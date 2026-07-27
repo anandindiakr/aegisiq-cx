@@ -750,6 +750,54 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          company_id: string
+          created_at: string
+          digest_email: string | null
+          email_alerts: boolean
+          id: string
+          in_app_alerts: boolean
+          quiet_hours_end: number | null
+          quiet_hours_start: number | null
+          sla_email: boolean
+          sla_frequency: string
+          sla_in_app: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          digest_email?: string | null
+          email_alerts?: boolean
+          id?: string
+          in_app_alerts?: boolean
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          sla_email?: boolean
+          sla_frequency?: string
+          sla_in_app?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          digest_email?: string | null
+          email_alerts?: boolean
+          id?: string
+          in_app_alerts?: boolean
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          sla_email?: boolean
+          sla_frequency?: string
+          sla_in_app?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       outlets: {
         Row: {
           address: string | null
