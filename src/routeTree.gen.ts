@@ -20,6 +20,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedOutletsRouteImport } from './routes/_authenticated/outlets'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
+import { Route as AuthenticatedCommandCentreRouteImport } from './routes/_authenticated/command-centre'
 import { Route as AuthenticatedCamerasRouteImport } from './routes/_authenticated/cameras'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
@@ -90,6 +91,12 @@ const AuthenticatedConversationsRoute =
   AuthenticatedConversationsRouteImport.update({
     id: '/conversations',
     path: '/conversations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCommandCentreRoute =
+  AuthenticatedCommandCentreRouteImport.update({
+    id: '/command-centre',
+    path: '/command-centre',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCamerasRoute = AuthenticatedCamerasRouteImport.update({
@@ -191,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/assistant': typeof AuthenticatedAssistantRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/cameras': typeof AuthenticatedCamerasRoute
+  '/command-centre': typeof AuthenticatedCommandCentreRoute
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/outlets': typeof AuthenticatedOutletsRoute
@@ -219,6 +227,7 @@ export interface FileRoutesByTo {
   '/assistant': typeof AuthenticatedAssistantRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/cameras': typeof AuthenticatedCamerasRoute
+  '/command-centre': typeof AuthenticatedCommandCentreRoute
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/outlets': typeof AuthenticatedOutletsRoute
@@ -249,6 +258,7 @@ export interface FileRoutesById {
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/cameras': typeof AuthenticatedCamerasRoute
+  '/_authenticated/command-centre': typeof AuthenticatedCommandCentreRoute
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/outlets': typeof AuthenticatedOutletsRoute
@@ -279,6 +289,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/audit-logs'
     | '/cameras'
+    | '/command-centre'
     | '/conversations'
     | '/dashboard'
     | '/outlets'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/audit-logs'
     | '/cameras'
+    | '/command-centre'
     | '/conversations'
     | '/dashboard'
     | '/outlets'
@@ -336,6 +348,7 @@ export interface FileRouteTypes {
     | '/_authenticated/assistant'
     | '/_authenticated/audit-logs'
     | '/_authenticated/cameras'
+    | '/_authenticated/command-centre'
     | '/_authenticated/conversations'
     | '/_authenticated/dashboard'
     | '/_authenticated/outlets'
@@ -442,6 +455,13 @@ declare module '@tanstack/react-router' {
       path: '/conversations'
       fullPath: '/conversations'
       preLoaderRoute: typeof AuthenticatedConversationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/command-centre': {
+      id: '/_authenticated/command-centre'
+      path: '/command-centre'
+      fullPath: '/command-centre'
+      preLoaderRoute: typeof AuthenticatedCommandCentreRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cameras': {
@@ -564,6 +584,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedCamerasRoute: typeof AuthenticatedCamerasRoute
+  AuthenticatedCommandCentreRoute: typeof AuthenticatedCommandCentreRoute
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedOutletsRoute: typeof AuthenticatedOutletsRoute
@@ -589,6 +610,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
   AuthenticatedCamerasRoute: AuthenticatedCamerasRoute,
+  AuthenticatedCommandCentreRoute: AuthenticatedCommandCentreRoute,
   AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedOutletsRoute: AuthenticatedOutletsRoute,

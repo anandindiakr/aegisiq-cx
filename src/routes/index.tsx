@@ -88,7 +88,7 @@ function SignInPage() {
         const { error } = await supabase.auth.signInWithPassword(parsed.data);
         if (error) throw error;
         toast.success("Welcome back to AegisIQ CX™");
-        navigate({ to: "/dashboard" });
+        navigate({ to: "/command-centre" });
       } else {
         const { error } = await supabase.auth.signUp({
           ...parsed.data,
@@ -119,7 +119,7 @@ function SignInPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/dashboard" });
+    navigate({ to: "/command-centre" });
   }
 
   /**
