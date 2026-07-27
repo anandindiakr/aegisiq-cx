@@ -90,6 +90,17 @@ function KeywordsPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  // Detected keyword labels are title-cased by the enrichment pipeline while the
+  // library stores free-text terms, so counts are matched case-insensitively.
+  const detectionCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const [term, count] of detections.data?.counts ?? []) {
+      const key = term.toLowerCase();
+      counts.set(key, (counts.get(key) ?? 0) + count);
+    }
+    return counts;
+  }, [detections.data]);
+
   const rows = useMemo(() => {
     const list = keywords.data ?? [];
     return categoryFilter === "all" ? list : list.filter((k) => k.category === categoryFilter);
@@ -141,7 +152,7 @@ function KeywordsPage() {
                 <Chip tone="info">{keyword.category}</Chip>
                 <Chip>weight {Number(keyword.weight).toFixed(2)}</Chip>
                 <Chip>
-                  {formatNumber(detections.data?.counts.get(keyword.term) ?? 0)} detections
+                  {formatNumber(detectionCounts.get(keyword.term.toLowerCase()) ?? 0)} detections
                 </Chip>
                 <span className="ml-auto flex items-center gap-3">
                   <Switch
