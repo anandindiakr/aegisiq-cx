@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,
+  Radar,
   MessagesSquare,
   Search,
   BrainCircuit,
@@ -37,6 +38,7 @@ import {
 import { companyQuery } from "@/features/platform/queries";
 
 const OPERATIONS = [
+  { title: "Command Centre", url: "/command-centre", icon: Radar },
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Alerts", url: "/alerts", icon: Siren },
   { title: "Reports", url: "/reports", icon: FileBarChart },
@@ -110,7 +112,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="border-b border-sidebar-border px-3 py-4">
-        <Link to="/dashboard" className="flex items-center gap-3">
+        <Link to="/command-centre" className="flex items-center gap-3">
           <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-primary/15 text-primary ring-1 ring-primary/30">
             {company?.logo_url ? (
               <img
