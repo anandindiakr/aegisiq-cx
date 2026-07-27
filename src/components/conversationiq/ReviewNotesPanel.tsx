@@ -259,7 +259,6 @@ export function ReviewNotesPanel({ conversationId }: { conversationId: string })
                       </Button>
                     </div>
                   )}
-
                 </>
               )}
             </div>

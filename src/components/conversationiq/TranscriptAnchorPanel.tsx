@@ -132,12 +132,7 @@ export function TranscriptAnchorPanel({
   });
 
   const editRange = useMutation({
-    mutationFn: (input: {
-      id: string;
-      speaker: string;
-      startMs: number;
-      endMs: number;
-    }) =>
+    mutationFn: (input: { id: string; speaker: string; startMs: number; endMs: number }) =>
       updateTranscriptAnchor(input.id, {
         speaker: input.speaker,
         startMs: input.startMs,

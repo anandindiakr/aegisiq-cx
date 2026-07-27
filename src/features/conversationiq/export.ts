@@ -208,7 +208,12 @@ export async function exportComplianceCsv(
       ids,
       "iq.compliance_transcripts",
     ),
-    fetchScoped<{ conversation_id: string; author_name: string | null; body: string; created_at: string }>(
+    fetchScoped<{
+      conversation_id: string;
+      author_name: string | null;
+      body: string;
+      created_at: string;
+    }>(
       "conversation_notes",
       "conversation_id,author_name,body,created_at",
       ids,

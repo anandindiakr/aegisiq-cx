@@ -118,7 +118,6 @@ export async function updateTranscriptAnchor(
   if (error) throw new Error(error.message);
 }
 
-
 export async function deleteTranscriptAnchor(id: string) {
   const company = getActiveTenant();
   let query = raw.from("transcript_anchors").delete().eq("id", id);

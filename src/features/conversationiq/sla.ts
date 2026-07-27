@@ -4,11 +4,7 @@ import { toast } from "sonner";
 
 import { reviewQueueQuery, slaMinutesLeft, slaState, formatSla } from "./queue";
 import type { ReviewAssignment } from "./queue";
-import {
-  DEFAULT_PREFERENCES,
-  notificationPreferencesQuery,
-  slaCooldownMs,
-} from "./notifications";
+import { DEFAULT_PREFERENCES, notificationPreferencesQuery, slaCooldownMs } from "./notifications";
 
 /**
  * SLA watch — polls the reviewer queue and raises an in-app notification when

@@ -197,7 +197,6 @@ export async function createAssignments(items: CreateAssignmentInput[]) {
   return ((data ?? []) as { id: string }[]).length;
 }
 
-
 export async function updateAssignment(
   id: string,
   patch: {

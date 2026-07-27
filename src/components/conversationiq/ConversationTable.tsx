@@ -43,10 +43,7 @@ import {
   languageName,
 } from "@/components/conversationiq/Badges";
 import type { IqConversation, IqSummary } from "@/features/conversationiq/queries";
-import {
-  exportComplianceCsv,
-  exportConversationsDeepCsv,
-} from "@/features/conversationiq/export";
+import { exportComplianceCsv, exportConversationsDeepCsv } from "@/features/conversationiq/export";
 import { useIqAccess } from "@/features/conversationiq/access";
 import { BulkReviewMenu } from "@/components/conversationiq/BulkReviewMenu";
 

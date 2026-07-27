@@ -1,7 +1,11 @@
 import { Check, Minus } from "lucide-react";
 
 import { Panel } from "@/components/common/Primitives";
-import { CAPABILITY_LABELS, useIqAccess, type IqCapability } from "@/features/conversationiq/access";
+import {
+  CAPABILITY_LABELS,
+  useIqAccess,
+  type IqCapability,
+} from "@/features/conversationiq/access";
 
 const ORDER: IqCapability[] = [
   "viewTranscripts",
