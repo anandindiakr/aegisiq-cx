@@ -320,7 +320,9 @@ export interface AuditLogPage {
 export const auditLogFilterOptionsQuery = queryOptions({
   queryKey: ["audit-log-filters"],
   queryFn: async () => {
-    const rows = await run<{ actor_id: string | null; actor_name: string | null; action: string; entity_type: string }[]>(
+    const rows = await run<
+      { actor_id: string | null; actor_name: string | null; action: string; entity_type: string }[]
+    >(
       db.from("audit_logs").select("actor_id,actor_name,action,entity_type").limit(1000),
       "supabase.audit_log_filters",
     );

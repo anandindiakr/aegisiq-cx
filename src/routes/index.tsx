@@ -327,7 +327,10 @@ function SignInPage() {
             </Button>
 
             {ssoOpen ? (
-              <form onSubmit={handleSso} className="space-y-3 rounded-xl border border-border bg-surface/60 p-4">
+              <form
+                onSubmit={handleSso}
+                className="space-y-3 rounded-xl border border-border bg-surface/60 p-4"
+              >
                 <Label htmlFor="ssoDomain" className="text-xs">
                   Company email domain
                 </Label>

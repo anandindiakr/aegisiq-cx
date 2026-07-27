@@ -311,7 +311,9 @@ function SettingsPage() {
                       )}
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{form.name || "Your company"}</p>
+                      <p className="truncate text-sm font-semibold">
+                        {form.name || "Your company"}
+                      </p>
                       <p className="truncate text-[11px] text-muted-foreground">
                         {form.brand_tagline || DEFAULT_BRANDING.brand_tagline}
                       </p>
