@@ -45,6 +45,15 @@ import {
   saveNotificationPreferences,
 } from "@/features/conversationiq/notifications";
 import { useIqAccess } from "@/features/conversationiq/access";
+import { policyFor, slaPoliciesQuery } from "@/features/conversationiq/slaPolicies";
+import { SlaTimeline } from "@/components/conversationiq/SlaTimeline";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { staffQuery } from "@/features/platform/queries";
 
 import { formatDate, formatNumber, titleCase } from "@/lib/format";
