@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Crosshair, Highlighter, Loader2, Quote, Trash2, Users2 } from "lucide-react";
+import {
+  Check,
+  Crosshair,
+  Highlighter,
+  Loader2,
+  Pencil,
+  Quote,
+  Trash2,
+  Users2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -15,6 +25,7 @@ import {
   updateTranscriptAnchor,
   type TranscriptAnchor,
 } from "@/features/conversationiq/anchors";
+import { useIqAccess } from "@/features/conversationiq/access";
 import { formatDate, titleCase } from "@/lib/format";
 
 export interface AnchorDraft {
@@ -26,6 +37,20 @@ export interface AnchorDraft {
 }
 
 const LABEL_SUGGESTIONS = ["evidence", "coaching", "escalation", "compliance", "highlight"];
+
+/** Parses an "mm:ss" (or plain seconds) offset back into milliseconds. */
+export function parseOffset(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const parts = trimmed.split(":");
+  if (parts.some((p) => p === "" || Number.isNaN(Number(p)))) return null;
+  const seconds =
+    parts.length === 1
+      ? Number(parts[0])
+      : parts.reduce((total, part) => total * 60 + Number(part), 0);
+  if (!Number.isFinite(seconds) || seconds < 0) return null;
+  return Math.round(seconds * 1000);
+}
 
 export function offsetLabel(ms: number) {
   const total = Math.round(ms / 1000);
@@ -51,7 +76,13 @@ export function TranscriptAnchorPanel({
   onJump?: (anchor: TranscriptAnchor) => void;
 }) {
   const queryClient = useQueryClient();
+  const access = useIqAccess();
+  const canEdit = access.can("editAnchors");
   const anchors = useQuery(transcriptAnchorsQuery(conversationId));
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editSpeaker, setEditSpeaker] = useState("");
+  const [editStart, setEditStart] = useState("");
+  const [editEnd, setEditEnd] = useState("");
   const [note, setNote] = useState("");
   const [labels, setLabels] = useState<string[]>([]);
   const [labelInput, setLabelInput] = useState("");
@@ -100,6 +131,51 @@ export function TranscriptAnchorPanel({
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const editRange = useMutation({
+    mutationFn: (input: {
+      id: string;
+      speaker: string;
+      startMs: number;
+      endMs: number;
+    }) =>
+      updateTranscriptAnchor(input.id, {
+        speaker: input.speaker,
+        startMs: input.startMs,
+        endMs: input.endMs,
+      }),
+    onSuccess: () => {
+      toast.success("Anchor updated");
+      setEditingId(null);
+      refresh();
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  function beginEdit(anchor: TranscriptAnchor) {
+    setEditingId(anchor.id);
+    setEditSpeaker(anchor.speaker);
+    setEditStart(offsetLabel(anchor.start_ms));
+    setEditEnd(offsetLabel(anchor.end_ms));
+  }
+
+  function commitEdit(anchor: TranscriptAnchor) {
+    const startMs = parseOffset(editStart);
+    const endMs = parseOffset(editEnd);
+    if (startMs === null || endMs === null) {
+      toast.error("Use mm:ss for the anchor start and end times.");
+      return;
+    }
+    if (endMs < startMs) {
+      toast.error("The anchor end time must be after its start time.");
+      return;
+    }
+    if (!editSpeaker.trim()) {
+      toast.error("An anchor needs a speaker.");
+      return;
+    }
+    editRange.mutate({ id: anchor.id, speaker: editSpeaker.trim(), startMs, endMs });
+  }
+
   const editNote = useMutation({
     mutationFn: (input: { id: string; note: string }) =>
       updateTranscriptAnchor(input.id, { note: input.note }),
@@ -124,7 +200,7 @@ export function TranscriptAnchorPanel({
       title="Transcript anchors"
       description="Highlight transcript text to attach a note or label to an exact speaker and time range."
     >
-      {draft ? (
+      {draft && canEdit ? (
         <div className="mb-4 space-y-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
           <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
             <Chip tone="info">
@@ -185,7 +261,10 @@ export function TranscriptAnchorPanel({
         </div>
       ) : (
         <p className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-          <Highlighter className="size-3.5" /> Select text inside an utterance, then press “Anchor”.
+          <Highlighter className="size-3.5" />{" "}
+          {canEdit
+            ? "Select text inside an utterance, then press “Anchor”."
+            : "Your role can view anchors but not create or change them."}
         </p>
       )}
 
@@ -215,15 +294,78 @@ export function TranscriptAnchorPanel({
           .map((anchor: TranscriptAnchor) => (
             <li key={anchor.id} className="rounded-lg border border-border bg-surface/50 p-3">
               <div className="flex items-start justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                  <Chip tone="neutral">
-                    <Users2 className="size-3" /> {titleCase(anchor.speaker)}
-                  </Chip>
-                  <span className="font-mono">
-                    {offsetLabel(anchor.start_ms)} – {offsetLabel(anchor.end_ms)}
-                  </span>
-                </div>
+                {editingId === anchor.id ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Input
+                      value={editSpeaker}
+                      onChange={(e) => setEditSpeaker(e.target.value)}
+                      aria-label="Anchor speaker"
+                      className="h-7 w-32 bg-surface text-xs"
+                    />
+                    <Input
+                      value={editStart}
+                      onChange={(e) => setEditStart(e.target.value)}
+                      aria-label="Anchor start time"
+                      placeholder="mm:ss"
+                      className="h-7 w-20 bg-surface font-mono text-xs"
+                    />
+                    <Input
+                      value={editEnd}
+                      onChange={(e) => setEditEnd(e.target.value)}
+                      aria-label="Anchor end time"
+                      placeholder="mm:ss"
+                      className="h-7 w-20 bg-surface font-mono text-xs"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                    <Chip tone="neutral">
+                      <Users2 className="size-3" /> {titleCase(anchor.speaker)}
+                    </Chip>
+                    <span className="font-mono">
+                      {offsetLabel(anchor.start_ms)} – {offsetLabel(anchor.end_ms)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center gap-1">
+                  {canEdit &&
+                    (editingId === anchor.id ? (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-7"
+                          aria-label="Save anchor range"
+                          disabled={editRange.isPending}
+                          onClick={() => commitEdit(anchor)}
+                        >
+                          {editRange.isPending ? (
+                            <Loader2 className="size-3.5 animate-spin" />
+                          ) : (
+                            <Check className="size-3.5" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-7"
+                          aria-label="Cancel anchor edit"
+                          onClick={() => setEditingId(null)}
+                        >
+                          <X className="size-3.5" />
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-7"
+                        aria-label="Edit anchor"
+                        onClick={() => beginEdit(anchor)}
+                      >
+                        <Pencil className="size-3.5" />
+                      </Button>
+                    ))}
                   {onJump && (
                     <Button
                       variant="ghost"
@@ -234,15 +376,17 @@ export function TranscriptAnchorPanel({
                       <Crosshair className="mr-1 size-3.5" /> Jump
                     </Button>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-7"
-                    aria-label="Delete anchor"
-                    onClick={() => remove.mutate(anchor.id)}
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
+                  {canEdit && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7"
+                      aria-label="Delete anchor"
+                      onClick={() => remove.mutate(anchor.id)}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  )}
                 </div>
               </div>
               <p className="mt-2 flex gap-2 text-sm">
@@ -251,7 +395,8 @@ export function TranscriptAnchorPanel({
               </p>
               <Textarea
                 defaultValue={anchor.note ?? ""}
-                placeholder="Add a reviewer note..."
+                readOnly={!canEdit}
+                placeholder={canEdit ? "Add a reviewer note..." : "No reviewer note"}
                 className="mt-2 min-h-12 bg-surface text-xs"
                 onBlur={(e) => {
                   if (e.target.value.trim() !== (anchor.note ?? "").trim()) {
