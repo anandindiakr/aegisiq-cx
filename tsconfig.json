@@ -20,6 +20,11 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowUnreachableCode": false,
+    "exactOptionalPropertyTypes": false,
     "paths": {
       "@/*": ["./src/*"]
     }

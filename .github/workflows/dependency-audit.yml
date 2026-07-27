@@ -1,0 +1,57 @@
+name: Dependency audit & update
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # every Monday at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  audit:
+    name: Audit dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Security audit (high/critical)
+        run: bun audit --audit-level=high
+
+  update:
+    name: Propose safe dependency updates
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Update within semver ranges
+        run: bun update
+
+      - name: Verify updated tree
+        run: |
+          bun run deps:check
+          bun run typecheck
+          bun run lint
+          bun run build
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/dependency-updates
+          commit-message: "chore(deps): weekly dependency update"
+          title: "chore(deps): weekly dependency update"
+          body: |
+            Automated weekly dependency refresh (within existing semver ranges).
+
+            Verified in CI: dependency check, typecheck, lint and production build.
+          labels: dependencies
+          delete-branch: true

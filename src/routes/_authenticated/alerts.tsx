@@ -132,9 +132,7 @@ function AlertsPage() {
                         size="sm"
                         variant="outline"
                         disabled={acknowledge.isPending}
-                        onClick={() =>
-                          acknowledge.mutate({ id: alert.id, status: "acknowledged" })
-                        }
+                        onClick={() => acknowledge.mutate({ id: alert.id, status: "acknowledged" })}
                       >
                         Acknowledge
                       </Button>

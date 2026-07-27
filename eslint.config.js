@@ -10,6 +10,7 @@ export default tseslint.config(
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
+    ignores: ["src/routeTree.gen.ts", "src/integrations/supabase/types.ts"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -33,7 +34,20 @@ export default tseslint.config(
         },
       ],
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
+      // Stricter safety net: surface unused code and unsafe typing without
+      // blocking iteration on intentional throwaway args.
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none" },
+      ],
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/consistent-type-imports": [
+        "warn",
+        { prefer: "type-imports", fixStyle: "inline-type-imports" },
+      ],
+      "no-var": "error",
+      eqeqeq: ["error", "smart"],
+      "prefer-const": "error",
     },
   },
   eslintPluginPrettier,

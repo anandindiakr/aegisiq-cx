@@ -191,7 +191,8 @@ export const auditLogsQuery = queryOptions({
 
 export const keywordsQuery = queryOptions({
   queryKey: ["keywords"],
-  queryFn: () => run<KeywordRow[]>(db.from("keywords").select("*").order("weight", { ascending: false })),
+  queryFn: () =>
+    run<KeywordRow[]>(db.from("keywords").select("*").order("weight", { ascending: false })),
 });
 
 export const languagesQuery = queryOptions({

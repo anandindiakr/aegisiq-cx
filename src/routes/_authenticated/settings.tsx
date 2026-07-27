@@ -51,7 +51,14 @@ export const Route = createFileRoute("/_authenticated/settings")({
 });
 
 const PLANS = ["starter", "growth", "enterprise", "enterprise_plus"];
-const TIMEZONES = ["UTC", "Europe/London", "Europe/Paris", "Asia/Dubai", "Asia/Kolkata", "America/New_York"];
+const TIMEZONES = [
+  "UTC",
+  "Europe/London",
+  "Europe/Paris",
+  "Asia/Dubai",
+  "Asia/Kolkata",
+  "America/New_York",
+];
 
 function SettingsPage() {
   const { data, isPending, error, refetch } = useQuery(companyQuery);
@@ -102,7 +109,10 @@ function SettingsPage() {
         description="Tenant configuration: company identity, branding, subscription, localisation and detection rules."
         actions={
           data && (
-            <StatusPill label={data.status} tone={data.status === "active" ? "positive" : "warning"} />
+            <StatusPill
+              label={data.status}
+              tone={data.status === "active" ? "positive" : "warning"}
+            />
           )
         }
       />
