@@ -317,8 +317,9 @@ function SettingsPage() {
                       </p>
                     </div>
                     <span
-                      className="ml-auto rounded-lg px-4 py-2 text-xs font-medium text-white"
+                      className="ml-auto rounded-lg px-4 py-2 text-xs font-medium"
                       style={{
+                        color: "#ffffff",
                         backgroundColor: isValidHex(form.brand_primary_color)
                           ? form.brand_primary_color
                           : DEFAULT_BRANDING.brand_primary_color,
