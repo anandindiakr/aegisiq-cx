@@ -29,6 +29,7 @@ import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/tele
 import { Route as AuthenticatedConversationiqSlaRouteImport } from './routes/_authenticated/conversationiq.sla'
 import { Route as AuthenticatedConversationiqSearchRouteImport } from './routes/_authenticated/conversationiq.search'
 import { Route as AuthenticatedConversationiqReviewRouteImport } from './routes/_authenticated/conversationiq.review'
+import { Route as AuthenticatedConversationiqRedactionsRouteImport } from './routes/_authenticated/conversationiq.redactions'
 import { Route as AuthenticatedConversationiqQueueRouteImport } from './routes/_authenticated/conversationiq.queue'
 import { Route as AuthenticatedConversationiqLanguagesRouteImport } from './routes/_authenticated/conversationiq.languages'
 import { Route as AuthenticatedConversationiqKeywordsRouteImport } from './routes/_authenticated/conversationiq.keywords'
@@ -140,6 +141,12 @@ const AuthenticatedConversationiqReviewRoute =
     path: '/conversationiq/review',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedConversationiqRedactionsRoute =
+  AuthenticatedConversationiqRedactionsRouteImport.update({
+    id: '/conversationiq/redactions',
+    path: '/conversationiq/redactions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConversationiqQueueRoute =
   AuthenticatedConversationiqQueueRouteImport.update({
     id: '/conversationiq/queue',
@@ -197,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
   '/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
   '/conversationiq/queue': typeof AuthenticatedConversationiqQueueRoute
+  '/conversationiq/redactions': typeof AuthenticatedConversationiqRedactionsRoute
   '/conversationiq/review': typeof AuthenticatedConversationiqReviewRoute
   '/conversationiq/search': typeof AuthenticatedConversationiqSearchRoute
   '/conversationiq/sla': typeof AuthenticatedConversationiqSlaRoute
@@ -224,6 +232,7 @@ export interface FileRoutesByTo {
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
   '/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
   '/conversationiq/queue': typeof AuthenticatedConversationiqQueueRoute
+  '/conversationiq/redactions': typeof AuthenticatedConversationiqRedactionsRoute
   '/conversationiq/review': typeof AuthenticatedConversationiqReviewRoute
   '/conversationiq/search': typeof AuthenticatedConversationiqSearchRoute
   '/conversationiq/sla': typeof AuthenticatedConversationiqSlaRoute
@@ -253,6 +262,7 @@ export interface FileRoutesById {
   '/_authenticated/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
   '/_authenticated/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
   '/_authenticated/conversationiq/queue': typeof AuthenticatedConversationiqQueueRoute
+  '/_authenticated/conversationiq/redactions': typeof AuthenticatedConversationiqRedactionsRoute
   '/_authenticated/conversationiq/review': typeof AuthenticatedConversationiqReviewRoute
   '/_authenticated/conversationiq/search': typeof AuthenticatedConversationiqSearchRoute
   '/_authenticated/conversationiq/sla': typeof AuthenticatedConversationiqSlaRoute
@@ -282,6 +292,7 @@ export interface FileRouteTypes {
     | '/conversationiq/keywords'
     | '/conversationiq/languages'
     | '/conversationiq/queue'
+    | '/conversationiq/redactions'
     | '/conversationiq/review'
     | '/conversationiq/search'
     | '/conversationiq/sla'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/conversationiq/keywords'
     | '/conversationiq/languages'
     | '/conversationiq/queue'
+    | '/conversationiq/redactions'
     | '/conversationiq/review'
     | '/conversationiq/search'
     | '/conversationiq/sla'
@@ -337,6 +349,7 @@ export interface FileRouteTypes {
     | '/_authenticated/conversationiq/keywords'
     | '/_authenticated/conversationiq/languages'
     | '/_authenticated/conversationiq/queue'
+    | '/_authenticated/conversationiq/redactions'
     | '/_authenticated/conversationiq/review'
     | '/_authenticated/conversationiq/search'
     | '/_authenticated/conversationiq/sla'
@@ -494,6 +507,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConversationiqReviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/conversationiq/redactions': {
+      id: '/_authenticated/conversationiq/redactions'
+      path: '/conversationiq/redactions'
+      fullPath: '/conversationiq/redactions'
+      preLoaderRoute: typeof AuthenticatedConversationiqRedactionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/conversationiq/queue': {
       id: '/_authenticated/conversationiq/queue'
       path: '/conversationiq/queue'
@@ -557,6 +577,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConversationiqKeywordsRoute: typeof AuthenticatedConversationiqKeywordsRoute
   AuthenticatedConversationiqLanguagesRoute: typeof AuthenticatedConversationiqLanguagesRoute
   AuthenticatedConversationiqQueueRoute: typeof AuthenticatedConversationiqQueueRoute
+  AuthenticatedConversationiqRedactionsRoute: typeof AuthenticatedConversationiqRedactionsRoute
   AuthenticatedConversationiqReviewRoute: typeof AuthenticatedConversationiqReviewRoute
   AuthenticatedConversationiqSearchRoute: typeof AuthenticatedConversationiqSearchRoute
   AuthenticatedConversationiqSlaRoute: typeof AuthenticatedConversationiqSlaRoute
@@ -584,6 +605,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConversationiqLanguagesRoute:
     AuthenticatedConversationiqLanguagesRoute,
   AuthenticatedConversationiqQueueRoute: AuthenticatedConversationiqQueueRoute,
+  AuthenticatedConversationiqRedactionsRoute:
+    AuthenticatedConversationiqRedactionsRoute,
   AuthenticatedConversationiqReviewRoute:
     AuthenticatedConversationiqReviewRoute,
   AuthenticatedConversationiqSearchRoute:
