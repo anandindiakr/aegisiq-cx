@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, LogOut, Search, ShieldCheck } from "lucide-react";
@@ -20,6 +20,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { ROLE_LABELS, useSession } from "@/features/auth/useSession";
 import { companyQuery, myProfileQuery, myRolesQuery } from "@/features/platform/queries";
+import { applyBrandColor } from "@/features/platform/branding";
+import { useAlertRealtime } from "@/features/platform/realtime";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
@@ -28,6 +30,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { data: profile } = useQuery(myProfileQuery);
   const { data: roles } = useQuery(myRolesQuery);
   const { data: company } = useQuery(companyQuery);
+
+  // Tenant branding: paint the company colour into the design tokens.
+  useEffect(() => {
+    applyBrandColor(company?.brand_primary_color);
+  }, [company?.brand_primary_color]);
+
+  // Live alert stream (toasts + cache refresh) for the whole console.
+  useAlertRealtime(company?.id);
 
   const displayName = profile?.full_name ?? user?.email ?? "Operator";
   const initials = displayName
@@ -52,7 +62,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur-xl md:px-6">
             <SidebarTrigger className="text-muted-foreground" />
             <div className="hidden min-w-0 items-center gap-2 md:flex">
-              <ShieldCheck className="size-4 text-primary" />
+              {company?.logo_url ? (
+                <img
+                  src={company.logo_url}
+                  alt={`${company.name} logo`}
+                  className="size-5 rounded object-contain"
+                  loading="lazy"
+                />
+              ) : (
+                <ShieldCheck className="size-4 text-primary" />
+              )}
               <span className="truncate text-sm font-medium">
                 {company?.name ?? "Loading tenant…"}
               </span>
