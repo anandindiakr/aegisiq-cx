@@ -210,14 +210,21 @@ function ReviewerQueuePage() {
             size="sm"
             onClick={() => {
               const next = !emailAlerts;
-              setEmailAlerts(next);
-              setEmailEscalation(next);
-              toast.success(next ? "Email escalations enabled" : "Email escalations disabled", {
-                description: next
-                  ? "Breached items can now be sent as an escalation email digest."
-                  : "You will only receive in-app notifications.",
-              });
+              void saveNotificationPreferences({ sla_email: next })
+                .then(() => {
+                  void prefs.refetch();
+                  toast.success(
+                    next ? "Email escalations enabled" : "Email escalations disabled",
+                    {
+                      description: next
+                        ? "Breached items can now be sent as an escalation email digest."
+                        : "You will only receive in-app notifications.",
+                    },
+                  );
+                })
+                .catch((error: Error) => toast.error(error.message));
             }}
+
           >
             <Mail className="mr-2 size-4" /> Email escalations {emailAlerts ? "on" : "off"}
           </Button>
