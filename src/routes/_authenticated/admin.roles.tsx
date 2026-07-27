@@ -75,6 +75,8 @@ function RoleAdminPage() {
   const queryClient = useQueryClient();
   const staff = useQuery(staffQuery);
   const grants = useQuery(roleGrantsQuery);
+  const activeTemplate = useQuery(activeCapabilityMatrixQuery);
+  const matrixOverride = activeTemplate.data?.capabilities ?? null;
   const [term, setTerm] = useState("");
   const [pendingRole, setPendingRole] = useState<Record<string, AppRole>>({});
 
