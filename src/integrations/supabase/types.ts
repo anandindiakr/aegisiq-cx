@@ -209,6 +209,8 @@ export type Database = {
       companies: {
         Row: {
           address: string | null
+          brand_primary_color: string
+          brand_tagline: string | null
           contact_email: string | null
           contact_phone: string | null
           created_at: string
@@ -227,6 +229,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          brand_primary_color?: string
+          brand_tagline?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
@@ -245,6 +249,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          brand_primary_color?: string
+          brand_tagline?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
@@ -758,6 +764,15 @@ export type Database = {
         Returns: boolean
       }
       is_company_admin: { Args: never; Returns: boolean }
+      tenant_branding: {
+        Args: never
+        Returns: {
+          brand_primary_color: string
+          brand_tagline: string
+          logo_url: string
+          name: string
+        }[]
+      }
     }
     Enums: {
       alert_severity: "critical" | "high" | "medium" | "low" | "info"

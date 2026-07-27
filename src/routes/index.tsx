@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Building2, Languages, Loader2, Radar, ShieldCheck } from "lucide-react";
+import { Building2, KeyRound, Languages, Loader2, Radar, ShieldCheck } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { applyBrandColor, publicBrandingQuery } from "@/features/platform/branding";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -62,6 +64,15 @@ function SignInPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [pending, setPending] = useState(false);
+  const [ssoOpen, setSsoOpen] = useState(false);
+  const [ssoDomain, setSsoDomain] = useState("");
+
+  // Tenant branding is exposed through a read-only database function that
+  // returns presentation fields only — no tenant data leaves RLS.
+  const { data: branding } = useQuery(publicBrandingQuery);
+  useEffect(() => {
+    applyBrandColor(branding?.brand_primary_color);
+  }, [branding?.brand_primary_color]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -111,18 +122,60 @@ function SignInPage() {
     navigate({ to: "/dashboard" });
   }
 
+  /**
+   * Enterprise SSO (SAML / OIDC). Supabase resolves the tenant's identity
+   * provider from the email domain and returns the redirect URL; RLS and the
+   * tenant guard still apply once the session lands.
+   */
+  async function handleSso(event: React.FormEvent) {
+    event.preventDefault();
+    const domain = ssoDomain.trim().toLowerCase().replace(/^@/, "");
+    if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain)) {
+      toast.error("Enter your company email domain, e.g. company.com");
+      return;
+    }
+    setPending(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithSSO({
+        domain,
+        options: { redirectTo: window.location.origin },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+      toast.error("No identity provider is registered for that domain");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Single sign-on is unavailable for that domain",
+      );
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const brandName = branding?.name ?? "AegisIQ CX™";
+  const brandTagline = branding?.brand_tagline ?? "AI Customer Experience Intelligence Platform";
+
   return (
     <div className="auth-backdrop grid min-h-screen grid-cols-1 bg-background lg:grid-cols-[1.05fr_0.95fr]">
       <section className="hidden flex-col justify-between border-r border-border px-12 py-14 lg:flex">
         <div className="flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/30">
-            <ShieldCheck className="size-5" />
+          <span className="grid size-10 place-items-center overflow-hidden rounded-xl bg-primary/15 text-primary ring-1 ring-primary/30">
+            {branding?.logo_url ? (
+              <img
+                src={branding.logo_url}
+                alt={`${brandName} logo`}
+                className="size-full object-contain"
+              />
+            ) : (
+              <ShieldCheck className="size-5" />
+            )}
           </span>
           <div>
-            <p className="text-sm font-semibold tracking-tight">AegisIQ CX™</p>
-            <p className="text-[11px] text-muted-foreground">
-              AI Customer Experience Intelligence Platform
-            </p>
+            <p className="text-sm font-semibold tracking-tight">{brandName}</p>
+            <p className="text-[11px] text-muted-foreground">{brandTagline}</p>
           </div>
         </div>
 
@@ -171,10 +224,18 @@ function SignInPage() {
           className="panel w-full max-w-md p-7"
         >
           <div className="mb-6 flex items-center gap-3 lg:hidden">
-            <span className="grid size-9 place-items-center rounded-lg bg-primary/15 text-primary ring-1 ring-primary/30">
-              <ShieldCheck className="size-4" />
+            <span className="grid size-9 place-items-center overflow-hidden rounded-lg bg-primary/15 text-primary ring-1 ring-primary/30">
+              {branding?.logo_url ? (
+                <img
+                  src={branding.logo_url}
+                  alt={`${brandName} logo`}
+                  className="size-full object-contain"
+                />
+              ) : (
+                <ShieldCheck className="size-4" />
+              )}
             </span>
-            <span className="text-sm font-semibold">AegisIQ CX™</span>
+            <span className="text-sm font-semibold">{brandName}</span>
           </div>
 
           <h2 className="text-xl font-semibold tracking-tight">Company sign in</h2>
@@ -260,9 +321,53 @@ function SignInPage() {
             <span className="h-px flex-1 bg-border" />
           </div>
 
-          <Button variant="outline" className="w-full" onClick={handleGoogle} disabled={pending}>
-            Continue with Google Workspace
-          </Button>
+          <div className="space-y-3">
+            <Button variant="outline" className="w-full" onClick={handleGoogle} disabled={pending}>
+              Continue with Google Workspace
+            </Button>
+
+            {ssoOpen ? (
+              <form
+                onSubmit={handleSso}
+                className="space-y-3 rounded-xl border border-border bg-surface/60 p-4"
+              >
+                <Label htmlFor="ssoDomain" className="text-xs">
+                  Company email domain
+                </Label>
+                <Input
+                  id="ssoDomain"
+                  value={ssoDomain}
+                  onChange={(e) => setSsoDomain(e.target.value)}
+                  placeholder="company.com"
+                  maxLength={253}
+                  className="bg-background"
+                  autoComplete="organization"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  We redirect you to your organisation's SAML or OIDC identity provider. Tenant
+                  isolation is enforced by row-level security after sign-in.
+                </p>
+                <div className="flex gap-2">
+                  <Button type="submit" className="flex-1" disabled={pending}>
+                    {pending && <Loader2 className="mr-2 size-4 animate-spin" />}
+                    Continue with SSO
+                  </Button>
+                  <Button type="button" variant="ghost" onClick={() => setSsoOpen(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setSsoOpen(true)}
+                disabled={pending}
+              >
+                <KeyRound className="mr-2 size-4" /> Enterprise single sign-on (SAML / OIDC)
+              </Button>
+            )}
+          </div>
 
           <p className="mt-6 text-[11px] leading-relaxed text-muted-foreground">
             Sessions are protected with rotating tokens and full audit logging. Unauthorised access

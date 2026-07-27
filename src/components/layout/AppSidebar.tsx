@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,
   MessagesSquare,
@@ -27,6 +28,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { companyQuery } from "@/features/platform/queries";
 
 const OPERATIONS = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -88,21 +90,30 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const { data: company } = useQuery(companyQuery);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="border-b border-sidebar-border px-3 py-4">
         <Link to="/dashboard" className="flex items-center gap-3">
-          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary ring-1 ring-primary/30">
-            <ShieldCheck className="size-5" />
+          <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-primary/15 text-primary ring-1 ring-primary/30">
+            {company?.logo_url ? (
+              <img
+                src={company.logo_url}
+                alt={`${company.name} logo`}
+                className="size-full object-contain"
+              />
+            ) : (
+              <ShieldCheck className="size-5" />
+            )}
           </span>
           {!collapsed && (
             <span className="min-w-0">
               <span className="block truncate text-sm font-semibold tracking-tight">
-                AegisIQ CX™
+                {company?.name ?? "AegisIQ CX™"}
               </span>
               <span className="block truncate text-[11px] text-muted-foreground">
-                CX Intelligence Platform
+                {company?.brand_tagline ?? "CX Intelligence Platform"}
               </span>
             </span>
           )}
