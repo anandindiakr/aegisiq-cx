@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_events: {
+        Row: {
+          actor_id: string | null
+          actor_name: string | null
+          alert_id: string
+          company_id: string
+          created_at: string
+          from_status: Database["public"]["Enums"]["alert_status"] | null
+          id: string
+          note: string | null
+          to_status: Database["public"]["Enums"]["alert_status"]
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name?: string | null
+          alert_id: string
+          company_id: string
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["alert_status"] | null
+          id?: string
+          note?: string | null
+          to_status: Database["public"]["Enums"]["alert_status"]
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string | null
+          alert_id?: string
+          company_id?: string
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["alert_status"] | null
+          id?: string
+          note?: string | null
+          to_status?: Database["public"]["Enums"]["alert_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_events_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alert_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alert_reads: {
         Row: {
           alert_id: string
@@ -399,6 +450,99 @@ export type Database = {
           },
           {
             foreignKeyName: "conversation_keywords_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_notes: {
+        Row: {
+          author_id: string | null
+          author_name: string | null
+          body: string
+          company_id: string
+          conversation_id: string
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string | null
+          body: string
+          company_id: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string | null
+          body?: string
+          company_id?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_notes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_notes_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_tags: {
+        Row: {
+          company_id: string
+          conversation_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          tag: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          conversation_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          tag: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          conversation_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          tag?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_tags_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_tags_conversation_id_fkey"
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"

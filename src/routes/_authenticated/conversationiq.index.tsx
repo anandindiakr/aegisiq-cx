@@ -15,6 +15,7 @@ import {
   iqKeywordIndexQuery,
   iqSummaryIndexQuery,
 } from "@/features/conversationiq/queries";
+import { iqTagIndexQuery } from "@/features/conversationiq/review";
 import { DEFAULT_FILTERS, applyFilters, type IqFilters } from "@/features/conversationiq/filters";
 import { camerasQuery, outletsQuery } from "@/features/platform/queries";
 
@@ -59,6 +60,7 @@ function ConversationListPage() {
   const keywordIndex = useQuery(iqKeywordIndexQuery);
   const summaryIndex = useQuery(iqSummaryIndexQuery);
   const alertIndex = useQuery(iqAlertIndexQuery);
+  const tagIndex = useQuery(iqTagIndexQuery);
   const outlets = useQuery(outletsQuery);
   const cameras = useQuery(camerasQuery);
 
@@ -79,6 +81,11 @@ function ConversationListPage() {
     [conversations.data],
   );
 
+  const tagTerms = useMemo(
+    () => Array.from(tagIndex.data?.counts.keys() ?? []).sort(),
+    [tagIndex.data],
+  );
+
   const keywordTerms = useMemo(
     () => Array.from(keywordIndex.data?.counts.keys() ?? []).sort(),
     [keywordIndex.data],
@@ -90,8 +97,16 @@ function ConversationListPage() {
         keywordsByConversation: keywordIndex.data?.byConversation ?? new Map(),
         summaries: summaryIndex.data ?? new Map(),
         alertsByConversation: alertIndex.data ?? new Map(),
+        tagsByConversation: tagIndex.data?.byConversation ?? new Map(),
       }),
-    [conversations.data, filters, keywordIndex.data, summaryIndex.data, alertIndex.data],
+    [
+      conversations.data,
+      filters,
+      keywordIndex.data,
+      summaryIndex.data,
+      alertIndex.data,
+      tagIndex.data,
+    ],
   );
 
   return (
@@ -135,6 +150,7 @@ function ConversationListPage() {
           cameras={cameras.data ?? []}
           employees={employees}
           keywords={keywordTerms}
+          tags={tagTerms}
         />
         <ConversationTable
           rows={rows}
@@ -142,6 +158,7 @@ function ConversationListPage() {
           cameras={cameraMap}
           summaries={summaryIndex.data ?? new Map()}
           alerts={alertIndex.data ?? new Map()}
+          tags={tagIndex.data?.byConversation ?? new Map()}
           isLoading={conversations.isLoading}
         />
       </div>

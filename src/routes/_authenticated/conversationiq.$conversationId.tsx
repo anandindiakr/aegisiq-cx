@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -9,6 +10,7 @@ import {
   Cctv,
   Clock3,
   Copy,
+  Filter,
   Gauge,
   GraduationCap,
   Languages as LanguagesIcon,
@@ -40,6 +42,8 @@ import {
   SentimentBadge,
   languageName,
 } from "@/components/conversationiq/Badges";
+import { AlertReviewPanel } from "@/components/conversationiq/AlertReviewPanel";
+import { ReviewNotesPanel } from "@/components/conversationiq/ReviewNotesPanel";
 import { iqConversationQuery } from "@/features/conversationiq/queries";
 import { camerasQuery, outletsQuery } from "@/features/platform/queries";
 import { formatDate, formatDuration, titleCase } from "@/lib/format";
@@ -106,6 +110,31 @@ function ConversationViewer() {
   const detail = useQuery(iqConversationQuery(conversationId));
   const outlets = useQuery(outletsQuery);
   const cameras = useQuery(camerasQuery);
+  const [speakerFilter, setSpeakerFilter] = useState<Set<string>>(new Set());
+
+  const allTranscripts = useMemo(() => detail.data?.transcripts ?? [], [detail.data]);
+  const speakerStats = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const line of allTranscripts)
+      counts.set(line.speaker, (counts.get(line.speaker) ?? 0) + 1);
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+  }, [allTranscripts]);
+  const visibleTranscripts = useMemo(
+    () =>
+      speakerFilter.size === 0
+        ? allTranscripts
+        : allTranscripts.filter((line) => speakerFilter.has(line.speaker.trim().toLowerCase())),
+    [allTranscripts, speakerFilter],
+  );
+
+  function toggleSpeaker(speaker: string) {
+    setSpeakerFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(speaker)) next.delete(speaker);
+      else next.add(speaker);
+      return next;
+    });
+  }
 
   if (detail.isLoading) {
     return (
@@ -238,10 +267,42 @@ function ConversationViewer() {
 
           <Panel
             title="Transcript"
-            description={`${transcripts.length} utterances · diarised by speaker`}
+            description={`${visibleTranscripts.length} of ${transcripts.length} utterances · diarised by speaker`}
           >
+            <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-border pb-3">
+              <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+                <Filter className="size-3" /> Speakers
+              </span>
+              <button
+                type="button"
+                onClick={() => setSpeakerFilter(new Set())}
+                className="transition-opacity hover:opacity-80"
+              >
+                <Chip tone={speakerFilter.size === 0 ? "info" : "neutral"}>
+                  All · {transcripts.length}
+                </Chip>
+              </button>
+              {speakerStats.map(([speaker, count]) => (
+                <button
+                  key={speaker}
+                  type="button"
+                  onClick={() => toggleSpeaker(speaker)}
+                  className="transition-opacity hover:opacity-80"
+                >
+                  <Chip
+                    tone={speakerFilter.has(speaker) ? "info" : "neutral"}
+                    className={cn(
+                      speakerFilter.size > 0 && !speakerFilter.has(speaker) && "opacity-50",
+                    )}
+                  >
+                    <Users2 className="size-3" />
+                    {titleCase(speaker)} · {count}
+                  </Chip>
+                </button>
+              ))}
+            </div>
             <div className="max-h-[32rem] space-y-3 overflow-y-auto pr-1">
-              {transcripts.map((line, index) => {
+              {visibleTranscripts.map((line, index) => {
                 const isCustomer = line.speaker.toLowerCase().includes("customer");
                 return (
                   <motion.div
@@ -296,9 +357,11 @@ function ConversationViewer() {
                   </motion.div>
                 );
               })}
-              {transcripts.length === 0 && (
+              {visibleTranscripts.length === 0 && (
                 <p className="py-10 text-center text-sm text-muted-foreground">
-                  No transcript captured for this conversation.
+                  {transcripts.length === 0
+                    ? "No transcript captured for this conversation."
+                    : "No utterances from the selected speakers."}
                 </p>
               )}
             </div>
@@ -427,6 +490,10 @@ function ConversationViewer() {
               )}
             </div>
           </Panel>
+
+          <AlertReviewPanel alerts={alerts} conversationId={conversation.id} />
+
+          <ReviewNotesPanel conversationId={conversation.id} />
 
           <Panel
             title="Detected keywords"
