@@ -19,7 +19,11 @@ import {
 } from "@/components/ui/dialog";
 import { Chip } from "@/components/conversationiq/Badges";
 import { ROLE_LABELS } from "@/features/auth/useSession";
-import { CAPABILITY_LABELS, allowedRoles, type IqCapability } from "@/features/conversationiq/access";
+import {
+  CAPABILITY_LABELS,
+  allowedRoles,
+  type IqCapability,
+} from "@/features/conversationiq/access";
 import { companyQuery, type AppRole } from "@/features/platform/queries";
 import { ASSIGNABLE_ROLES, roleGrantsQuery, type CompanyMember } from "@/features/platform/roles";
 import {
@@ -320,9 +324,7 @@ export function RoleTemplatesPanel({ members }: RoleTemplatesPanelProps) {
                   <Input
                     id="template-name"
                     value={editor.name}
-                    onChange={(event) =>
-                      setEditor({ ...editor, name: event.target.value })
-                    }
+                    onChange={(event) => setEditor({ ...editor, name: event.target.value })}
                     className="bg-surface"
                   />
                 </div>
@@ -332,9 +334,7 @@ export function RoleTemplatesPanel({ members }: RoleTemplatesPanelProps) {
                     id="template-description"
                     rows={2}
                     value={editor.description}
-                    onChange={(event) =>
-                      setEditor({ ...editor, description: event.target.value })
-                    }
+                    onChange={(event) => setEditor({ ...editor, description: event.target.value })}
                     className="bg-surface"
                   />
                 </div>
@@ -408,7 +408,9 @@ export function RoleTemplatesPanel({ members }: RoleTemplatesPanelProps) {
               <label className="flex items-center gap-2 text-sm">
                 <Checkbox
                   checked={editor.isShared}
-                  onCheckedChange={(checked) => setEditor({ ...editor, isShared: Boolean(checked) })}
+                  onCheckedChange={(checked) =>
+                    setEditor({ ...editor, isShared: Boolean(checked) })
+                  }
                 />
                 Share this template with other workspaces
               </label>
@@ -463,9 +465,7 @@ export function RoleTemplatesPanel({ members }: RoleTemplatesPanelProps) {
               </label>
             ))}
             {assignable.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No members with a linked account yet.
-              </p>
+              <p className="text-sm text-muted-foreground">No members with a linked account yet.</p>
             )}
           </div>
 

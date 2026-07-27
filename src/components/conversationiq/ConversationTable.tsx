@@ -124,8 +124,7 @@ export function ConversationTable({
     canReveal: access.can("revealRedactions"),
   });
   /** Governance gate: transcript-bearing exports follow the workspace policy. */
-  const deepExportAllowed =
-    access.can("viewTranscripts") && !exportBehaviour.blocked;
+  const deepExportAllowed = access.can("viewTranscripts") && !exportBehaviour.blocked;
   const exportPolicyNote = exportBehaviour.blocked
     ? "Your workspace blocks exports containing redacted transcript segments."
     : exportBehaviour.reveal
@@ -439,7 +438,9 @@ export function ConversationTable({
             </Button>
           )}
           <Chip
-            tone={exportBehaviour.blocked ? "negative" : exportBehaviour.reveal ? "warning" : "info"}
+            tone={
+              exportBehaviour.blocked ? "negative" : exportBehaviour.reveal ? "warning" : "info"
+            }
             title={exportPolicyNote}
           >
             {exportBehaviour.blocked

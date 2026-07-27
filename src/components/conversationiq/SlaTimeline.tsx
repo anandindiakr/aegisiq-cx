@@ -31,7 +31,8 @@ const TONE_CLASS: Record<Tone, string> = {
 function relative(at: number, now: number) {
   const minutes = Math.round((at - now) / 60_000);
   const abs = Math.abs(minutes);
-  const span = abs >= 1440 ? `${Math.round(abs / 1440)}d` : abs >= 60 ? `${Math.round(abs / 60)}h` : `${abs}m`;
+  const span =
+    abs >= 1440 ? `${Math.round(abs / 1440)}d` : abs >= 60 ? `${Math.round(abs / 60)}h` : `${abs}m`;
   if (minutes === 0) return "now";
   return minutes > 0 ? `in ${span}` : `${span} ago`;
 }
@@ -83,9 +84,7 @@ export function SlaTimeline({
   milestones.push({
     key: "warning",
     label: "Warning threshold",
-    detail: policy
-      ? `${policy.warning_percent}% of target elapsed`
-      : "25% of target remaining",
+    detail: policy ? `${policy.warning_percent}% of target elapsed` : "25% of target remaining",
     at: warnAt,
     tone: clock >= warnAt ? (clock >= due ? "done" : "active") : "pending",
     icon: AlertTriangle,
@@ -94,13 +93,14 @@ export function SlaTimeline({
   milestones.push({
     key: "due",
     label: "SLA target",
-    detail: settled && completed
-      ? completed <= due
-        ? "Met before the deadline"
-        : "Missed — closed after the deadline"
-      : clock >= due
-        ? "Breached"
-        : "Deadline",
+    detail:
+      settled && completed
+        ? completed <= due
+          ? "Met before the deadline"
+          : "Missed — closed after the deadline"
+        : clock >= due
+          ? "Breached"
+          : "Deadline",
     at: due,
     tone: clock >= due ? (settled ? "done" : "breach") : "pending",
     icon: Siren,
