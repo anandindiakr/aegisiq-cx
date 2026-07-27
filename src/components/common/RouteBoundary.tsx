@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AlertTriangle, SearchX } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { MetricSkeletonGrid, LoadingState } from "@/components/common/Primitives";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
+import { captureError } from "@/lib/observability";
 
 function messageOf(error: unknown) {
   if (error instanceof Response) return `Request failed with status ${error.status}.`;
@@ -14,8 +15,12 @@ function messageOf(error: unknown) {
 
 /** Shared route-level error boundary UI (wired as the router default). */
 export function RouteErrorBoundary({ error, reset }: { error: Error; reset?: () => void }) {
+  const [traceId, setTraceId] = useState<string>();
+
   useEffect(() => {
     reportLovableError(error, { boundary: "route_error_boundary" });
+    // Reported with the signed-in user + tenant so the failure is traceable.
+    setTraceId(captureError(error, { boundary: "route_error_boundary" }));
   }, [error]);
 
   return (
@@ -25,6 +30,9 @@ export function RouteErrorBoundary({ error, reset }: { error: Error; reset?: () 
       </span>
       <h2 className="mt-4 text-base font-semibold">This section didn't load</h2>
       <p className="mt-1 max-w-md text-sm text-muted-foreground">{messageOf(error)}</p>
+      {traceId && (
+        <p className="mt-2 font-mono text-[11px] text-muted-foreground/70">Trace ID {traceId}</p>
+      )}
       <div className="mt-5 flex flex-wrap justify-center gap-2">
         <Button size="sm" onClick={() => (reset ? reset() : window.location.reload())}>
           Try again

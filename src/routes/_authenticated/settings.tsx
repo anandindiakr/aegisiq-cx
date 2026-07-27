@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRoles } from "@/features/platform/tenant";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Building2, Save } from "lucide-react";
@@ -32,6 +33,8 @@ import {
 } from "@/features/platform/queries";
 
 export const Route = createFileRoute("/_authenticated/settings")({
+  // Tenant-scoped role gate: administrative surface for company admins only.
+  beforeLoad: ({ context }) => requireRoles(context.tenant, ["super_admin", "tenant_admin"]),
   head: () => ({
     meta: [
       { title: "Settings — AegisIQ CX™" },

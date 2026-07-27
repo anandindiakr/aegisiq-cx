@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { requireRoles } from "@/features/platform/tenant";
 import { useQuery } from "@tanstack/react-query";
 import { Search, ShieldCheck } from "lucide-react";
 
@@ -24,6 +25,8 @@ import { auditLogsQuery } from "@/features/platform/queries";
 import { formatDateTime } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/audit-logs")({
+  // Tenant-scoped role gate: administrative surface for company admins only.
+  beforeLoad: ({ context }) => requireRoles(context.tenant, ["super_admin", "tenant_admin"]),
   head: () => ({
     meta: [
       { title: "Audit logs — AegisIQ CX™" },

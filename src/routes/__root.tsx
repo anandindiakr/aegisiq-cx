@@ -11,6 +11,12 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import {
+  captureError,
+  clearObservabilityContext,
+  installGlobalErrorReporting,
+} from "../lib/observability";
+import { setActiveTenant } from "@/features/platform/queries";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -41,6 +47,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    captureError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (
@@ -146,9 +153,17 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
+  // Global error reporting: unhandled errors + promise rejections are tagged
+  // with the current user/tenant and streamed to the telemetry sink.
+  useEffect(() => installGlobalErrorReporting(), []);
+
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      if (event === "SIGNED_OUT") {
+        clearObservabilityContext();
+        setActiveTenant(null);
+      }
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });

@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { traced } from "@/lib/observability";
 
 export type EntityStatus = "active" | "inactive" | "suspended" | "archived";
 export type CameraStatus = "online" | "offline" | "degraded" | "maintenance";
@@ -125,14 +126,60 @@ export interface LanguageRow {
 
 // Untyped table access keeps the data layer stable while the generated
 // database types catch up with new migrations.
-const db = supabase as unknown as {
-  from: (table: string) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyBuilder = any;
+
+const rawDb = supabase as unknown as { from: (table: string) => AnyBuilder };
+
+// Tenant scoping (defence in depth). Row-level security is the enforcement
+// point in the database; the client additionally filters every tenant table by
+// the company resolved in the `_authenticated` route guard, so a mis-scoped
+// query fails closed instead of relying on RLS alone.
+let activeCompanyId: string | null = null;
+const GLOBAL_TABLES = new Set(["companies", "user_roles"]);
+
+export function setActiveTenant(companyId: string | null) {
+  activeCompanyId = companyId;
+}
+
+export function getActiveTenant() {
+  return activeCompanyId;
+}
+
+const db = {
+  from(table: string): AnyBuilder {
+    const builder = rawDb.from(table);
+    if (!activeCompanyId || GLOBAL_TABLES.has(table)) return builder;
+    return new Proxy(builder, {
+      get(target, prop, receiver) {
+        const value = Reflect.get(target, prop, receiver);
+        if (typeof value !== "function") return value;
+        return (...args: unknown[]) => {
+          const next = value.apply(target, args);
+          // Scope the first query verb (select / update / delete).
+          if (
+            (prop === "select" || prop === "update" || prop === "delete") &&
+            next &&
+            typeof next.eq === "function"
+          ) {
+            return next.eq("company_id", activeCompanyId);
+          }
+          return next;
+        };
+      },
+    });
+  },
 };
 
-async function run<T>(builder: PromiseLike<{ data: unknown; error: { message: string } | null }>) {
-  const { data, error } = await builder;
-  if (error) throw new Error(error.message);
-  return (data ?? []) as T;
+async function run<T>(
+  builder: PromiseLike<{ data: unknown; error: { message: string } | null }>,
+  operation = "supabase.query",
+) {
+  return traced(operation, async () => {
+    const { data, error } = await builder;
+    if (error) throw new Error(error.message);
+    return (data ?? []) as T;
+  });
 }
 
 export const companyQuery = queryOptions({

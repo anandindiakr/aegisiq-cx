@@ -12,7 +12,10 @@
     "format": "prettier --write .",
     "typecheck": "tsgo --noEmit || tsc --noEmit",
     "deps:check": "node scripts/check-deps.mjs",
-    "audit": "bun audit --audit-level=high"
+    "audit": "bun audit --audit-level=high",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "db:seed": "node scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -74,6 +77,7 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "^2.7.7",
+    "@playwright/test": "^1.62.0",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
