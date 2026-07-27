@@ -24,7 +24,13 @@ import { Route as AuthenticatedCamerasRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
+import { Route as AuthenticatedConversationiqIndexRouteImport } from './routes/_authenticated/conversationiq.index'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
+import { Route as AuthenticatedConversationiqSearchRouteImport } from './routes/_authenticated/conversationiq.search'
+import { Route as AuthenticatedConversationiqReviewRouteImport } from './routes/_authenticated/conversationiq.review'
+import { Route as AuthenticatedConversationiqLanguagesRouteImport } from './routes/_authenticated/conversationiq.languages'
+import { Route as AuthenticatedConversationiqKeywordsRouteImport } from './routes/_authenticated/conversationiq.keywords'
+import { Route as AuthenticatedConversationiqConversationIdRouteImport } from './routes/_authenticated/conversationiq.$conversationId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -101,11 +107,47 @@ const AuthenticatedAlertsRoute = AuthenticatedAlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConversationiqIndexRoute =
+  AuthenticatedConversationiqIndexRouteImport.update({
+    id: '/conversationiq/',
+    path: '/conversationiq/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
   id: '/api/public/telemetry',
   path: '/api/public/telemetry',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedConversationiqSearchRoute =
+  AuthenticatedConversationiqSearchRouteImport.update({
+    id: '/conversationiq/search',
+    path: '/conversationiq/search',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConversationiqReviewRoute =
+  AuthenticatedConversationiqReviewRouteImport.update({
+    id: '/conversationiq/review',
+    path: '/conversationiq/review',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConversationiqLanguagesRoute =
+  AuthenticatedConversationiqLanguagesRouteImport.update({
+    id: '/conversationiq/languages',
+    path: '/conversationiq/languages',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConversationiqKeywordsRoute =
+  AuthenticatedConversationiqKeywordsRouteImport.update({
+    id: '/conversationiq/keywords',
+    path: '/conversationiq/keywords',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConversationiqConversationIdRoute =
+  AuthenticatedConversationiqConversationIdRouteImport.update({
+    id: '/conversationiq/$conversationId',
+    path: '/conversationiq/$conversationId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -122,7 +164,13 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
+  '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
+  '/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
+  '/conversationiq/review': typeof AuthenticatedConversationiqReviewRoute
+  '/conversationiq/search': typeof AuthenticatedConversationiqSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
+  '/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -139,7 +187,13 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
+  '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
+  '/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
+  '/conversationiq/review': typeof AuthenticatedConversationiqReviewRoute
+  '/conversationiq/search': typeof AuthenticatedConversationiqSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
+  '/conversationiq': typeof AuthenticatedConversationiqIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -158,7 +212,13 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
+  '/_authenticated/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
+  '/_authenticated/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
+  '/_authenticated/conversationiq/review': typeof AuthenticatedConversationiqReviewRoute
+  '/_authenticated/conversationiq/search': typeof AuthenticatedConversationiqSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
+  '/_authenticated/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -177,7 +237,13 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/users'
+    | '/conversationiq/$conversationId'
+    | '/conversationiq/keywords'
+    | '/conversationiq/languages'
+    | '/conversationiq/review'
+    | '/conversationiq/search'
     | '/api/public/telemetry'
+    | '/conversationiq/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -194,7 +260,13 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/users'
+    | '/conversationiq/$conversationId'
+    | '/conversationiq/keywords'
+    | '/conversationiq/languages'
+    | '/conversationiq/review'
+    | '/conversationiq/search'
     | '/api/public/telemetry'
+    | '/conversationiq'
   id:
     | '__root__'
     | '/'
@@ -212,7 +284,13 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/settings'
     | '/_authenticated/users'
+    | '/_authenticated/conversationiq/$conversationId'
+    | '/_authenticated/conversationiq/keywords'
+    | '/_authenticated/conversationiq/languages'
+    | '/_authenticated/conversationiq/review'
+    | '/_authenticated/conversationiq/search'
     | '/api/public/telemetry'
+    | '/_authenticated/conversationiq/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -330,12 +408,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAlertsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/conversationiq/': {
+      id: '/_authenticated/conversationiq/'
+      path: '/conversationiq'
+      fullPath: '/conversationiq/'
+      preLoaderRoute: typeof AuthenticatedConversationiqIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/telemetry': {
       id: '/api/public/telemetry'
       path: '/api/public/telemetry'
       fullPath: '/api/public/telemetry'
       preLoaderRoute: typeof ApiPublicTelemetryRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/conversationiq/search': {
+      id: '/_authenticated/conversationiq/search'
+      path: '/conversationiq/search'
+      fullPath: '/conversationiq/search'
+      preLoaderRoute: typeof AuthenticatedConversationiqSearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/conversationiq/review': {
+      id: '/_authenticated/conversationiq/review'
+      path: '/conversationiq/review'
+      fullPath: '/conversationiq/review'
+      preLoaderRoute: typeof AuthenticatedConversationiqReviewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/conversationiq/languages': {
+      id: '/_authenticated/conversationiq/languages'
+      path: '/conversationiq/languages'
+      fullPath: '/conversationiq/languages'
+      preLoaderRoute: typeof AuthenticatedConversationiqLanguagesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/conversationiq/keywords': {
+      id: '/_authenticated/conversationiq/keywords'
+      path: '/conversationiq/keywords'
+      fullPath: '/conversationiq/keywords'
+      preLoaderRoute: typeof AuthenticatedConversationiqKeywordsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/conversationiq/$conversationId': {
+      id: '/_authenticated/conversationiq/$conversationId'
+      path: '/conversationiq/$conversationId'
+      fullPath: '/conversationiq/$conversationId'
+      preLoaderRoute: typeof AuthenticatedConversationiqConversationIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
@@ -352,6 +472,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+  AuthenticatedConversationiqConversationIdRoute: typeof AuthenticatedConversationiqConversationIdRoute
+  AuthenticatedConversationiqKeywordsRoute: typeof AuthenticatedConversationiqKeywordsRoute
+  AuthenticatedConversationiqLanguagesRoute: typeof AuthenticatedConversationiqLanguagesRoute
+  AuthenticatedConversationiqReviewRoute: typeof AuthenticatedConversationiqReviewRoute
+  AuthenticatedConversationiqSearchRoute: typeof AuthenticatedConversationiqSearchRoute
+  AuthenticatedConversationiqIndexRoute: typeof AuthenticatedConversationiqIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -366,6 +492,17 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+  AuthenticatedConversationiqConversationIdRoute:
+    AuthenticatedConversationiqConversationIdRoute,
+  AuthenticatedConversationiqKeywordsRoute:
+    AuthenticatedConversationiqKeywordsRoute,
+  AuthenticatedConversationiqLanguagesRoute:
+    AuthenticatedConversationiqLanguagesRoute,
+  AuthenticatedConversationiqReviewRoute:
+    AuthenticatedConversationiqReviewRoute,
+  AuthenticatedConversationiqSearchRoute:
+    AuthenticatedConversationiqSearchRoute,
+  AuthenticatedConversationiqIndexRoute: AuthenticatedConversationiqIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
