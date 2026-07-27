@@ -1,0 +1,507 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import {
+  ArrowLeft,
+  AudioLines,
+  BadgeCheck,
+  Bot,
+  Cctv,
+  Clock3,
+  Copy,
+  Gauge,
+  GraduationCap,
+  Languages as LanguagesIcon,
+  ListChecks,
+  Play,
+  Quote,
+  ScanFace,
+  ShieldCheck,
+  Siren,
+  SmilePlus,
+  Sparkles,
+  Store,
+  Users2,
+  Video,
+  Waves,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Panel } from "@/components/common/Primitives";
+import {
+  Chip,
+  ConversationStatusBadge,
+  EMOTION_TONE,
+  LanguageBadge,
+  RiskBadge,
+  SentimentBadge,
+  languageName,
+} from "@/components/conversationiq/Badges";
+import { iqConversationQuery } from "@/features/conversationiq/queries";
+import { camerasQuery, outletsQuery } from "@/features/platform/queries";
+import { formatDate, formatDuration, titleCase } from "@/lib/format";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/_authenticated/conversationiq/$conversationId")({
+  head: () => ({
+    meta: [
+      { title: "Conversation Viewer — ConversationIQ™ | AegisIQ CX" },
+      {
+        name: "description",
+        content:
+          "Full transcript, AI summary, sentiment, risk, keywords and timeline for a single captured customer conversation.",
+      },
+      { property: "og:title", content: "Conversation Viewer — ConversationIQ™" },
+      {
+        property: "og:description",
+        content: "Transcript, AI summary and conversation intelligence in one workspace.",
+      },
+      { property: "og:type", content: "article" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: ConversationViewer,
+});
+
+const FUTURE_WIDGETS = [
+  { label: "Voice Stress Analysis", icon: Waves },
+  { label: "Speaker Diarisation", icon: Users2 },
+  { label: "Behaviour Analysis", icon: ScanFace },
+  { label: "Compliance Score", icon: ShieldCheck },
+  { label: "Customer Satisfaction Score", icon: SmilePlus },
+  { label: "Training Recommendation", icon: GraduationCap },
+];
+
+function offsetLabel(ms: number) {
+  const total = Math.round(ms / 1000);
+  return `${Math.floor(total / 60)
+    .toString()
+    .padStart(2, "0")}:${(total % 60).toString().padStart(2, "0")}`;
+}
+
+function MetaRow({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: typeof Store;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-border/60 py-2 last:border-0">
+      <span className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Icon className="size-3.5" /> {label}
+      </span>
+      <span className="text-right text-xs font-medium">{children}</span>
+    </div>
+  );
+}
+
+function ConversationViewer() {
+  const { conversationId } = Route.useParams();
+  const detail = useQuery(iqConversationQuery(conversationId));
+  const outlets = useQuery(outletsQuery);
+  const cameras = useQuery(camerasQuery);
+
+  if (detail.isLoading) {
+    return (
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <Skeleton className="h-[70vh] w-full rounded-xl" />
+        <Skeleton className="h-[70vh] w-full rounded-xl" />
+      </div>
+    );
+  }
+
+  if (detail.isError || !detail.data) {
+    return (
+      <Panel
+        title="Conversation unavailable"
+        description="This record is not visible in your workspace."
+      >
+        <Button asChild variant="outline" size="sm">
+          <Link to="/conversationiq">
+            <ArrowLeft className="mr-2 size-4" /> Back to ConversationIQ™
+          </Link>
+        </Button>
+      </Panel>
+    );
+  }
+
+  const { conversation, transcripts, summary, keywords, events, alerts } = detail.data;
+  const outlet = outlets.data?.find((o) => o.id === conversation.outlet_id);
+  const camera = cameras.data?.find((c) => c.id === conversation.camera_id);
+  const speakers = Array.from(new Set(transcripts.map((t) => t.speaker)));
+  const sentimentPct = Math.round(((conversation.sentiment_score + 1) / 2) * 100);
+  const riskPct = { low: 20, medium: 58, high: 92 }[conversation.risk_level] ?? 20;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Button asChild variant="ghost" size="icon">
+            <Link to="/conversationiq">
+              <ArrowLeft className="size-4" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="font-mono text-lg font-semibold tracking-tight">
+              {conversation.reference}
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              {formatDate(conversation.started_at)} · {outlet?.name ?? "Unassigned outlet"} ·{" "}
+              {conversation.topic ?? "General interaction"}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <ConversationStatusBadge value={conversation.status} />
+          <RiskBadge value={conversation.risk_level} />
+          <SentimentBadge value={conversation.sentiment} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void navigator.clipboard.writeText(conversation.reference);
+              toast.success("Conversation reference copied");
+            }}
+          >
+            <Copy className="mr-2 size-4" /> Copy ID
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        {/* LEFT — capture, metadata, transcript, timeline */}
+        <div className="space-y-6">
+          <div className="panel overflow-hidden">
+            <div className="relative grid aspect-video place-items-center bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--primary)_12%,transparent),transparent_70%)]">
+              <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                <span className="grid size-14 place-items-center rounded-full border border-border bg-surface/80">
+                  <Video className="size-6" />
+                </span>
+                <p className="text-xs">Video playback placeholder · CCTV stream not connected</p>
+              </div>
+              <span className="absolute left-3 top-3">
+                <Chip tone="neutral">
+                  <Cctv className="size-3" /> {camera?.name ?? "Camera unassigned"}
+                </Chip>
+              </span>
+            </div>
+            <div className="flex items-center gap-3 border-t border-border px-4 py-3">
+              <Button variant="outline" size="icon" className="size-9" disabled>
+                <Play className="size-4" />
+              </Button>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <AudioLines className="size-3.5" /> Audio track placeholder
+                </div>
+                <Progress value={0} className="mt-2 h-1.5" />
+              </div>
+              <span className="font-mono text-xs text-muted-foreground">
+                00:00 / {offsetLabel(conversation.duration_seconds * 1000)}
+              </span>
+            </div>
+          </div>
+
+          <Panel title="Conversation metadata" description="Capture context recorded at ingestion.">
+            <div className="grid gap-x-8 sm:grid-cols-2">
+              <MetaRow icon={Store} label="Outlet">
+                {outlet?.name ?? "—"}
+              </MetaRow>
+              <MetaRow icon={Cctv} label="Camera">
+                {camera?.name ?? "—"}
+              </MetaRow>
+              <MetaRow icon={Clock3} label="Duration">
+                {formatDuration(conversation.duration_seconds)}
+              </MetaRow>
+              <MetaRow icon={LanguagesIcon} label="Language">
+                {languageName(conversation.language_code)}
+              </MetaRow>
+              <MetaRow icon={Clock3} label="Date">
+                {formatDate(conversation.started_at)}
+              </MetaRow>
+              <MetaRow icon={Users2} label="Detected speakers">
+                {speakers.length > 0 ? speakers.map(titleCase).join(", ") : "—"}
+              </MetaRow>
+              <MetaRow icon={SmilePlus} label="Sentiment">
+                {titleCase(conversation.sentiment)}
+              </MetaRow>
+              <MetaRow icon={ShieldCheck} label="Risk">
+                {titleCase(conversation.risk_level)}
+              </MetaRow>
+            </div>
+          </Panel>
+
+          <Panel
+            title="Transcript"
+            description={`${transcripts.length} utterances · diarised by speaker`}
+          >
+            <div className="max-h-[32rem] space-y-3 overflow-y-auto pr-1">
+              {transcripts.map((line, index) => {
+                const isCustomer = line.speaker.toLowerCase().includes("customer");
+                return (
+                  <motion.div
+                    key={line.id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.18, delay: Math.min(index * 0.02, 0.3) }}
+                    className={cn("group flex", isCustomer ? "justify-start" : "justify-end")}
+                  >
+                    <div
+                      className={cn(
+                        "max-w-[80%] rounded-2xl border px-3.5 py-2.5",
+                        isCustomer
+                          ? "rounded-tl-sm border-border bg-surface"
+                          : "rounded-tr-sm border-primary/25 bg-primary/10",
+                      )}
+                    >
+                      <div className="mb-1 flex items-center gap-2 text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+                        <span className="font-semibold text-foreground/80">
+                          {titleCase(line.speaker)}
+                        </span>
+                        <span className="font-mono">{offsetLabel(line.start_ms)}</span>
+                        <span>{languageName(line.language_code)}</span>
+                        <span className="flex items-center gap-1">
+                          <BadgeCheck className="size-3" />
+                          {Math.round(Number(line.confidence) * 100)}%
+                        </span>
+                      </div>
+                      <p className="text-sm leading-relaxed">{line.content}</p>
+                      <div className="mt-1.5 hidden gap-1 group-hover:flex">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-[11px]"
+                          onClick={() => {
+                            void navigator.clipboard.writeText(line.content);
+                            toast.success("Utterance copied");
+                          }}
+                        >
+                          <Copy className="mr-1 size-3" /> Copy
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-[11px]"
+                          onClick={() => toast.info("Flagged for review queue")}
+                        >
+                          <Quote className="mr-1 size-3" /> Flag
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+              {transcripts.length === 0 && (
+                <p className="py-10 text-center text-sm text-muted-foreground">
+                  No transcript captured for this conversation.
+                </p>
+              )}
+            </div>
+          </Panel>
+
+          <Panel
+            title="Conversation timeline"
+            description="Detected milestones across the interaction."
+          >
+            <ol className="relative space-y-4 border-l border-border pl-5">
+              {events.map((event) => (
+                <li key={event.id} className="relative">
+                  <span className="absolute -left-[1.42rem] top-1.5 size-2.5 rounded-full border border-primary/50 bg-primary/40" />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium">{event.label}</span>
+                    <span className="font-mono text-[11px] text-muted-foreground">
+                      {offsetLabel(event.offset_ms)}
+                    </span>
+                  </div>
+                  {event.detail && <p className="text-xs text-muted-foreground">{event.detail}</p>}
+                </li>
+              ))}
+              {events.length === 0 && (
+                <li className="text-sm text-muted-foreground">No timeline events recorded.</li>
+              )}
+            </ol>
+          </Panel>
+        </div>
+
+        {/* RIGHT — AI intelligence */}
+        <div className="space-y-6">
+          <Panel
+            title="AI summary"
+            description={summary ? `Generated by ${summary.model}` : "Awaiting generation"}
+          >
+            {summary ? (
+              <div className="space-y-3">
+                <p className="text-sm leading-relaxed">{summary.summary}</p>
+                {summary.key_points.length > 0 && (
+                  <ul className="space-y-1.5">
+                    {summary.key_points.map((point) => (
+                      <li key={point} className="flex gap-2 text-xs text-muted-foreground">
+                        <ListChecks className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                        {point}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {summary.intent && <Chip tone="info">Intent · {summary.intent}</Chip>}
+                  <Chip tone={summary.resolution_status === "resolved" ? "positive" : "warning"}>
+                    {titleCase(summary.resolution_status)}
+                  </Chip>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No summary has been generated for this conversation yet.
+              </p>
+            )}
+          </Panel>
+
+          <Panel
+            title="Conversation intelligence"
+            description="Sentiment, risk and emotion signals."
+          >
+            <div className="space-y-5">
+              <div>
+                <div className="mb-1.5 flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-2 text-muted-foreground">
+                    <Gauge className="size-3.5" /> Sentiment gauge
+                  </span>
+                  <span className="font-medium">{sentimentPct}%</span>
+                </div>
+                <Progress value={sentimentPct} className="h-2" />
+                <div className="mt-1 flex justify-between text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+                  <span>Negative</span>
+                  <span>Neutral</span>
+                  <span>Positive</span>
+                </div>
+              </div>
+              <div>
+                <div className="mb-1.5 flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-2 text-muted-foreground">
+                    <ShieldCheck className="size-3.5" /> Risk meter
+                  </span>
+                  <span className="font-medium">{titleCase(conversation.risk_level)}</span>
+                </div>
+                <Progress value={riskPct} className="h-2" />
+                <div className="mt-1 flex justify-between text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+                  <span>Low</span>
+                  <span>Medium</span>
+                  <span>High</span>
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 text-xs text-muted-foreground">Detected emotion</p>
+                <div className="flex flex-wrap gap-2">
+                  {(["satisfied", "happy", "confused", "frustrated", "angry"] as const).map(
+                    (emotion) => (
+                      <Chip
+                        key={emotion}
+                        tone={conversation.emotion === emotion ? EMOTION_TONE[emotion] : "neutral"}
+                        className={cn(conversation.emotion !== emotion && "opacity-45")}
+                      >
+                        {titleCase(emotion)}
+                      </Chip>
+                    ),
+                  )}
+                </div>
+              </div>
+              {alerts.length > 0 && (
+                <div className="rounded-lg border border-destructive/25 bg-destructive/5 p-3">
+                  <p className="flex items-center gap-2 text-xs font-medium text-destructive">
+                    <Siren className="size-3.5" /> {alerts.length} linked alert
+                    {alerts.length > 1 ? "s" : ""}
+                  </p>
+                  <ul className="mt-1.5 space-y-1">
+                    {alerts.map((alert) => (
+                      <li key={alert.id} className="text-xs text-muted-foreground">
+                        {alert.title} · {titleCase(alert.severity)} · {titleCase(alert.status)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </Panel>
+
+          <Panel
+            title="Detected keywords"
+            description="Terms matched against the tenant keyword library."
+          >
+            <div className="flex flex-wrap gap-2">
+              {keywords.map((keyword) => (
+                <Chip
+                  key={keyword.id}
+                  tone="info"
+                  title={`${keyword.category} · ${Math.round(Number(keyword.confidence) * 100)}% confidence`}
+                >
+                  {keyword.keyword}
+                  <span className="opacity-60">
+                    {Math.round(Number(keyword.confidence) * 100)}%
+                  </span>
+                </Chip>
+              ))}
+              {keywords.length === 0 && (
+                <p className="text-sm text-muted-foreground">No keywords detected.</p>
+              )}
+            </div>
+          </Panel>
+
+          <Panel title="Detected language" description="Primary and secondary language detection.">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Primary language</span>
+                <LanguageBadge code={conversation.language_code} />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Secondary language</span>
+                {conversation.secondary_language_code ? (
+                  <LanguageBadge code={conversation.secondary_language_code} />
+                ) : (
+                  <span className="text-xs">None detected</span>
+                )}
+              </div>
+              <div>
+                <div className="mb-1.5 flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Detection confidence</span>
+                  <span className="font-medium">
+                    {Math.round(Number(conversation.language_confidence) * 100)}%
+                  </span>
+                </div>
+                <Progress value={Number(conversation.language_confidence) * 100} className="h-2" />
+              </div>
+            </div>
+          </Panel>
+
+          <Panel
+            title="Future AI widgets"
+            description="Architecture prepared — models are not connected in this release."
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              {FUTURE_WIDGETS.map((widget) => (
+                <div
+                  key={widget.label}
+                  className="rounded-lg border border-dashed border-border bg-surface/40 p-3"
+                >
+                  <widget.icon className="size-4 text-muted-foreground" />
+                  <p className="mt-2 text-xs font-medium">{widget.label}</p>
+                  <p className="mt-1 flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+                    <Sparkles className="size-3" /> Coming soon
+                  </p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">
+              <Bot className="size-3.5" /> Inference outputs will populate these cards without UI
+              changes.
+            </p>
+          </Panel>
+        </div>
+      </div>
+    </div>
+  );
+}

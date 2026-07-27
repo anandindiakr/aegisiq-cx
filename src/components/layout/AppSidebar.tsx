@@ -3,6 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,
   MessagesSquare,
+  Search,
+  BrainCircuit,
+  Tags,
+  Languages,
   Siren,
   FileBarChart,
   Sparkles,
@@ -32,10 +36,17 @@ import { companyQuery } from "@/features/platform/queries";
 
 const OPERATIONS = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "ConversationIQ™", url: "/conversations", icon: MessagesSquare },
   { title: "Alerts", url: "/alerts", icon: Siren },
   { title: "Reports", url: "/reports", icon: FileBarChart },
   { title: "AI Assistant", url: "/assistant", icon: Sparkles },
+];
+
+const CONVERSATION_IQ = [
+  { title: "Conversations", url: "/conversationiq", icon: MessagesSquare },
+  { title: "Search", url: "/conversationiq/search", icon: Search },
+  { title: "AI Review", url: "/conversationiq/review", icon: BrainCircuit },
+  { title: "Keywords", url: "/conversationiq/keywords", icon: Tags },
+  { title: "Languages", url: "/conversationiq/languages", icon: Languages },
 ];
 
 const ESTATE = [
@@ -124,6 +135,12 @@ export function AppSidebar() {
         <NavGroup
           label="Intelligence"
           items={OPERATIONS}
+          collapsed={collapsed}
+          pathname={pathname}
+        />
+        <NavGroup
+          label="ConversationIQ™"
+          items={CONVERSATION_IQ}
           collapsed={collapsed}
           pathname={pathname}
         />

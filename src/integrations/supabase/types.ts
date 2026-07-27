@@ -307,6 +307,105 @@ export type Database = {
         }
         Relationships: []
       }
+      conversation_events: {
+        Row: {
+          company_id: string
+          conversation_id: string
+          created_at: string
+          detail: string | null
+          id: string
+          label: string
+          offset_ms: number
+          sequence: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          conversation_id: string
+          created_at?: string
+          detail?: string | null
+          id?: string
+          label: string
+          offset_ms?: number
+          sequence?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          conversation_id?: string
+          created_at?: string
+          detail?: string | null
+          id?: string
+          label?: string
+          offset_ms?: number
+          sequence?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_events_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_keywords: {
+        Row: {
+          category: string
+          company_id: string
+          confidence: number
+          conversation_id: string
+          created_at: string
+          id: string
+          keyword: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          company_id: string
+          confidence?: number
+          conversation_id: string
+          created_at?: string
+          id?: string
+          keyword: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          confidence?: number
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          keyword?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_keywords_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_keywords_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           agent_name: string | null
@@ -317,15 +416,20 @@ export type Database = {
           customer_type: string | null
           deleted_at: string | null
           duration_seconds: number
+          emotion: Database["public"]["Enums"]["emotion_label"]
           ended_at: string | null
           escalated: boolean
           id: string
           language_code: string
+          language_confidence: number
           outlet_id: string | null
           reference: string
+          risk_level: Database["public"]["Enums"]["risk_level"]
+          secondary_language_code: string | null
           sentiment: Database["public"]["Enums"]["sentiment_label"]
           sentiment_score: number
           started_at: string
+          status: Database["public"]["Enums"]["conversation_status"]
           topic: string | null
           updated_at: string
         }
@@ -338,15 +442,20 @@ export type Database = {
           customer_type?: string | null
           deleted_at?: string | null
           duration_seconds?: number
+          emotion?: Database["public"]["Enums"]["emotion_label"]
           ended_at?: string | null
           escalated?: boolean
           id?: string
           language_code?: string
+          language_confidence?: number
           outlet_id?: string | null
           reference: string
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          secondary_language_code?: string | null
           sentiment?: Database["public"]["Enums"]["sentiment_label"]
           sentiment_score?: number
           started_at?: string
+          status?: Database["public"]["Enums"]["conversation_status"]
           topic?: string | null
           updated_at?: string
         }
@@ -359,15 +468,20 @@ export type Database = {
           customer_type?: string | null
           deleted_at?: string | null
           duration_seconds?: number
+          emotion?: Database["public"]["Enums"]["emotion_label"]
           ended_at?: string | null
           escalated?: boolean
           id?: string
           language_code?: string
+          language_confidence?: number
           outlet_id?: string | null
           reference?: string
+          risk_level?: Database["public"]["Enums"]["risk_level"]
+          secondary_language_code?: string | null
           sentiment?: Database["public"]["Enums"]["sentiment_label"]
           sentiment_score?: number
           started_at?: string
+          status?: Database["public"]["Enums"]["conversation_status"]
           topic?: string | null
           updated_at?: string
         }
@@ -449,6 +563,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          detection_confidence: number
           id: string
           is_active: boolean
           name: string
@@ -461,6 +576,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          detection_confidence?: number
           id?: string
           is_active?: boolean
           name: string
@@ -473,6 +589,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          detection_confidence?: number
           id?: string
           is_active?: boolean
           name?: string
@@ -879,7 +996,21 @@ export type Database = {
         | "supervisor"
         | "viewer"
       camera_status: "online" | "offline" | "degraded" | "maintenance"
+      conversation_status:
+        | "new"
+        | "in_review"
+        | "escalated"
+        | "resolved"
+        | "closed"
+      emotion_label:
+        | "satisfied"
+        | "happy"
+        | "confused"
+        | "frustrated"
+        | "angry"
+        | "neutral"
       entity_status: "active" | "inactive" | "suspended" | "archived"
+      risk_level: "low" | "medium" | "high"
       sentiment_label:
         | "very_negative"
         | "negative"
@@ -1024,7 +1155,23 @@ export const Constants = {
         "viewer",
       ],
       camera_status: ["online", "offline", "degraded", "maintenance"],
+      conversation_status: [
+        "new",
+        "in_review",
+        "escalated",
+        "resolved",
+        "closed",
+      ],
+      emotion_label: [
+        "satisfied",
+        "happy",
+        "confused",
+        "frustrated",
+        "angry",
+        "neutral",
+      ],
       entity_status: ["active", "inactive", "suspended", "archived"],
+      risk_level: ["low", "medium", "high"],
       sentiment_label: [
         "very_negative",
         "negative",
