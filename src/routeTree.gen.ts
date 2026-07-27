@@ -14,8 +14,10 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedOutletsRouteImport } from './routes/_authenticated/outlets'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
+import { Route as AuthenticatedCamerasRouteImport } from './routes/_authenticated/cameras'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
 
@@ -43,6 +45,11 @@ const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOutletsRoute = AuthenticatedOutletsRouteImport.update({
+  id: '/outlets',
+  path: '/outlets',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -54,6 +61,11 @@ const AuthenticatedConversationsRoute =
     path: '/conversations',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCamerasRoute = AuthenticatedCamerasRouteImport.update({
+  id: '/cameras',
+  path: '/cameras',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
   id: '/assistant',
   path: '/assistant',
@@ -71,8 +83,10 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/alerts': typeof AuthenticatedAlertsRoute
   '/assistant': typeof AuthenticatedAssistantRoute
+  '/cameras': typeof AuthenticatedCamerasRoute
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/outlets': typeof AuthenticatedOutletsRoute
   '/reports': typeof AuthenticatedReportsRoute
 }
 export interface FileRoutesByTo {
@@ -81,8 +95,10 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/alerts': typeof AuthenticatedAlertsRoute
   '/assistant': typeof AuthenticatedAssistantRoute
+  '/cameras': typeof AuthenticatedCamerasRoute
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/outlets': typeof AuthenticatedOutletsRoute
   '/reports': typeof AuthenticatedReportsRoute
 }
 export interface FileRoutesById {
@@ -93,8 +109,10 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
+  '/_authenticated/cameras': typeof AuthenticatedCamerasRoute
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/outlets': typeof AuthenticatedOutletsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
 }
 export interface FileRouteTypes {
@@ -105,8 +123,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/alerts'
     | '/assistant'
+    | '/cameras'
     | '/conversations'
     | '/dashboard'
+    | '/outlets'
     | '/reports'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -115,8 +135,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/alerts'
     | '/assistant'
+    | '/cameras'
     | '/conversations'
     | '/dashboard'
+    | '/outlets'
     | '/reports'
   id:
     | '__root__'
@@ -126,8 +148,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/alerts'
     | '/_authenticated/assistant'
+    | '/_authenticated/cameras'
     | '/_authenticated/conversations'
     | '/_authenticated/dashboard'
+    | '/_authenticated/outlets'
     | '/_authenticated/reports'
   fileRoutesById: FileRoutesById
 }
@@ -175,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/outlets': {
+      id: '/_authenticated/outlets'
+      path: '/outlets'
+      fullPath: '/outlets'
+      preLoaderRoute: typeof AuthenticatedOutletsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -187,6 +218,13 @@ declare module '@tanstack/react-router' {
       path: '/conversations'
       fullPath: '/conversations'
       preLoaderRoute: typeof AuthenticatedConversationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cameras': {
+      id: '/_authenticated/cameras'
+      path: '/cameras'
+      fullPath: '/cameras'
+      preLoaderRoute: typeof AuthenticatedCamerasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/assistant': {
@@ -209,16 +247,20 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
+  AuthenticatedCamerasRoute: typeof AuthenticatedCamerasRoute
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedOutletsRoute: typeof AuthenticatedOutletsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
+  AuthenticatedCamerasRoute: AuthenticatedCamerasRoute,
   AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedOutletsRoute: AuthenticatedOutletsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
 }
 
