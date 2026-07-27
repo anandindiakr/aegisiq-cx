@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { requireRoles } from "@/features/platform/tenant";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Building2, Save } from "lucide-react";
+import { Building2, Palette, Save } from "lucide-react";
 
 import {
   ErrorState,
@@ -31,6 +31,7 @@ import {
   languagesQuery,
   updateCompany,
 } from "@/features/platform/queries";
+import { applyBrandColor, DEFAULT_BRANDING, isValidHex } from "@/features/platform/branding";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   // Tenant-scoped role gate: administrative surface for company admins only.
@@ -78,6 +79,8 @@ function SettingsPage() {
     subscription_plan: "enterprise",
     timezone: "UTC",
     logo_url: "",
+    brand_primary_color: DEFAULT_BRANDING.brand_primary_color,
+    brand_tagline: "",
   });
 
   useEffect(() => {
@@ -91,12 +94,20 @@ function SettingsPage() {
       subscription_plan: data.subscription_plan,
       timezone: data.timezone,
       logo_url: data.logo_url ?? "",
+      brand_primary_color: data.brand_primary_color ?? DEFAULT_BRANDING.brand_primary_color,
+      brand_tagline: data.brand_tagline ?? "",
     });
   }, [data]);
 
   const save = useMutation({
-    mutationFn: () => updateCompany(data!.id, form),
+    mutationFn: () => {
+      if (!isValidHex(form.brand_primary_color)) {
+        throw new Error("Brand colour must be a hex value such as #4f8cff");
+      }
+      return updateCompany(data!.id, form);
+    },
     onSuccess: () => {
+      applyBrandColor(form.brand_primary_color);
       toast.success("Company profile saved");
       queryClient.invalidateQueries({ queryKey: ["company"] });
     },
@@ -123,6 +134,7 @@ function SettingsPage() {
       <Tabs defaultValue="company">
         <TabsList className="bg-surface">
           <TabsTrigger value="company">Company</TabsTrigger>
+          <TabsTrigger value="branding">Branding</TabsTrigger>
           <TabsTrigger value="localisation">Localisation</TabsTrigger>
           <TabsTrigger value="detection">Detection</TabsTrigger>
         </TabsList>
@@ -206,6 +218,127 @@ function SettingsPage() {
                 <div className="md:col-span-2">
                   <Button onClick={() => save.mutate()} disabled={save.isPending || !data}>
                     <Save className="mr-2 size-4" /> Save company profile
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Panel>
+        </TabsContent>
+
+        <TabsContent value="branding" className="mt-4">
+          <Panel
+            title="Tenant branding"
+            description="Applied to the sign-in screen, sidebar and every accent across the console"
+          >
+            {isPending ? (
+              <LoadingState rows={4} />
+            ) : (
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="brand_name">Display name</Label>
+                  <Input
+                    id="brand_name"
+                    value={form.name}
+                    maxLength={120}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    className="bg-surface"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="brand_tagline">Tagline</Label>
+                  <Input
+                    id="brand_tagline"
+                    value={form.brand_tagline}
+                    maxLength={120}
+                    placeholder="CX Intelligence Platform"
+                    onChange={(e) => setForm((f) => ({ ...f, brand_tagline: e.target.value }))}
+                    className="bg-surface"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="brand_logo">Logo URL</Label>
+                  <Input
+                    id="brand_logo"
+                    value={form.logo_url}
+                    maxLength={500}
+                    placeholder="https://cdn.company.com/logo.svg"
+                    onChange={(e) => setForm((f) => ({ ...f, logo_url: e.target.value }))}
+                    className="bg-surface"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="brand_color">Primary colour</Label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      id="brand_color"
+                      type="color"
+                      aria-label="Primary colour picker"
+                      value={
+                        isValidHex(form.brand_primary_color)
+                          ? form.brand_primary_color
+                          : DEFAULT_BRANDING.brand_primary_color
+                      }
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, brand_primary_color: e.target.value }))
+                      }
+                      className="size-10 cursor-pointer rounded-lg border border-border bg-surface p-1"
+                    />
+                    <Input
+                      value={form.brand_primary_color}
+                      maxLength={7}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, brand_primary_color: e.target.value }))
+                      }
+                      className="bg-surface font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  <div className="flex flex-wrap items-center gap-4 rounded-xl border border-border bg-surface/60 p-4">
+                    <span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-lg ring-1 ring-border">
+                      {form.logo_url ? (
+                        <img
+                          src={form.logo_url}
+                          alt="Brand logo preview"
+                          className="size-full object-contain"
+                        />
+                      ) : (
+                        <Building2 className="size-5 text-muted-foreground" />
+                      )}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{form.name || "Your company"}</p>
+                      <p className="truncate text-[11px] text-muted-foreground">
+                        {form.brand_tagline || DEFAULT_BRANDING.brand_tagline}
+                      </p>
+                    </div>
+                    <span
+                      className="ml-auto rounded-lg px-4 py-2 text-xs font-medium text-white"
+                      style={{
+                        backgroundColor: isValidHex(form.brand_primary_color)
+                          ? form.brand_primary_color
+                          : DEFAULT_BRANDING.brand_primary_color,
+                      }}
+                    >
+                      Primary action
+                    </span>
+                  </div>
+                </div>
+
+                <div className="md:col-span-2 flex gap-2">
+                  <Button onClick={() => save.mutate()} disabled={save.isPending || !data}>
+                    <Palette className="mr-2 size-4" /> Save branding
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => applyBrandColor(form.brand_primary_color)}
+                    disabled={!isValidHex(form.brand_primary_color)}
+                  >
+                    Preview
                   </Button>
                 </div>
               </div>
