@@ -39,12 +39,14 @@ import {
   type QueueStatus,
   type ReviewAssignment,
 } from "@/features/conversationiq/queue";
+import { useSlaWatch } from "@/features/conversationiq/sla";
 import {
-  emailEscalationEnabled,
-  setEmailEscalation,
-  useSlaWatch,
-} from "@/features/conversationiq/sla";
+  notificationPreferencesQuery,
+  saveNotificationPreferences,
+} from "@/features/conversationiq/notifications";
+import { useIqAccess } from "@/features/conversationiq/access";
 import { staffQuery } from "@/features/platform/queries";
+
 import { formatDate, formatNumber, titleCase } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/conversationiq/queue")({
@@ -86,7 +88,10 @@ function ReviewerQueuePage() {
   const queryClient = useQueryClient();
   const queue = useQuery(reviewQueueQuery);
   const sla = useSlaWatch();
-  const [emailAlerts, setEmailAlerts] = useState(() => emailEscalationEnabled());
+  const prefs = useQuery(notificationPreferencesQuery);
+  const emailAlerts = prefs.data?.sla_email ?? false;
+  const access = useIqAccess();
+
   const staff = useQuery(staffQuery);
 
   const [statusFilter, setStatusFilter] = useState<string>("active");
@@ -205,13 +210,16 @@ function ReviewerQueuePage() {
             size="sm"
             onClick={() => {
               const next = !emailAlerts;
-              setEmailAlerts(next);
-              setEmailEscalation(next);
-              toast.success(next ? "Email escalations enabled" : "Email escalations disabled", {
-                description: next
-                  ? "Breached items can now be sent as an escalation email digest."
-                  : "You will only receive in-app notifications.",
-              });
+              void saveNotificationPreferences({ sla_email: next })
+                .then(() => {
+                  void prefs.refetch();
+                  toast.success(next ? "Email escalations enabled" : "Email escalations disabled", {
+                    description: next
+                      ? "Breached items can now be sent as an escalation email digest."
+                      : "You will only receive in-app notifications.",
+                  });
+                })
+                .catch((error: Error) => toast.error(error.message));
             }}
           >
             <Mail className="mr-2 size-4" /> Email escalations {emailAlerts ? "on" : "off"}
@@ -356,6 +364,7 @@ function ReviewerQueuePage() {
                   </span>
                   <Select
                     value={item.assignee_id ?? "unassigned"}
+                    disabled={!access.can("assignQueue")}
                     onValueChange={(value) => assign(item, value)}
                   >
                     <SelectTrigger className="h-8 w-48 bg-surface text-xs">
@@ -374,6 +383,7 @@ function ReviewerQueuePage() {
                   </Select>
                   <Select
                     value={item.status}
+                    disabled={!access.can("moveQueue")}
                     onValueChange={(value) =>
                       update.mutate({ id: item.id, patch: { status: value as QueueStatus } })
                     }
@@ -391,6 +401,7 @@ function ReviewerQueuePage() {
                   </Select>
                   <Select
                     value={item.priority}
+                    disabled={!access.can("moveQueue")}
                     onValueChange={(value) =>
                       update.mutate({
                         id: item.id,
@@ -424,9 +435,11 @@ function ReviewerQueuePage() {
                         </Link>
                       </Button>
                     )}
-                    <Button variant="ghost" size="sm" onClick={() => remove.mutate(item.id)}>
-                      Remove
-                    </Button>
+                    {access.can("moveQueue") && (
+                      <Button variant="ghost" size="sm" onClick={() => remove.mutate(item.id)}>
+                        Remove
+                      </Button>
+                    )}
                   </div>
                 </div>
               </li>

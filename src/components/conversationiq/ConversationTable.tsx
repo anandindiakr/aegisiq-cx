@@ -11,6 +11,7 @@ import {
   Eye,
   FileText,
   Loader2,
+  ShieldCheck,
   Siren,
 } from "lucide-react";
 
@@ -42,7 +43,8 @@ import {
   languageName,
 } from "@/components/conversationiq/Badges";
 import type { IqConversation, IqSummary } from "@/features/conversationiq/queries";
-import { exportConversationsDeepCsv } from "@/features/conversationiq/export";
+import { exportComplianceCsv, exportConversationsDeepCsv } from "@/features/conversationiq/export";
+import { useIqAccess } from "@/features/conversationiq/access";
 import { BulkReviewMenu } from "@/components/conversationiq/BulkReviewMenu";
 
 import type { AlertRow, Camera, Outlet } from "@/features/platform/queries";
@@ -111,6 +113,7 @@ export function ConversationTable({
   tags,
   isLoading,
 }: Props) {
+  const access = useIqAccess();
   const [exporting, setExporting] = useState(false);
   const [sortKey, setSortKey] = useState<ColumnKey>("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -259,6 +262,20 @@ export function ConversationTable({
     }
   }
 
+  /** Compliance pack: transcript snippet + notes, tags, anchors and audit trail. */
+  async function exportCompliance() {
+    const source = selected.size > 0 ? sorted.filter((r) => selected.has(r.id)) : sorted;
+    setExporting(true);
+    try {
+      const count = await exportComplianceCsv(source, { outlets, cameras, summaries, alerts });
+      toast.success(`Compliance pack exported for ${count} conversations`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Export failed");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   function renderCell(column: ColumnKey, row: IqConversation) {
     switch (column) {
       case "reference":
@@ -376,6 +393,22 @@ export function ConversationTable({
             )}
             Full export{selected.size > 0 ? ` (${selected.size})` : ""}
           </Button>
+          {access.can("exportCompliance") && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void exportCompliance()}
+              disabled={sorted.length === 0 || exporting}
+              title="Transcript snippet, reviewer notes, tags, saved anchors and audit entries"
+            >
+              {exporting ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <ShieldCheck className="mr-2 size-4" />
+              )}
+              Compliance pack{selected.size > 0 ? ` (${selected.size})` : ""}
+            </Button>
+          )}
         </div>
       </div>
 

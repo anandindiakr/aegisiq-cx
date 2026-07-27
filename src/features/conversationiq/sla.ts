@@ -4,41 +4,33 @@ import { toast } from "sonner";
 
 import { reviewQueueQuery, slaMinutesLeft, slaState, formatSla } from "./queue";
 import type { ReviewAssignment } from "./queue";
+import { DEFAULT_PREFERENCES, notificationPreferencesQuery, slaCooldownMs } from "./notifications";
 
 /**
- * SLA watch — polls the reviewer queue and raises an in-app notification the
- * first time an item breaches (or is about to breach) its service-level
- * target. Notified item IDs are remembered per browser session so a reviewer
- * is never nagged twice for the same escalation.
+ * SLA watch — polls the reviewer queue and raises an in-app notification when
+ * an item breaches (or is about to breach) its service-level target. How often
+ * a reviewer may be re-notified for the same item comes from their personal
+ * notification settings, so nobody is nagged more than they asked for.
  */
 
 const STORAGE_KEY = "aegisiq.sla.notified";
-const EMAIL_PREF_KEY = "aegisiq.sla.email";
 const POLL_MS = 60_000;
 
-function readNotified(): Record<string, string> {
+/** id -> { state, at } of the last notification we raised for that item. */
+type NotifiedMap = Record<string, { state: string; at: number }>;
+
+function readNotified(): NotifiedMap {
   if (typeof window === "undefined") return {};
   try {
-    return JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) ?? "{}") as Record<string, string>;
+    return JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "{}") as NotifiedMap;
   } catch {
     return {};
   }
 }
 
-function writeNotified(value: Record<string, string>) {
+function writeNotified(value: NotifiedMap) {
   if (typeof window === "undefined") return;
-  window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-}
-
-/** Whether the reviewer opted in to email escalations for SLA breaches. */
-export function emailEscalationEnabled() {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(EMAIL_PREF_KEY) === "on";
-}
-
-export function setEmailEscalation(enabled: boolean) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(EMAIL_PREF_KEY, enabled ? "on" : "off");
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
 }
 
 export interface SlaSnapshot {
@@ -61,26 +53,39 @@ export function summariseSla(items: ReviewAssignment[]): SlaSnapshot {
  * threshold. Mount once per page that should surface escalations.
  */
 export function useSlaWatch(options: { enabled?: boolean } = {}) {
+  const prefsQuery = useQuery(notificationPreferencesQuery);
+  const prefs = prefsQuery.data ?? DEFAULT_PREFERENCES;
   const enabled = options.enabled ?? true;
+
   const queue = useQuery({
     ...reviewQueueQuery,
     refetchInterval: enabled ? POLL_MS : false,
     refetchIntervalInBackground: false,
   });
-  const seen = useRef<Record<string, string> | null>(null);
+  const seen = useRef<NotifiedMap | null>(null);
 
   const items = queue.data;
+  const notify = enabled && prefs.sla_in_app && prefs.sla_frequency !== "off";
+  const cooldown = slaCooldownMs(prefs.sla_frequency);
 
   useEffect(() => {
-    if (!enabled || !items) return;
+    if (!notify || !items) return;
     if (seen.current === null) seen.current = readNotified();
     const snapshot = summariseSla(items);
-    const next = { ...seen.current };
+    const next: NotifiedMap = { ...seen.current };
+    const now = Date.now();
     let changed = false;
 
+    const fresh = (id: string, state: string) => {
+      const last = next[id];
+      if (!last) return true;
+      if (last.state !== state) return true;
+      return now - last.at >= cooldown;
+    };
+
     for (const item of snapshot.breached) {
-      if (next[item.id] === "breached") continue;
-      next[item.id] = "breached";
+      if (!fresh(item.id, "breached")) continue;
+      next[item.id] = { state: "breached", at: now };
       changed = true;
       toast.error(`SLA breached — ${item.title}`, {
         description: `${formatSla(slaMinutesLeft(item))} · ${
@@ -91,8 +96,8 @@ export function useSlaWatch(options: { enabled?: boolean } = {}) {
     }
 
     for (const item of snapshot.dueSoon) {
-      if (next[item.id]) continue;
-      next[item.id] = "due_soon";
+      if (!fresh(item.id, "due_soon")) continue;
+      next[item.id] = { state: "due_soon", at: now };
       changed = true;
       toast.warning(`SLA due soon — ${item.title}`, {
         description: `${formatSla(slaMinutesLeft(item))} · ${item.assignee_name ?? "Unassigned"}`,
@@ -103,11 +108,12 @@ export function useSlaWatch(options: { enabled?: boolean } = {}) {
       seen.current = next;
       writeNotified(next);
     }
-  }, [items, enabled]);
+  }, [items, notify, cooldown]);
 
   return {
     ...summariseSla(items ?? []),
     isLoading: queue.isLoading,
     refetch: queue.refetch,
+    preferences: prefs,
   };
 }

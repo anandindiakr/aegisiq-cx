@@ -46,6 +46,7 @@ import { AlertReviewPanel } from "@/components/conversationiq/AlertReviewPanel";
 import { ReviewNotesPanel } from "@/components/conversationiq/ReviewNotesPanel";
 import { iqConversationQuery } from "@/features/conversationiq/queries";
 import { transcriptAnchorsQuery } from "@/features/conversationiq/anchors";
+import { useIqAccess } from "@/features/conversationiq/access";
 import {
   TranscriptAnchorPanel,
   type AnchorDraft,
@@ -142,6 +143,8 @@ function ConversationViewer() {
   const outlets = useQuery(outletsQuery);
   const cameras = useQuery(camerasQuery);
   const [speakerFilter, setSpeakerFilter] = useState<Set<string>>(new Set());
+  const access = useIqAccess();
+  const canViewTranscripts = access.can("viewTranscripts");
   const [anchorDraft, setAnchorDraft] = useState<AnchorDraft | null>(null);
   const anchors = useQuery(transcriptAnchorsQuery(conversationId));
   const [activeAnchorId, setActiveAnchorId] = useState<string | null>(null);
@@ -340,138 +343,154 @@ function ConversationViewer() {
             </div>
           </Panel>
 
-          <Panel
-            title="Transcript"
-            description={`${visibleTranscripts.length} of ${transcripts.length} utterances · diarised by speaker`}
-          >
-            <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-border pb-3">
-              <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
-                <Filter className="size-3" /> Speakers
-              </span>
-              <button
-                type="button"
-                onClick={() => setSpeakerFilter(new Set())}
-                className="transition-opacity hover:opacity-80"
-              >
-                <Chip tone={speakerFilter.size === 0 ? "info" : "neutral"}>
-                  All · {transcripts.length}
-                </Chip>
-              </button>
-              {speakerStats.map(([speaker, count]) => (
+          {!canViewTranscripts && (
+            <Panel
+              title="Transcript"
+              description="Restricted — your role cannot view conversation transcripts."
+            >
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                Ask a workspace administrator for a supervisor or manager role to read transcripts
+                and saved anchors.
+              </p>
+            </Panel>
+          )}
+
+          {canViewTranscripts && (
+            <Panel
+              title="Transcript"
+              description={`${visibleTranscripts.length} of ${transcripts.length} utterances · diarised by speaker`}
+            >
+              <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-border pb-3">
+                <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+                  <Filter className="size-3" /> Speakers
+                </span>
                 <button
-                  key={speaker}
                   type="button"
-                  onClick={() => toggleSpeaker(speaker)}
+                  onClick={() => setSpeakerFilter(new Set())}
                   className="transition-opacity hover:opacity-80"
                 >
-                  <Chip
-                    tone={speakerFilter.has(speaker) ? "info" : "neutral"}
-                    className={cn(
-                      speakerFilter.size > 0 && !speakerFilter.has(speaker) && "opacity-50",
-                    )}
-                  >
-                    <Users2 className="size-3" />
-                    {titleCase(speaker)} · {count}
+                  <Chip tone={speakerFilter.size === 0 ? "info" : "neutral"}>
+                    All · {transcripts.length}
                   </Chip>
                 </button>
-              ))}
-            </div>
-            <div className="max-h-[32rem] space-y-3 overflow-y-auto pr-1">
-              {visibleTranscripts.map((line, index) => {
-                const isCustomer = line.speaker.toLowerCase().includes("customer");
-                const isActive = (anchors.data ?? []).some(
-                  (anchor) => anchor.id === activeAnchorId && anchor.transcript_id === line.id,
-                );
-                return (
-                  <motion.div
-                    key={line.id}
-                    ref={(node) => {
-                      if (node) transcriptRefs.current.set(line.id, node);
-                      else transcriptRefs.current.delete(line.id);
-                    }}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.18, delay: Math.min(index * 0.02, 0.3) }}
-                    className={cn("group flex", isCustomer ? "justify-start" : "justify-end")}
+                {speakerStats.map(([speaker, count]) => (
+                  <button
+                    key={speaker}
+                    type="button"
+                    onClick={() => toggleSpeaker(speaker)}
+                    className="transition-opacity hover:opacity-80"
                   >
-                    <div
+                    <Chip
+                      tone={speakerFilter.has(speaker) ? "info" : "neutral"}
                       className={cn(
-                        "max-w-[80%] rounded-2xl border px-3.5 py-2.5 transition-shadow",
-                        isActive && "ring-2 ring-primary ring-offset-2 ring-offset-background",
-                        isCustomer
-                          ? "rounded-tl-sm border-border bg-surface"
-                          : "rounded-tr-sm border-primary/25 bg-primary/10",
+                        speakerFilter.size > 0 && !speakerFilter.has(speaker) && "opacity-50",
                       )}
                     >
-                      <div className="mb-1 flex items-center gap-2 text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-                        <span className="font-semibold text-foreground/80">
-                          {titleCase(line.speaker)}
-                        </span>
-                        <span className="font-mono">{offsetLabel(line.start_ms)}</span>
-                        <span>{languageName(line.language_code)}</span>
-                        <span className="flex items-center gap-1">
-                          <BadgeCheck className="size-3" />
-                          {Math.round(Number(line.confidence) * 100)}%
-                        </span>
+                      <Users2 className="size-3" />
+                      {titleCase(speaker)} · {count}
+                    </Chip>
+                  </button>
+                ))}
+              </div>
+              <div className="max-h-[32rem] space-y-3 overflow-y-auto pr-1">
+                {visibleTranscripts.map((line, index) => {
+                  const isCustomer = line.speaker.toLowerCase().includes("customer");
+                  const isActive = (anchors.data ?? []).some(
+                    (anchor) => anchor.id === activeAnchorId && anchor.transcript_id === line.id,
+                  );
+                  return (
+                    <motion.div
+                      key={line.id}
+                      ref={(node) => {
+                        if (node) transcriptRefs.current.set(line.id, node);
+                        else transcriptRefs.current.delete(line.id);
+                      }}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.18, delay: Math.min(index * 0.02, 0.3) }}
+                      className={cn("group flex", isCustomer ? "justify-start" : "justify-end")}
+                    >
+                      <div
+                        className={cn(
+                          "max-w-[80%] rounded-2xl border px-3.5 py-2.5 transition-shadow",
+                          isActive && "ring-2 ring-primary ring-offset-2 ring-offset-background",
+                          isCustomer
+                            ? "rounded-tl-sm border-border bg-surface"
+                            : "rounded-tr-sm border-primary/25 bg-primary/10",
+                        )}
+                      >
+                        <div className="mb-1 flex items-center gap-2 text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+                          <span className="font-semibold text-foreground/80">
+                            {titleCase(line.speaker)}
+                          </span>
+                          <span className="font-mono">{offsetLabel(line.start_ms)}</span>
+                          <span>{languageName(line.language_code)}</span>
+                          <span className="flex items-center gap-1">
+                            <BadgeCheck className="size-3" />
+                            {Math.round(Number(line.confidence) * 100)}%
+                          </span>
+                        </div>
+                        <p className="text-sm leading-relaxed">
+                          {renderHighlighted(line.content, anchorQuotes.get(line.id) ?? [])}
+                        </p>
+                        <div className="mt-1.5 hidden gap-1 group-hover:flex">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-[11px]"
+                            onClick={() => {
+                              void navigator.clipboard.writeText(line.content);
+                              toast.success("Utterance copied");
+                            }}
+                          >
+                            <Copy className="mr-1 size-3" /> Copy
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-[11px]"
+                            onClick={() => {
+                              const selection = window.getSelection()?.toString().trim() ?? "";
+                              const quote =
+                                selection && line.content.includes(selection)
+                                  ? selection
+                                  : line.content;
+                              setAnchorDraft({
+                                transcriptId: line.id,
+                                speaker: line.speaker,
+                                startMs: line.start_ms,
+                                endMs: line.end_ms,
+                                quote,
+                              });
+                              toast.info("Highlight ready — add a note or label to save it");
+                            }}
+                          >
+                            <Highlighter className="mr-1 size-3" /> Anchor
+                          </Button>
+                        </div>
                       </div>
-                      <p className="text-sm leading-relaxed">
-                        {renderHighlighted(line.content, anchorQuotes.get(line.id) ?? [])}
-                      </p>
-                      <div className="mt-1.5 hidden gap-1 group-hover:flex">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2 text-[11px]"
-                          onClick={() => {
-                            void navigator.clipboard.writeText(line.content);
-                            toast.success("Utterance copied");
-                          }}
-                        >
-                          <Copy className="mr-1 size-3" /> Copy
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2 text-[11px]"
-                          onClick={() => {
-                            const selection = window.getSelection()?.toString().trim() ?? "";
-                            const quote =
-                              selection && line.content.includes(selection)
-                                ? selection
-                                : line.content;
-                            setAnchorDraft({
-                              transcriptId: line.id,
-                              speaker: line.speaker,
-                              startMs: line.start_ms,
-                              endMs: line.end_ms,
-                              quote,
-                            });
-                            toast.info("Highlight ready — add a note or label to save it");
-                          }}
-                        >
-                          <Highlighter className="mr-1 size-3" /> Anchor
-                        </Button>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-              {visibleTranscripts.length === 0 && (
-                <p className="py-10 text-center text-sm text-muted-foreground">
-                  {transcripts.length === 0
-                    ? "No transcript captured for this conversation."
-                    : "No utterances from the selected speakers."}
-                </p>
-              )}
-            </div>
-          </Panel>
+                    </motion.div>
+                  );
+                })}
+                {visibleTranscripts.length === 0 && (
+                  <p className="py-10 text-center text-sm text-muted-foreground">
+                    {transcripts.length === 0
+                      ? "No transcript captured for this conversation."
+                      : "No utterances from the selected speakers."}
+                  </p>
+                )}
+              </div>
+            </Panel>
+          )}
 
-          <TranscriptAnchorPanel
-            conversationId={conversationId}
-            draft={anchorDraft}
-            onClearDraft={() => setAnchorDraft(null)}
-            onJump={jumpToAnchor}
-          />
+          {canViewTranscripts && (
+            <TranscriptAnchorPanel
+              conversationId={conversationId}
+              draft={anchorDraft}
+              onClearDraft={() => setAnchorDraft(null)}
+              onJump={jumpToAnchor}
+            />
+          )}
 
           <Panel
             title="Conversation timeline"
