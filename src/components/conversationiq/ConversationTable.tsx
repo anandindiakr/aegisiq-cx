@@ -117,6 +117,20 @@ export function ConversationTable({
   isLoading,
 }: Props) {
   const access = useIqAccess();
+  const company = useQuery(companyQuery);
+  const exportMode = company.data?.redaction_export_mode ?? "masked";
+  const exportBehaviour = resolveExportBehaviour({
+    mode: exportMode,
+    canReveal: access.can("revealRedactions"),
+  });
+  /** Governance gate: transcript-bearing exports follow the workspace policy. */
+  const deepExportAllowed =
+    access.can("viewTranscripts") && !exportBehaviour.blocked;
+  const exportPolicyNote = exportBehaviour.blocked
+    ? "Your workspace blocks exports containing redacted transcript segments."
+    : exportBehaviour.reveal
+      ? "Redacted segments are exported unmasked for workspace admins."
+      : "Redacted segments are masked consistently in every export.";
   const [exporting, setExporting] = useState(false);
   const [sortKey, setSortKey] = useState<ColumnKey>("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
