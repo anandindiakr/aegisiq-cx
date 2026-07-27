@@ -230,3 +230,79 @@ export function formatSla(minutes: number) {
   const label = abs >= 60 ? `${Math.floor(abs / 60)}h ${abs % 60}m` : `${abs}m`;
   return minutes < 0 ? `${label} over` : `${label} left`;
 }
+
+/** Applies the same patch to many queue items, chunked to keep URLs short. */
+export async function bulkUpdateAssignments(
+  ids: string[],
+  patch: Parameters<typeof updateAssignment>[1],
+) {
+  let updated = 0;
+  for (const id of ids) {
+    await updateAssignment(id, patch);
+    updated += 1;
+  }
+  return updated;
+}
+
+/** Queue items linked to the given conversations (used by bulk actions). */
+export async function assignmentsForConversations(conversationIds: string[]) {
+  if (conversationIds.length === 0) return [] as ReviewAssignment[];
+  const company = getActiveTenant();
+  const out: ReviewAssignment[] = [];
+  for (let i = 0; i < conversationIds.length; i += 80) {
+    const chunk = conversationIds.slice(i, i + 80);
+    let builder = raw
+      .from("review_assignments")
+      .select(QUEUE_COLUMNS)
+      .in("conversation_id", chunk);
+    if (company) builder = builder.eq("company_id", company);
+    const { data, error } = await builder;
+    if (error) throw new Error(error.message);
+    out.push(...((data ?? []) as ReviewAssignment[]));
+  }
+  return out;
+}
+
+export interface BulkQueuePatch {
+  status?: QueueStatus;
+  priority?: QueuePriority;
+  assigneeId?: string | null;
+  assigneeName?: string | null;
+  slaMinutes?: number;
+}
+
+/**
+ * Bulk assign or move conversations between queue states. Conversations that
+ * are not queued yet are enqueued first, so a single action always lands.
+ */
+export async function bulkQueueConversations(
+  conversationIds: string[],
+  patch: BulkQueuePatch,
+  titles?: Map<string, string>,
+) {
+  if (conversationIds.length === 0) return { updated: 0, created: 0 };
+  const existing = await assignmentsForConversations(conversationIds);
+  const queued = new Set(existing.map((item) => item.conversation_id));
+  const missing = conversationIds.filter((id) => !queued.has(id));
+
+  let created = 0;
+  if (missing.length > 0) {
+    created = await createAssignments(
+      missing.map((id) => ({
+        conversationId: id,
+        title: titles?.get(id) ?? "Review conversation",
+        assigneeId: patch.assigneeId ?? null,
+        assigneeName: patch.assigneeName ?? null,
+        priority: patch.priority ?? "normal",
+        slaMinutes: patch.slaMinutes,
+      })),
+    );
+  }
+
+  const targets = existing.filter((item) => item.status !== "cancelled" || patch.status);
+  const updated = await bulkUpdateAssignments(
+    targets.map((item) => item.id),
+    patch,
+  );
+  return { updated, created };
+}
