@@ -1,0 +1,250 @@
+import { queryOptions } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+export type EntityStatus = "active" | "inactive" | "suspended" | "archived";
+export type CameraStatus = "online" | "offline" | "degraded" | "maintenance";
+export type AlertSeverity = "critical" | "high" | "medium" | "low" | "info";
+export type AlertStatus = "open" | "acknowledged" | "resolved" | "dismissed";
+export type AppRole =
+  | "super_admin"
+  | "tenant_admin"
+  | "regional_manager"
+  | "outlet_manager"
+  | "supervisor"
+  | "viewer";
+
+export interface Company {
+  id: string;
+  name: string;
+  legal_name: string | null;
+  industry: string;
+  logo_url: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  address: string | null;
+  subscription_plan: string;
+  status: EntityStatus;
+  timezone: string;
+  preferred_languages: string[];
+  created_at: string;
+}
+
+export interface Outlet {
+  id: string;
+  name: string;
+  code: string;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  region: string | null;
+  timezone: string;
+  manager_name: string | null;
+  manager_email: string | null;
+  status: EntityStatus;
+  opened_at: string | null;
+}
+
+export interface Camera {
+  id: string;
+  outlet_id: string | null;
+  name: string;
+  rtsp_url: string | null;
+  location: string | null;
+  status: CameraStatus;
+  audio_enabled: boolean;
+  firmware: string | null;
+  last_seen_at: string | null;
+}
+
+export interface Conversation {
+  id: string;
+  outlet_id: string | null;
+  camera_id: string | null;
+  reference: string;
+  started_at: string;
+  duration_seconds: number;
+  language_code: string;
+  sentiment_score: number;
+  sentiment: string;
+  topic: string | null;
+  agent_name: string | null;
+  customer_type: string | null;
+  escalated: boolean;
+}
+
+export interface AlertRow {
+  id: string;
+  outlet_id: string | null;
+  conversation_id: string | null;
+  title: string;
+  description: string | null;
+  category: string;
+  severity: AlertSeverity;
+  status: AlertStatus;
+  triggered_at: string;
+}
+
+export interface StaffProfile {
+  id: string;
+  user_id: string | null;
+  outlet_id: string | null;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  job_title: string | null;
+  directory_role: AppRole;
+  status: EntityStatus;
+  last_active_at: string | null;
+}
+
+export interface AuditLog {
+  id: string;
+  actor_name: string | null;
+  action: string;
+  entity_type: string;
+  ip_address: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface KeywordRow {
+  id: string;
+  term: string;
+  category: string;
+  weight: number;
+  is_active: boolean;
+}
+
+export interface LanguageRow {
+  id: string;
+  code: string;
+  name: string;
+  native_name: string | null;
+  is_active: boolean;
+}
+
+// Untyped table access keeps the data layer stable while the generated
+// database types catch up with new migrations.
+const db = supabase as unknown as {
+  from: (table: string) => any;
+};
+
+async function run<T>(builder: PromiseLike<{ data: unknown; error: { message: string } | null }>) {
+  const { data, error } = await builder;
+  if (error) throw new Error(error.message);
+  return (data ?? []) as T;
+}
+
+export const companyQuery = queryOptions({
+  queryKey: ["company"],
+  queryFn: async () => {
+    const { data, error } = await db.from("companies").select("*").limit(1).maybeSingle();
+    if (error) throw new Error(error.message);
+    return data as Company | null;
+  },
+});
+
+export const outletsQuery = queryOptions({
+  queryKey: ["outlets"],
+  queryFn: () => run<Outlet[]>(db.from("outlets").select("*").order("code")),
+});
+
+export const camerasQuery = queryOptions({
+  queryKey: ["cameras"],
+  queryFn: () => run<Camera[]>(db.from("cameras").select("*").order("name")),
+});
+
+export const conversationsQuery = queryOptions({
+  queryKey: ["conversations"],
+  queryFn: () =>
+    run<Conversation[]>(
+      db
+        .from("conversations")
+        .select(
+          "id,outlet_id,camera_id,reference,started_at,duration_seconds,language_code,sentiment_score,sentiment,topic,agent_name,customer_type,escalated",
+        )
+        .order("started_at", { ascending: false })
+        .limit(1000),
+    ),
+});
+
+export const alertsQuery = queryOptions({
+  queryKey: ["alerts"],
+  queryFn: () =>
+    run<AlertRow[]>(
+      db.from("alerts").select("*").order("triggered_at", { ascending: false }).limit(300),
+    ),
+});
+
+export const staffQuery = queryOptions({
+  queryKey: ["staff"],
+  queryFn: () => run<StaffProfile[]>(db.from("profiles").select("*").order("full_name")),
+});
+
+export const auditLogsQuery = queryOptions({
+  queryKey: ["audit-logs"],
+  queryFn: () =>
+    run<AuditLog[]>(
+      db.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(200),
+    ),
+});
+
+export const keywordsQuery = queryOptions({
+  queryKey: ["keywords"],
+  queryFn: () => run<KeywordRow[]>(db.from("keywords").select("*").order("weight", { ascending: false })),
+});
+
+export const languagesQuery = queryOptions({
+  queryKey: ["languages"],
+  queryFn: () => run<LanguageRow[]>(db.from("languages").select("*").order("name")),
+});
+
+export const myProfileQuery = queryOptions({
+  queryKey: ["my-profile"],
+  queryFn: async () => {
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) return null;
+    const { data, error } = await db
+      .from("profiles")
+      .select("*")
+      .eq("user_id", auth.user.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data as StaffProfile | null;
+  },
+});
+
+export const myRolesQuery = queryOptions({
+  queryKey: ["my-roles"],
+  queryFn: async () => {
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) return [] as AppRole[];
+    const rows = await run<{ role: AppRole }[]>(
+      db.from("user_roles").select("role").eq("user_id", auth.user.id),
+    );
+    return rows.map((r) => r.role);
+  },
+});
+
+export async function updateAlertStatus(id: string, status: AlertStatus) {
+  const { error } = await db
+    .from("alerts")
+    .update({ status, acknowledged_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function updateCompany(id: string, patch: Partial<Company>) {
+  const { error } = await db.from("companies").update(patch).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function updateOutlet(id: string, patch: Partial<Outlet>) {
+  const { error } = await db.from("outlets").update(patch).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function updateCamera(id: string, patch: Partial<Camera>) {
+  const { error } = await db.from("cameras").update(patch).eq("id", id);
+  if (error) throw new Error(error.message);
+}
