@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -144,6 +144,8 @@ function ConversationViewer() {
   const [speakerFilter, setSpeakerFilter] = useState<Set<string>>(new Set());
   const [anchorDraft, setAnchorDraft] = useState<AnchorDraft | null>(null);
   const anchors = useQuery(transcriptAnchorsQuery(conversationId));
+  const [activeAnchorId, setActiveAnchorId] = useState<string | null>(null);
+  const transcriptRefs = useRef(new Map<string, HTMLDivElement>());
 
   const allTranscripts = useMemo(() => detail.data?.transcripts ?? [], [detail.data]);
   const speakerStats = useMemo(() => {
@@ -171,6 +173,34 @@ function ConversationViewer() {
     }
     return map;
   }, [anchors.data]);
+
+  /**
+   * Sends the transcript to a saved anchor: isolates its speaker, scrolls the
+   * matching utterance into view and flashes it so the reviewer sees the
+   * exact moment the note refers to.
+   */
+  function jumpToAnchor(anchor: {
+    id: string;
+    speaker: string;
+    transcript_id: string | null;
+    start_ms: number;
+  }) {
+    const key = anchor.speaker.trim().toLowerCase();
+    setSpeakerFilter((prev) => (prev.size === 0 || prev.has(key) ? prev : new Set([key])));
+    setActiveAnchorId(anchor.id);
+    const targetId =
+      anchor.transcript_id ??
+      allTranscripts
+        .slice()
+        .sort(
+          (a, b) => Math.abs(a.start_ms - anchor.start_ms) - Math.abs(b.start_ms - anchor.start_ms),
+        )[0]?.id;
+    window.setTimeout(() => {
+      const node = targetId ? transcriptRefs.current.get(targetId) : undefined;
+      node?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 60);
+    window.setTimeout(() => setActiveAnchorId(null), 2600);
+  }
 
   function toggleSpeaker(speaker: string) {
     setSpeakerFilter((prev) => {
@@ -349,9 +379,16 @@ function ConversationViewer() {
             <div className="max-h-[32rem] space-y-3 overflow-y-auto pr-1">
               {visibleTranscripts.map((line, index) => {
                 const isCustomer = line.speaker.toLowerCase().includes("customer");
+                const isActive = (anchors.data ?? []).some(
+                  (anchor) => anchor.id === activeAnchorId && anchor.transcript_id === line.id,
+                );
                 return (
                   <motion.div
                     key={line.id}
+                    ref={(node) => {
+                      if (node) transcriptRefs.current.set(line.id, node);
+                      else transcriptRefs.current.delete(line.id);
+                    }}
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.18, delay: Math.min(index * 0.02, 0.3) }}
@@ -359,7 +396,8 @@ function ConversationViewer() {
                   >
                     <div
                       className={cn(
-                        "max-w-[80%] rounded-2xl border px-3.5 py-2.5",
+                        "max-w-[80%] rounded-2xl border px-3.5 py-2.5 transition-shadow",
+                        isActive && "ring-2 ring-primary ring-offset-2 ring-offset-background",
                         isCustomer
                           ? "rounded-tl-sm border-border bg-surface"
                           : "rounded-tr-sm border-primary/25 bg-primary/10",
@@ -432,6 +470,7 @@ function ConversationViewer() {
             conversationId={conversationId}
             draft={anchorDraft}
             onClearDraft={() => setAnchorDraft(null)}
+            onJump={jumpToAnchor}
           />
 
           <Panel

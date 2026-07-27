@@ -153,13 +153,50 @@ export async function createAssignments(items: CreateAssignmentInput[]) {
     };
   });
   if (rows.length === 0) return 0;
-  const { data, error } = await raw
-    .from("review_assignments")
-    .upsert(rows, { onConflict: "alert_id", ignoreDuplicates: true })
-    .select("id");
+
+  // No unique index exists on the table, so de-duplicate in the app: skip any
+  // conversation or alert that already has an active (open/in progress) item.
+  const conversationIds = rows.map((r) => r.conversation_id).filter(Boolean) as string[];
+  const alertIds = rows.map((r) => r.alert_id).filter(Boolean) as string[];
+  const existingConversations = new Set<string>();
+  const existingAlerts = new Set<string>();
+  if (conversationIds.length > 0 || alertIds.length > 0) {
+    let query = raw
+      .from("review_assignments")
+      .select("conversation_id, alert_id")
+      .in("status", ["open", "in_progress"])
+      .eq("company_id", company);
+    if (conversationIds.length > 0 && alertIds.length > 0) {
+      query = query.or(
+        `conversation_id.in.(${conversationIds.join(",")}),alert_id.in.(${alertIds.join(",")})`,
+      );
+    } else if (conversationIds.length > 0) {
+      query = query.in("conversation_id", conversationIds);
+    } else {
+      query = query.in("alert_id", alertIds);
+    }
+    const { data: existing } = await query;
+    for (const row of (existing ?? []) as {
+      conversation_id: string | null;
+      alert_id: string | null;
+    }[]) {
+      if (row.conversation_id) existingConversations.add(row.conversation_id);
+      if (row.alert_id) existingAlerts.add(row.alert_id);
+    }
+  }
+
+  const fresh = rows.filter(
+    (row) =>
+      !(row.conversation_id && existingConversations.has(row.conversation_id)) &&
+      !(row.alert_id && existingAlerts.has(row.alert_id)),
+  );
+  if (fresh.length === 0) return 0;
+
+  const { data, error } = await raw.from("review_assignments").insert(fresh).select("id");
   if (error) throw new Error(error.message);
   return ((data ?? []) as { id: string }[]).length;
 }
+
 
 export async function updateAssignment(
   id: string,
@@ -229,4 +266,77 @@ export function formatSla(minutes: number) {
   const abs = Math.abs(minutes);
   const label = abs >= 60 ? `${Math.floor(abs / 60)}h ${abs % 60}m` : `${abs}m`;
   return minutes < 0 ? `${label} over` : `${label} left`;
+}
+
+/** Applies the same patch to many queue items, chunked to keep URLs short. */
+export async function bulkUpdateAssignments(
+  ids: string[],
+  patch: Parameters<typeof updateAssignment>[1],
+) {
+  let updated = 0;
+  for (const id of ids) {
+    await updateAssignment(id, patch);
+    updated += 1;
+  }
+  return updated;
+}
+
+/** Queue items linked to the given conversations (used by bulk actions). */
+export async function assignmentsForConversations(conversationIds: string[]) {
+  if (conversationIds.length === 0) return [] as ReviewAssignment[];
+  const company = getActiveTenant();
+  const out: ReviewAssignment[] = [];
+  for (let i = 0; i < conversationIds.length; i += 80) {
+    const chunk = conversationIds.slice(i, i + 80);
+    let builder = raw.from("review_assignments").select(QUEUE_COLUMNS).in("conversation_id", chunk);
+    if (company) builder = builder.eq("company_id", company);
+    const { data, error } = await builder;
+    if (error) throw new Error(error.message);
+    out.push(...((data ?? []) as ReviewAssignment[]));
+  }
+  return out;
+}
+
+export interface BulkQueuePatch {
+  status?: QueueStatus;
+  priority?: QueuePriority;
+  assigneeId?: string | null;
+  assigneeName?: string | null;
+  slaMinutes?: number;
+}
+
+/**
+ * Bulk assign or move conversations between queue states. Conversations that
+ * are not queued yet are enqueued first, so a single action always lands.
+ */
+export async function bulkQueueConversations(
+  conversationIds: string[],
+  patch: BulkQueuePatch,
+  titles?: Map<string, string>,
+) {
+  if (conversationIds.length === 0) return { updated: 0, created: 0 };
+  const existing = await assignmentsForConversations(conversationIds);
+  const queued = new Set(existing.map((item) => item.conversation_id));
+  const missing = conversationIds.filter((id) => !queued.has(id));
+
+  let created = 0;
+  if (missing.length > 0) {
+    created = await createAssignments(
+      missing.map((id) => ({
+        conversationId: id,
+        title: titles?.get(id) ?? "Review conversation",
+        assigneeId: patch.assigneeId ?? null,
+        assigneeName: patch.assigneeName ?? null,
+        priority: patch.priority ?? "normal",
+        slaMinutes: patch.slaMinutes,
+      })),
+    );
+  }
+
+  const targets = existing.filter((item) => item.status !== "cancelled" || patch.status);
+  const updated = await bulkUpdateAssignments(
+    targets.map((item) => item.id),
+    patch,
+  );
+  return { updated, created };
 }
