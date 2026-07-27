@@ -39,12 +39,14 @@ import {
   type QueueStatus,
   type ReviewAssignment,
 } from "@/features/conversationiq/queue";
+import { useSlaWatch } from "@/features/conversationiq/sla";
 import {
-  emailEscalationEnabled,
-  setEmailEscalation,
-  useSlaWatch,
-} from "@/features/conversationiq/sla";
+  notificationPreferencesQuery,
+  saveNotificationPreferences,
+} from "@/features/conversationiq/notifications";
+import { useIqAccess } from "@/features/conversationiq/access";
 import { staffQuery } from "@/features/platform/queries";
+
 import { formatDate, formatNumber, titleCase } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/conversationiq/queue")({
