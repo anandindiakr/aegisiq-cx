@@ -16,6 +16,7 @@ import {
   Languages as LanguagesIcon,
   ListChecks,
   Play,
+  Highlighter,
   Quote,
   ScanFace,
   ShieldCheck,
@@ -45,6 +46,11 @@ import {
 import { AlertReviewPanel } from "@/components/conversationiq/AlertReviewPanel";
 import { ReviewNotesPanel } from "@/components/conversationiq/ReviewNotesPanel";
 import { iqConversationQuery } from "@/features/conversationiq/queries";
+import { transcriptAnchorsQuery } from "@/features/conversationiq/anchors";
+import {
+  TranscriptAnchorPanel,
+  type AnchorDraft,
+} from "@/components/conversationiq/TranscriptAnchorPanel";
 import { camerasQuery, outletsQuery } from "@/features/platform/queries";
 import { formatDate, formatDuration, titleCase } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -84,6 +90,32 @@ function offsetLabel(ms: number) {
   return `${Math.floor(total / 60)
     .toString()
     .padStart(2, "0")}:${(total % 60).toString().padStart(2, "0")}`;
+}
+
+/** Wraps every saved anchor quote found in an utterance with a highlight mark. */
+function renderHighlighted(content: string, quotes: string[]) {
+  const matches = quotes.filter((quote) => quote && content.includes(quote));
+  if (matches.length === 0) return content;
+  const longest = [...matches].sort((a, b) => b.length - a.length);
+  let parts: (string | { mark: string })[] = [content];
+  for (const quote of longest) {
+    parts = parts.flatMap((part) => {
+      if (typeof part !== "string" || !part.includes(quote)) return [part];
+      const segments = part.split(quote);
+      return segments.flatMap((segment, index) =>
+        index === 0 ? [segment] : [{ mark: quote }, segment],
+      );
+    });
+  }
+  return parts.map((part, index) =>
+    typeof part === "string" ? (
+      <span key={index}>{part}</span>
+    ) : (
+      <mark key={index} className="rounded bg-primary/25 px-0.5 text-foreground">
+        {part.mark}
+      </mark>
+    ),
+  );
 }
 
 function MetaRow({
@@ -129,6 +161,18 @@ function ConversationViewer() {
         : allTranscripts.filter((line) => speakerFilter.has(line.speaker.trim().toLowerCase())),
     [allTranscripts, speakerFilter],
   );
+
+  /** Quotes to highlight inside each utterance, keyed by transcript row. */
+  const anchorQuotes = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const anchor of anchors.data ?? []) {
+      if (!anchor.transcript_id) continue;
+      const list = map.get(anchor.transcript_id) ?? [];
+      list.push(anchor.quote);
+      map.set(anchor.transcript_id, list);
+    }
+    return map;
+  }, [anchors.data]);
 
   function toggleSpeaker(speaker: string) {
     setSpeakerFilter((prev) => {
@@ -334,7 +378,9 @@ function ConversationViewer() {
                           {Math.round(Number(line.confidence) * 100)}%
                         </span>
                       </div>
-                      <p className="text-sm leading-relaxed">{line.content}</p>
+                      <p className="text-sm leading-relaxed">
+                        {renderHighlighted(line.content, anchorQuotes.get(line.id) ?? [])}
+                      </p>
                       <div className="mt-1.5 hidden gap-1 group-hover:flex">
                         <Button
                           variant="ghost"
@@ -351,9 +397,23 @@ function ConversationViewer() {
                           variant="ghost"
                           size="sm"
                           className="h-6 px-2 text-[11px]"
-                          onClick={() => toast.info("Flagged for review queue")}
+                          onClick={() => {
+                            const selection = window.getSelection()?.toString().trim() ?? "";
+                            const quote =
+                              selection && line.content.includes(selection)
+                                ? selection
+                                : line.content;
+                            setAnchorDraft({
+                              transcriptId: line.id,
+                              speaker: line.speaker,
+                              startMs: line.start_ms,
+                              endMs: line.end_ms,
+                              quote,
+                            });
+                            toast.info("Highlight ready — add a note or label to save it");
+                          }}
                         >
-                          <Quote className="mr-1 size-3" /> Flag
+                          <Highlighter className="mr-1 size-3" /> Anchor
                         </Button>
                       </div>
                     </div>
@@ -369,6 +429,12 @@ function ConversationViewer() {
               )}
             </div>
           </Panel>
+
+          <TranscriptAnchorPanel
+            conversationId={conversationId}
+            draft={anchorDraft}
+            onClearDraft={() => setAnchorDraft(null)}
+          />
 
           <Panel
             title="Conversation timeline"
