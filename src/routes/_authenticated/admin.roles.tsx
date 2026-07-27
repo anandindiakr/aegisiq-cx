@@ -307,7 +307,7 @@ function RoleAdminPage() {
                   </TableCell>
                   {ASSIGNABLE_ROLES.map((role) => (
                     <TableCell key={role} className="text-center">
-                      {can([role], capability) ? (
+                      {can([role], capability, matrixOverride) ? (
                         <Chip tone="positive">Yes</Chip>
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
