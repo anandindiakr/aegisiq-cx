@@ -4,6 +4,7 @@ import { Loader2, MessageSquarePlus, Pencil, Tag, Trash2, X } from "lucide-react
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { useIqAccess } from "@/features/conversationiq/access";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Panel } from "@/components/common/Primitives";
@@ -34,6 +35,8 @@ const SUGGESTED_TAGS = [
  * previously reviewed conversation findable from the ConversationIQ™ list.
  */
 export function ReviewNotesPanel({ conversationId }: { conversationId: string }) {
+  const access = useIqAccess();
+  const canEdit = access.can("editNotesTags");
   const queryClient = useQueryClient();
   const notes = useQuery(conversationNotesQuery(conversationId));
   const tags = useQuery(conversationTagsQuery(conversationId));
@@ -117,7 +120,8 @@ export function ReviewNotesPanel({ conversationId }: { conversationId: string })
                   <button
                     type="button"
                     aria-label={`Remove tag ${tag.tag}`}
-                    className="opacity-60 transition-opacity hover:opacity-100"
+                    className="opacity-60 transition-opacity hover:opacity-100 disabled:hidden"
+                    disabled={!canEdit}
                     onClick={() => dropTag.mutate(tag.id)}
                   >
                     <X className="size-3" />
@@ -140,16 +144,21 @@ export function ReviewNotesPanel({ conversationId }: { conversationId: string })
             <Input
               value={tagDraft}
               onChange={(e) => setTagDraft(e.target.value)}
-              placeholder="Add a tag…"
+              disabled={!canEdit}
+              placeholder={canEdit ? "Add a tag…" : "Your role cannot edit tags"}
               className="h-8 bg-surface text-xs"
             />
-            <Button type="submit" size="sm" disabled={!tagDraft.trim() || createTag.isPending}>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!canEdit || !tagDraft.trim() || createTag.isPending}
+            >
               Add
             </Button>
           </form>
 
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {SUGGESTED_TAGS.filter((tag) => !applied.has(tag)).map((tag) => (
+            {(canEdit ? SUGGESTED_TAGS.filter((tag) => !applied.has(tag)) : []).map((tag) => (
               <button
                 key={tag}
                 type="button"
@@ -166,13 +175,18 @@ export function ReviewNotesPanel({ conversationId }: { conversationId: string })
           <Textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="Capture an internal review comment…"
+            disabled={!canEdit}
+            placeholder={
+              canEdit
+                ? "Capture an internal review comment…"
+                : "Your role can read review notes but not add them."
+            }
             className="min-h-20 bg-surface text-sm"
           />
           <Button
             size="sm"
             className="mt-2"
-            disabled={!draft.trim() || createNote.isPending}
+            disabled={!canEdit || !draft.trim() || createNote.isPending}
             onClick={() => createNote.mutate(draft.trim())}
           >
             {createNote.isPending ? (
