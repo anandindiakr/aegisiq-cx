@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -146,6 +146,7 @@ function MetaRow({
 
 function ConversationViewer() {
   const { conversationId } = Route.useParams();
+  const queryClient = useQueryClient();
   const detail = useQuery(iqConversationQuery(conversationId));
   const outlets = useQuery(outletsQuery);
   const cameras = useQuery(camerasQuery);
