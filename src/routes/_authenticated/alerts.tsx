@@ -211,7 +211,9 @@ function AlertsPage() {
                   </div>
                 </div>
               </li>
-            ))}
+              );
+            })}
+
           </ul>
         )}
       </Panel>
