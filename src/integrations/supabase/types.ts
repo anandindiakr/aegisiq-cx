@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_reads: {
+        Row: {
+          alert_id: string
+          company_id: string
+          created_at: string
+          id: string
+          read_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_id: string
+          company_id: string
+          created_at?: string
+          id?: string
+          read_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_id?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_reads_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alerts: {
         Row: {
           acknowledged_at: string | null
@@ -584,6 +622,62 @@ export type Database = {
           },
           {
             foreignKeyName: "profiles_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sso_role_mappings: {
+        Row: {
+          claim_key: string
+          claim_value: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          is_active: boolean
+          outlet_id: string | null
+          priority: number
+          provider: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }
+        Insert: {
+          claim_key: string
+          claim_value: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean
+          outlet_id?: string | null
+          priority?: number
+          provider?: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Update: {
+          claim_key?: string
+          claim_value?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          is_active?: boolean
+          outlet_id?: string | null
+          priority?: number
+          provider?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sso_role_mappings_outlet_id_fkey"
             columns: ["outlet_id"]
             isOneToOne: false
             referencedRelation: "outlets"
