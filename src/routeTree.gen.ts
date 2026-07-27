@@ -31,6 +31,7 @@ import { Route as AuthenticatedConversationiqReviewRouteImport } from './routes/
 import { Route as AuthenticatedConversationiqQueueRouteImport } from './routes/_authenticated/conversationiq.queue'
 import { Route as AuthenticatedConversationiqLanguagesRouteImport } from './routes/_authenticated/conversationiq.languages'
 import { Route as AuthenticatedConversationiqKeywordsRouteImport } from './routes/_authenticated/conversationiq.keywords'
+import { Route as AuthenticatedConversationiqAuditRouteImport } from './routes/_authenticated/conversationiq.audit'
 import { Route as AuthenticatedConversationiqConversationIdRouteImport } from './routes/_authenticated/conversationiq.$conversationId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -149,6 +150,12 @@ const AuthenticatedConversationiqKeywordsRoute =
     path: '/conversationiq/keywords',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedConversationiqAuditRoute =
+  AuthenticatedConversationiqAuditRouteImport.update({
+    id: '/conversationiq/audit',
+    path: '/conversationiq/audit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConversationiqConversationIdRoute =
   AuthenticatedConversationiqConversationIdRouteImport.update({
     id: '/conversationiq/$conversationId',
@@ -172,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
+  '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
   '/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
   '/conversationiq/queue': typeof AuthenticatedConversationiqQueueRoute
@@ -196,6 +204,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
+  '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
   '/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
   '/conversationiq/queue': typeof AuthenticatedConversationiqQueueRoute
@@ -222,6 +231,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
+  '/_authenticated/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/_authenticated/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
   '/_authenticated/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
   '/_authenticated/conversationiq/queue': typeof AuthenticatedConversationiqQueueRoute
@@ -248,6 +258,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/conversationiq/$conversationId'
+    | '/conversationiq/audit'
     | '/conversationiq/keywords'
     | '/conversationiq/languages'
     | '/conversationiq/queue'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/users'
     | '/conversationiq/$conversationId'
+    | '/conversationiq/audit'
     | '/conversationiq/keywords'
     | '/conversationiq/languages'
     | '/conversationiq/queue'
@@ -297,6 +309,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/users'
     | '/_authenticated/conversationiq/$conversationId'
+    | '/_authenticated/conversationiq/audit'
     | '/_authenticated/conversationiq/keywords'
     | '/_authenticated/conversationiq/languages'
     | '/_authenticated/conversationiq/queue'
@@ -470,6 +483,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConversationiqKeywordsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/conversationiq/audit': {
+      id: '/_authenticated/conversationiq/audit'
+      path: '/conversationiq/audit'
+      fullPath: '/conversationiq/audit'
+      preLoaderRoute: typeof AuthenticatedConversationiqAuditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/conversationiq/$conversationId': {
       id: '/_authenticated/conversationiq/$conversationId'
       path: '/conversationiq/$conversationId'
@@ -493,6 +513,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedConversationiqConversationIdRoute: typeof AuthenticatedConversationiqConversationIdRoute
+  AuthenticatedConversationiqAuditRoute: typeof AuthenticatedConversationiqAuditRoute
   AuthenticatedConversationiqKeywordsRoute: typeof AuthenticatedConversationiqKeywordsRoute
   AuthenticatedConversationiqLanguagesRoute: typeof AuthenticatedConversationiqLanguagesRoute
   AuthenticatedConversationiqQueueRoute: typeof AuthenticatedConversationiqQueueRoute
@@ -515,6 +536,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedConversationiqConversationIdRoute:
     AuthenticatedConversationiqConversationIdRoute,
+  AuthenticatedConversationiqAuditRoute: AuthenticatedConversationiqAuditRoute,
   AuthenticatedConversationiqKeywordsRoute:
     AuthenticatedConversationiqKeywordsRoute,
   AuthenticatedConversationiqLanguagesRoute:

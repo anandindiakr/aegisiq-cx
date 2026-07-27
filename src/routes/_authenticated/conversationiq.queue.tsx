@@ -1,7 +1,17 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlarmClock, CircleSlash, Eye, ListChecks, Loader2, Timer, UserRound } from "lucide-react";
+import {
+  AlarmClock,
+  CircleSlash,
+  Eye,
+  ListChecks,
+  Loader2,
+  Mail,
+  Timer,
+  TriangleAlert,
+  UserRound,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader, Panel } from "@/components/common/Primitives";
@@ -29,6 +39,11 @@ import {
   type QueueStatus,
   type ReviewAssignment,
 } from "@/features/conversationiq/queue";
+import {
+  emailEscalationEnabled,
+  setEmailEscalation,
+  useSlaWatch,
+} from "@/features/conversationiq/sla";
 import { staffQuery } from "@/features/platform/queries";
 import { formatDate, formatNumber, titleCase } from "@/lib/format";
 
@@ -70,6 +85,8 @@ const PRIORITY_TONE: Record<QueuePriority, "neutral" | "info" | "warning" | "neg
 function ReviewerQueuePage() {
   const queryClient = useQueryClient();
   const queue = useQuery(reviewQueueQuery);
+  const sla = useSlaWatch();
+  const [emailAlerts, setEmailAlerts] = useState(() => emailEscalationEnabled());
   const staff = useQuery(staffQuery);
 
   const [statusFilter, setStatusFilter] = useState<string>("active");
@@ -160,6 +177,66 @@ function ReviewerQueuePage() {
         description="Assign conversations and alerts to your review team, track progress and keep every case inside its service-level target."
       />
       <ConversationIqTabs />
+
+      <div className="panel flex flex-wrap items-center justify-between gap-3 border-l-2 border-l-primary/60 p-4">
+        <div className="flex items-start gap-3">
+          <TriangleAlert
+            className={
+              sla.breached.length > 0 ? "mt-0.5 size-5 text-destructive" : "mt-0.5 size-5 text-muted-foreground"
+            }
+          />
+          <div>
+            <p className="text-sm font-medium">
+              {sla.breached.length > 0
+                ? `${formatNumber(sla.breached.length)} item${sla.breached.length === 1 ? "" : "s"} past SLA`
+                : "All active work is inside its SLA"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {formatNumber(sla.dueSoon.length)} due soon · monitored every minute with in-app
+              notifications.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant={emailAlerts ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              const next = !emailAlerts;
+              setEmailAlerts(next);
+              setEmailEscalation(next);
+              toast.success(
+                next ? "Email escalations enabled" : "Email escalations disabled",
+                {
+                  description: next
+                    ? "Breached items can now be sent as an escalation email digest."
+                    : "You will only receive in-app notifications.",
+                },
+              );
+            }}
+          >
+            <Mail className="mr-2 size-4" /> Email escalations {emailAlerts ? "on" : "off"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!emailAlerts || sla.breached.length === 0}
+            onClick={() => {
+              const body = sla.breached
+                .map(
+                  (item) =>
+                    `- ${item.title} | ${item.priority} | ${item.assignee_name ?? "Unassigned"} | ${formatSla(slaMinutesLeft(item))}`,
+                )
+                .join("\n");
+              window.location.href = `mailto:?subject=${encodeURIComponent(
+                `AegisIQ CX — ${sla.breached.length} SLA breaches`,
+              )}&body=${encodeURIComponent(body)}`;
+            }}
+          >
+            Send breach digest
+          </Button>
+        </div>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[

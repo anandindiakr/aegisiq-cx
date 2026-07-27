@@ -1,5 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BrainCircuit, Languages, ListChecks, MessagesSquare, Search, Tags } from "lucide-react";
+import {
+  BrainCircuit,
+  FileClock,
+  Languages,
+  ListChecks,
+  MessagesSquare,
+  Search,
+  Tags,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -8,6 +16,7 @@ const TABS = [
   { label: "Search", to: "/conversationiq/search", icon: Search },
   { label: "AI Review", to: "/conversationiq/review", icon: BrainCircuit },
   { label: "Reviewer Queue", to: "/conversationiq/queue", icon: ListChecks },
+  { label: "Audit Trail", to: "/conversationiq/audit", icon: FileClock },
   { label: "Keywords", to: "/conversationiq/keywords", icon: Tags },
   { label: "Languages", to: "/conversationiq/languages", icon: Languages },
 ] as const;
