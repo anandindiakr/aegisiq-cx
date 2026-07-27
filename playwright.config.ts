@@ -18,7 +18,18 @@ export default defineConfig({
     screenshot: "only-on-failure",
     viewport: { width: 1280, height: 900 },
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        // Allows pointing at a preinstalled Chromium (sandboxes / air-gapped CI).
+        launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
+          ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE }
+          : {},
+      },
+    },
+  ],
   // Reuse an already-running dev server locally; boot one in CI.
   webServer: process.env.E2E_BASE_URL
     ? undefined
