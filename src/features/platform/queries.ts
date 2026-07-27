@@ -27,6 +27,8 @@ export interface Company {
   status: EntityStatus;
   timezone: string;
   preferred_languages: string[];
+  brand_primary_color: string;
+  brand_tagline: string | null;
   created_at: string;
 }
 
