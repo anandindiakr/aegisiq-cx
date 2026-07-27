@@ -88,7 +88,10 @@ function ReviewerQueuePage() {
   const queryClient = useQueryClient();
   const queue = useQuery(reviewQueueQuery);
   const sla = useSlaWatch();
-  const [emailAlerts, setEmailAlerts] = useState(() => emailEscalationEnabled());
+  const prefs = useQuery(notificationPreferencesQuery);
+  const emailAlerts = prefs.data?.sla_email ?? false;
+  const access = useIqAccess();
+
   const staff = useQuery(staffQuery);
 
   const [statusFilter, setStatusFilter] = useState<string>("active");
