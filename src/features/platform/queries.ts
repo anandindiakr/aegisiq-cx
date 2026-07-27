@@ -298,3 +298,66 @@ export async function updateCamera(id: string, patch: Partial<Camera>) {
   const { error } = await db.from("cameras").update(patch).eq("id", id);
   if (error) throw new Error(error.message);
 }
+
+// ---------------------------------------------------------------------------
+// Audit logs: server-side filtering + pagination
+// ---------------------------------------------------------------------------
+
+export interface AuditLogFilters {
+  actor: string;
+  action: string;
+  entityType: string;
+  page: number;
+  pageSize: number;
+}
+
+export interface AuditLogPage {
+  rows: AuditLog[];
+  total: number;
+}
+
+export const auditLogFilterOptionsQuery = queryOptions({
+  queryKey: ["audit-log-filters"],
+  queryFn: async () => {
+    const rows = await run<{ actor_id: string | null; actor_name: string | null; action: string; entity_type: string }[]>(
+      db.from("audit_logs").select("actor_id,actor_name,action,entity_type").limit(1000),
+      "supabase.audit_log_filters",
+    );
+    const actors = new Map<string, string>();
+    const actions = new Set<string>();
+    const entities = new Set<string>();
+    for (const row of rows) {
+      if (row.actor_name) actors.set(row.actor_name, row.actor_name);
+      actions.add(row.action);
+      entities.add(row.entity_type);
+    }
+    return {
+      actors: [...actors.keys()].sort(),
+      actions: [...actions].sort(),
+      entityTypes: [...entities].sort(),
+    };
+  },
+});
+
+export function auditLogsPageQuery(filters: AuditLogFilters) {
+  return queryOptions({
+    queryKey: ["audit-logs", filters],
+    queryFn: async (): Promise<AuditLogPage> =>
+      traced("supabase.audit_logs_page", async () => {
+        const from = filters.page * filters.pageSize;
+        let query = db
+          .from("audit_logs")
+          .select("*", { count: "exact" })
+          .order("created_at", { ascending: false })
+          .range(from, from + filters.pageSize - 1);
+
+        if (filters.actor !== "all") query = query.eq("actor_name", filters.actor);
+        if (filters.action !== "all") query = query.eq("action", filters.action);
+        if (filters.entityType !== "all") query = query.eq("entity_type", filters.entityType);
+
+        const { data, error, count } = await query;
+        if (error) throw new Error(error.message);
+        return { rows: (data ?? []) as AuditLog[], total: count ?? 0 };
+      }),
+  });
+}
