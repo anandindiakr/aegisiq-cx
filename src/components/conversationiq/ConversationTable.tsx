@@ -45,6 +45,9 @@ import {
 import type { IqConversation, IqSummary } from "@/features/conversationiq/queries";
 import { exportComplianceCsv, exportConversationsDeepCsv } from "@/features/conversationiq/export";
 import { useIqAccess } from "@/features/conversationiq/access";
+import { resolveExportBehaviour } from "@/features/conversationiq/redaction";
+import { companyQuery } from "@/features/platform/queries";
+import { useQuery } from "@tanstack/react-query";
 import { BulkReviewMenu } from "@/components/conversationiq/BulkReviewMenu";
 
 import type { AlertRow, Camera, Outlet } from "@/features/platform/queries";
@@ -114,6 +117,19 @@ export function ConversationTable({
   isLoading,
 }: Props) {
   const access = useIqAccess();
+  const company = useQuery(companyQuery);
+  const exportMode = company.data?.redaction_export_mode ?? "masked";
+  const exportBehaviour = resolveExportBehaviour({
+    mode: exportMode,
+    canReveal: access.can("revealRedactions"),
+  });
+  /** Governance gate: transcript-bearing exports follow the workspace policy. */
+  const deepExportAllowed = access.can("viewTranscripts") && !exportBehaviour.blocked;
+  const exportPolicyNote = exportBehaviour.blocked
+    ? "Your workspace blocks exports containing redacted transcript segments."
+    : exportBehaviour.reveal
+      ? "Redacted segments are exported unmasked for workspace admins."
+      : "Redacted segments are masked consistently in every export.";
   const [exporting, setExporting] = useState(false);
   const [sortKey, setSortKey] = useState<ColumnKey>("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
@@ -391,8 +407,12 @@ export function ConversationTable({
           <Button
             size="sm"
             onClick={() => void exportDeepCsv()}
-            disabled={sorted.length === 0 || exporting}
-            title="Includes the full transcript, detected keywords, alerts and review tags"
+            disabled={sorted.length === 0 || exporting || !deepExportAllowed}
+            title={
+              deepExportAllowed
+                ? `Includes the full transcript, detected keywords, alerts and review tags · ${exportPolicyNote}`
+                : exportPolicyNote
+            }
           >
             {exporting ? (
               <Loader2 className="mr-2 size-4 animate-spin" />
@@ -406,8 +426,8 @@ export function ConversationTable({
               variant="outline"
               size="sm"
               onClick={() => void exportCompliance()}
-              disabled={sorted.length === 0 || exporting}
-              title="Transcript snippet, reviewer notes, tags, saved anchors and audit entries"
+              disabled={sorted.length === 0 || exporting || exportBehaviour.blocked}
+              title={`Transcript snippet, reviewer notes, tags, saved anchors and audit entries · ${exportPolicyNote}`}
             >
               {exporting ? (
                 <Loader2 className="mr-2 size-4 animate-spin" />
@@ -417,6 +437,18 @@ export function ConversationTable({
               Compliance pack{selected.size > 0 ? ` (${selected.size})` : ""}
             </Button>
           )}
+          <Chip
+            tone={
+              exportBehaviour.blocked ? "negative" : exportBehaviour.reveal ? "warning" : "info"
+            }
+            title={exportPolicyNote}
+          >
+            {exportBehaviour.blocked
+              ? "Exports blocked"
+              : exportBehaviour.reveal
+                ? "Unmasked for admins"
+                : "Redacted export mode"}
+          </Chip>
         </div>
       </div>
 

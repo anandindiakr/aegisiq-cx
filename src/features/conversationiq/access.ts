@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { myRolesQuery, type AppRole } from "@/features/platform/queries";
+import { activeCapabilityMatrixQuery } from "@/features/platform/roleTemplates";
 
 /**
  * ConversationIQ™ role-based access control.
@@ -67,24 +68,45 @@ export const CAPABILITY_LABELS: Record<IqCapability, string> = {
   manageRoles: "Assign roles and manage workspace members",
 };
 
-export function can(roles: AppRole[] | undefined, capability: IqCapability) {
+export const DEFAULT_MATRIX = MATRIX;
+
+/** Roles allowed a capability, honouring an active role template override. */
+export function allowedRoles(
+  capability: IqCapability,
+  override?: Partial<Record<IqCapability, AppRole[]>> | null,
+) {
+  const custom = override?.[capability];
+  return custom && custom.length > 0 ? custom : MATRIX[capability];
+}
+
+export function can(
+  roles: AppRole[] | undefined,
+  capability: IqCapability,
+  override?: Partial<Record<IqCapability, AppRole[]>> | null,
+) {
   if (!roles || roles.length === 0) return false;
-  return roles.some((role) => MATRIX[capability].includes(role));
+  const allowed = allowedRoles(capability, override);
+  return roles.some((role) => allowed.includes(role));
 }
 
 export interface IqAccess {
   roles: AppRole[];
   isLoading: boolean;
   can: (capability: IqCapability) => boolean;
+  /** Name of the role template currently shaping the matrix, when one is applied. */
+  templateName: string | null;
 }
 
 /** Capability lookup for the signed-in reviewer. */
 export function useIqAccess(): IqAccess {
   const roles = useQuery(myRolesQuery);
+  const template = useQuery(activeCapabilityMatrixQuery);
   const list = roles.data ?? [];
+  const override = template.data?.capabilities ?? null;
   return {
     roles: list,
-    isLoading: roles.isLoading,
-    can: (capability: IqCapability) => can(list, capability),
+    isLoading: roles.isLoading || template.isLoading,
+    can: (capability: IqCapability) => can(list, capability, override),
+    templateName: template.data?.name ?? null,
   };
 }

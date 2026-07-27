@@ -297,6 +297,7 @@ export type Database = {
       }
       companies: {
         Row: {
+          active_role_template_id: string | null
           address: string | null
           brand_primary_color: string
           brand_tagline: string | null
@@ -318,6 +319,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active_role_template_id?: string | null
           address?: string | null
           brand_primary_color?: string
           brand_tagline?: string | null
@@ -339,6 +341,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active_role_template_id?: string | null
           address?: string | null
           brand_primary_color?: string
           brand_tagline?: string | null
@@ -359,7 +362,15 @@ export type Database = {
           timezone?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "companies_active_role_template_id_fkey"
+            columns: ["active_role_template_id"]
+            isOneToOne: false
+            referencedRelation: "role_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversation_events: {
         Row: {
@@ -1070,6 +1081,53 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      role_templates: {
+        Row: {
+          capabilities: Json
+          company_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_shared: boolean
+          name: string
+          roles: Database["public"]["Enums"]["app_role"][]
+          updated_at: string
+        }
+        Insert: {
+          capabilities?: Json
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_shared?: boolean
+          name: string
+          roles?: Database["public"]["Enums"]["app_role"][]
+          updated_at?: string
+        }
+        Update: {
+          capabilities?: Json
+          company_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_shared?: boolean
+          name?: string
+          roles?: Database["public"]["Enums"]["app_role"][]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sla_escalation_steps: {
         Row: {

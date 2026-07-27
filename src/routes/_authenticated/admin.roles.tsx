@@ -42,6 +42,8 @@ import {
   setDirectoryRole,
 } from "@/features/platform/roles";
 import { CAPABILITY_LABELS, can, type IqCapability } from "@/features/conversationiq/access";
+import { activeCapabilityMatrixQuery } from "@/features/platform/roleTemplates";
+import { RoleTemplatesPanel } from "@/components/platform/RoleTemplatesPanel";
 import { ROLE_LABELS } from "@/features/auth/useSession";
 import { formatRelative } from "@/lib/format";
 
@@ -73,6 +75,8 @@ function RoleAdminPage() {
   const queryClient = useQueryClient();
   const staff = useQuery(staffQuery);
   const grants = useQuery(roleGrantsQuery);
+  const activeTemplate = useQuery(activeCapabilityMatrixQuery);
+  const matrixOverride = activeTemplate.data?.capabilities ?? null;
   const [term, setTerm] = useState("");
   const [pendingRole, setPendingRole] = useState<Record<string, AppRole>>({});
 
@@ -270,9 +274,15 @@ function RoleAdminPage() {
         )}
       </Panel>
 
+      <RoleTemplatesPanel members={members} />
+
       <Panel
         title="Permission matrix"
-        description="What each role tier unlocks across ConversationIQ™. The database enforces the same boundaries."
+        description={
+          activeTemplate.data
+            ? `Live matrix from the “${activeTemplate.data.name}” template. The database enforces the same boundaries.`
+            : "What each role tier unlocks across ConversationIQ™. The database enforces the same boundaries."
+        }
       >
         <div className="overflow-x-auto">
           <Table>
@@ -297,7 +307,7 @@ function RoleAdminPage() {
                   </TableCell>
                   {ASSIGNABLE_ROLES.map((role) => (
                     <TableCell key={role} className="text-center">
-                      {can([role], capability) ? (
+                      {can([role], capability, matrixOverride) ? (
                         <Chip tone="positive">Yes</Chip>
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
