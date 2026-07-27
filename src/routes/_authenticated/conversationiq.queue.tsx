@@ -368,6 +368,7 @@ function ReviewerQueuePage() {
                   </span>
                   <Select
                     value={item.assignee_id ?? "unassigned"}
+                    disabled={!access.can("assignQueue")}
                     onValueChange={(value) => assign(item, value)}
                   >
                     <SelectTrigger className="h-8 w-48 bg-surface text-xs">
@@ -386,6 +387,7 @@ function ReviewerQueuePage() {
                   </Select>
                   <Select
                     value={item.status}
+                    disabled={!access.can("moveQueue")}
                     onValueChange={(value) =>
                       update.mutate({ id: item.id, patch: { status: value as QueueStatus } })
                     }
@@ -403,6 +405,7 @@ function ReviewerQueuePage() {
                   </Select>
                   <Select
                     value={item.priority}
+                    disabled={!access.can("moveQueue")}
                     onValueChange={(value) =>
                       update.mutate({
                         id: item.id,
@@ -436,9 +439,11 @@ function ReviewerQueuePage() {
                         </Link>
                       </Button>
                     )}
-                    <Button variant="ghost" size="sm" onClick={() => remove.mutate(item.id)}>
-                      Remove
-                    </Button>
+                    {access.can("moveQueue") && (
+                      <Button variant="ghost" size="sm" onClick={() => remove.mutate(item.id)}>
+                        Remove
+                      </Button>
+                    )}
                   </div>
                 </div>
               </li>
