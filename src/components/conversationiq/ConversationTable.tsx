@@ -324,7 +324,13 @@ export function ConversationTable({
           {selected.size > 0 && <Chip tone="info">{selected.size} selected</Chip>}
         </div>
         <div className="flex items-center gap-2">
+          <BulkReviewMenu
+            selected={sorted.filter((r) => selected.has(r.id)).map((r) => r.id)}
+            rows={sorted}
+            alerts={alerts}
+          />
           <DropdownMenu>
+
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
                 <Columns3 className="mr-2 size-4" /> Columns
