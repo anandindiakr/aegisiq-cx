@@ -43,6 +43,8 @@ import {
 } from "@/components/conversationiq/Badges";
 import type { IqConversation, IqSummary } from "@/features/conversationiq/queries";
 import { exportConversationsDeepCsv } from "@/features/conversationiq/export";
+import { BulkReviewMenu } from "@/components/conversationiq/BulkReviewMenu";
+
 import type { AlertRow, Camera, Outlet } from "@/features/platform/queries";
 
 type ColumnKey =
