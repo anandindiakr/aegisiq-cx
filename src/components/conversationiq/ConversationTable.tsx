@@ -408,8 +408,12 @@ export function ConversationTable({
           <Button
             size="sm"
             onClick={() => void exportDeepCsv()}
-            disabled={sorted.length === 0 || exporting}
-            title="Includes the full transcript, detected keywords, alerts and review tags"
+            disabled={sorted.length === 0 || exporting || !deepExportAllowed}
+            title={
+              deepExportAllowed
+                ? `Includes the full transcript, detected keywords, alerts and review tags · ${exportPolicyNote}`
+                : exportPolicyNote
+            }
           >
             {exporting ? (
               <Loader2 className="mr-2 size-4 animate-spin" />
@@ -423,8 +427,8 @@ export function ConversationTable({
               variant="outline"
               size="sm"
               onClick={() => void exportCompliance()}
-              disabled={sorted.length === 0 || exporting}
-              title="Transcript snippet, reviewer notes, tags, saved anchors and audit entries"
+              disabled={sorted.length === 0 || exporting || exportBehaviour.blocked}
+              title={`Transcript snippet, reviewer notes, tags, saved anchors and audit entries · ${exportPolicyNote}`}
             >
               {exporting ? (
                 <Loader2 className="mr-2 size-4 animate-spin" />
@@ -434,6 +438,16 @@ export function ConversationTable({
               Compliance pack{selected.size > 0 ? ` (${selected.size})` : ""}
             </Button>
           )}
+          <Chip
+            tone={exportBehaviour.blocked ? "negative" : exportBehaviour.reveal ? "warning" : "info"}
+            title={exportPolicyNote}
+          >
+            {exportBehaviour.blocked
+              ? "Exports blocked"
+              : exportBehaviour.reveal
+                ? "Unmasked for admins"
+                : "Redacted export mode"}
+          </Chip>
         </div>
       </div>
 
