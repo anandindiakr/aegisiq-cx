@@ -1663,6 +1663,7 @@ export type Database = {
       actor_display_name: { Args: never; Returns: string }
       can_operate: { Args: never; Returns: boolean }
       current_company_id: { Args: never; Returns: string }
+      executive_overview: { Args: { p_filters?: Json }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
