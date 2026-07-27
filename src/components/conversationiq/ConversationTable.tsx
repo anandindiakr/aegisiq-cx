@@ -11,6 +11,7 @@ import {
   Eye,
   FileText,
   Loader2,
+  ShieldCheck,
   Siren,
 } from "lucide-react";
 
@@ -115,6 +116,7 @@ export function ConversationTable({
   tags,
   isLoading,
 }: Props) {
+  const access = useIqAccess();
   const [exporting, setExporting] = useState(false);
   const [sortKey, setSortKey] = useState<ColumnKey>("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
