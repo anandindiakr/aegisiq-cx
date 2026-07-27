@@ -307,6 +307,7 @@ export interface AuditLogFilters {
   actor: string;
   action: string;
   entityType: string;
+  outletId: string;
   page: number;
   pageSize: number;
 }
@@ -354,6 +355,8 @@ export function auditLogsPageQuery(filters: AuditLogFilters) {
         if (filters.actor !== "all") query = query.eq("actor_name", filters.actor);
         if (filters.action !== "all") query = query.eq("action", filters.action);
         if (filters.entityType !== "all") query = query.eq("entity_type", filters.entityType);
+        if (filters.outletId !== "all")
+          query = query.filter("metadata->>outlet_id", "eq", filters.outletId);
 
         const { data, error, count } = await query;
         if (error) throw new Error(error.message);
