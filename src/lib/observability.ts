@@ -100,10 +100,14 @@ function send(event: TelemetryEvent) {
 }
 
 function normalise(error: unknown) {
-  if (error instanceof Error) return { name: error.name, message: error.message, stack: error.stack };
+  if (error instanceof Error)
+    return { name: error.name, message: error.message, stack: error.stack };
   if (error instanceof Response)
     return { name: "HttpError", message: `Request failed with status ${error.status}` };
-  return { name: "UnknownError", message: typeof error === "string" ? error : JSON.stringify(error) };
+  return {
+    name: "UnknownError",
+    message: typeof error === "string" ? error : JSON.stringify(error),
+  };
 }
 
 /** Report a route/API failure with user + tenant context. */

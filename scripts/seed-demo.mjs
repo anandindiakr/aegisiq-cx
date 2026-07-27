@@ -297,7 +297,11 @@ async function main() {
       company_id: COMPANY_ID,
       conversation_id: id,
       summary: `Customer raised ${topic.toLowerCase()} at ${camera.location?.toLowerCase()}. Agent acknowledged and ${escalated ? "escalated to the duty manager" : "resolved in line"}.`,
-      key_points: [topic, escalated ? "Escalated" : "Resolved at first contact", `Sentiment ${label}`],
+      key_points: [
+        topic,
+        escalated ? "Escalated" : "Resolved at first contact",
+        `Sentiment ${label}`,
+      ],
       intent: topic,
       resolution_status: escalated ? "escalated" : "resolved",
       model: "google/gemini-2.5-flash",
