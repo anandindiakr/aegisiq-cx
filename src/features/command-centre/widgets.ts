@@ -9,7 +9,11 @@ export const WIDGETS: WidgetDef[] = [
   { id: "kpis", label: "KPI Cards", description: "Twelve headline indicators with period deltas" },
   { id: "summary", label: "Executive AI Summary", description: "Narrative briefing" },
   { id: "score", label: "CX Score Gauge", description: "Composite experience index" },
-  { id: "sentiment", label: "Sentiment Overview", description: "Distribution, trend and hourly volume" },
+  {
+    id: "sentiment",
+    label: "Sentiment Overview",
+    description: "Distribution, trend and hourly volume",
+  },
   { id: "outlets", label: "Outlet Performance", description: "Ranked outlet league table" },
   { id: "map", label: "Outlet Map", description: "Geographic distribution" },
   { id: "languages", label: "Language Analytics", description: "Conversation mix by language" },
@@ -19,7 +23,11 @@ export const WIDGETS: WidgetDef[] = [
   { id: "regions", label: "Regional Comparison", description: "Region-level league table" },
   { id: "recommendations", label: "AI Recommendations", description: "Suggested actions" },
   { id: "insights", label: "AI Insight Cards", description: "Detected anomalies and movements" },
-  { id: "activity", label: "Live Activity Feed", description: "Streaming conversations and alerts" },
+  {
+    id: "activity",
+    label: "Live Activity Feed",
+    description: "Streaming conversations and alerts",
+  },
 ];
 
 export const DEFAULT_ORDER = WIDGETS.map((w) => w.id);

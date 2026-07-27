@@ -90,9 +90,7 @@ export function DashboardSettings({ layout }: { layout: DashboardLayout }) {
               <Label className="text-xs">Refresh interval</Label>
               <Select
                 value={String(draft.refresh_interval_seconds)}
-                onValueChange={(v) =>
-                  setDraft({ ...draft, refresh_interval_seconds: Number(v) })
-                }
+                onValueChange={(v) => setDraft({ ...draft, refresh_interval_seconds: Number(v) })}
                 disabled={!draft.auto_refresh}
               >
                 <SelectTrigger className="h-9 text-sm">

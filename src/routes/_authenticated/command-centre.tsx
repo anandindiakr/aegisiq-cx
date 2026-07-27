@@ -110,10 +110,7 @@ function CommandCentrePage() {
     switch (id) {
       case "kpis":
         return (
-          <KpiGrid
-            kpis={data.kpis}
-            onDrillDown={(kpi: KpiKey) => setDrill({ kind: "kpi", kpi })}
-          />
+          <KpiGrid kpis={data.kpis} onDrillDown={(kpi: KpiKey) => setDrill({ kind: "kpi", kpi })} />
         );
       case "summary":
         return <ExecutiveSummary overview={data} />;
@@ -161,7 +158,15 @@ function CommandCentrePage() {
   };
 
   // Two-column widgets sit side by side on wide screens; the rest span full width.
-  const HALF_WIDTH = new Set(["score", "languages", "keywords", "alerts", "issues", "map", "activity"]);
+  const HALF_WIDTH = new Set([
+    "score",
+    "languages",
+    "keywords",
+    "alerts",
+    "issues",
+    "map",
+    "activity",
+  ]);
 
   const visible = order.filter((id) => !hidden.has(id));
 
@@ -169,15 +174,17 @@ function CommandCentrePage() {
     <>
       <FilterBar
         filters={filters}
-        options={overview?.filterOptions ?? {
-          regions: [],
-          outlets: [],
-          languages: [],
-          topics: [],
-          employees: [],
-          keywords: [],
-          alertTypes: [],
-        }}
+        options={
+          overview?.filterOptions ?? {
+            regions: [],
+            outlets: [],
+            languages: [],
+            topics: [],
+            employees: [],
+            keywords: [],
+            alertTypes: [],
+          }
+        }
         onChange={setFilters}
       />
 
@@ -188,7 +195,8 @@ function CommandCentrePage() {
           <>
             <Badge variant="outline" className="text-[11px] text-muted-foreground">
               {rangeLabel(filters)}
-              {overview && ` · updated ${new Date(overview.generatedAt).toLocaleTimeString("en-GB")}`}
+              {overview &&
+                ` · updated ${new Date(overview.generatedAt).toLocaleTimeString("en-GB")}`}
             </Badge>
             <Button
               variant="outline"
@@ -232,10 +240,7 @@ function CommandCentrePage() {
       {overview && (
         <div className="grid gap-4 xl:grid-cols-2">
           {visible.map((id) => (
-            <section
-              key={id}
-              className={HALF_WIDTH.has(id) ? "min-w-0" : "min-w-0 xl:col-span-2"}
-            >
+            <section key={id} className={HALF_WIDTH.has(id) ? "min-w-0" : "min-w-0 xl:col-span-2"}>
               {renderWidget(id, overview)}
             </section>
           ))}

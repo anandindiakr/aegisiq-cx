@@ -47,7 +47,10 @@ export function cxScore(overview: ExecutiveOverview): number {
   const complaintPenalty = (k.complaints / k.total) * 12;
   return Math.max(
     0,
-    Math.min(100, Math.round(sentimentComponent + positiveShare + 10 - escalationPenalty - complaintPenalty)),
+    Math.min(
+      100,
+      Math.round(sentimentComponent + positiveShare + 10 - escalationPenalty - complaintPenalty),
+    ),
   );
 }
 
@@ -224,8 +227,6 @@ export function rankedIssues(overview: ExecutiveOverview) {
   return overview.issues.map((issue) => ({
     ...issue,
     trend: pct(issue.occurrences, issue.prev_count),
-    impact: Math.round(
-      (issue.occurrences / max) * 70 + Math.max(0, -issue.avg_sentiment) * 30,
-    ),
+    impact: Math.round((issue.occurrences / max) * 70 + Math.max(0, -issue.avg_sentiment) * 30),
   }));
 }

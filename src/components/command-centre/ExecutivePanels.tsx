@@ -132,7 +132,10 @@ export function RecommendationCards({ overview }: { overview: ExecutiveOverview 
               </div>
             </div>
             <div className="mt-3 flex items-center gap-2">
-              <Badge variant="outline" className={cn("text-[10px] uppercase", PRIORITY[rec.priority])}>
+              <Badge
+                variant="outline"
+                className={cn("text-[10px] uppercase", PRIORITY[rec.priority])}
+              >
                 {rec.priority} priority
               </Badge>
               <span className="text-[11px] text-muted-foreground">Owner · {rec.owner}</span>

@@ -19,7 +19,12 @@ const OPTIONS: { format: ExportFormat; label: string; hint: string; icon: typeof
   { format: "pdf", label: "PDF report", hint: "Board-ready document", icon: FileText },
   { format: "excel", label: "Excel workbook", hint: "Multi-sheet analysis", icon: FileSpreadsheet },
   { format: "csv", label: "CSV data", hint: "Raw aggregated tables", icon: Table2 },
-  { format: "powerpoint", label: "Slide deck", hint: "Executive briefing slides", icon: Presentation },
+  {
+    format: "powerpoint",
+    label: "Slide deck",
+    hint: "Executive briefing slides",
+    icon: Presentation,
+  },
 ];
 
 export function ExportMenu({
@@ -38,7 +43,9 @@ export function ExportMenu({
     setBusy(true);
     try {
       exportExecutiveReport(format, overview, filters);
-      toast.success(`Export started`, { description: `${format.toUpperCase()} generated from the current filters.` });
+      toast.success(`Export started`, {
+        description: `${format.toUpperCase()} generated from the current filters.`,
+      });
     } catch (error) {
       toast.error("Export failed", {
         description: error instanceof Error ? error.message : "Unknown error",
@@ -51,7 +58,12 @@ export function ExportMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" disabled={disabled || !overview || busy} className="gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={disabled || !overview || busy}
+          className="gap-2"
+        >
           <Download className="size-4" />
           Export
         </Button>

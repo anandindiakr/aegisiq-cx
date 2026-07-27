@@ -66,7 +66,8 @@ export function ScheduledReports() {
       setRecipients("");
       toast.success("Report scheduled");
     },
-    onError: (error: Error) => toast.error("Could not schedule report", { description: error.message }),
+    onError: (error: Error) =>
+      toast.error("Could not schedule report", { description: error.message }),
   });
 
   const toggle = useMutation({
@@ -125,8 +126,8 @@ export function ScheduledReports() {
                 <p className="truncate text-sm font-medium">{schedule.name}</p>
                 <p className="truncate text-[11px] text-muted-foreground">
                   {schedule.frequency} · {schedule.format.toUpperCase()} ·{" "}
-                  {String(schedule.send_hour).padStart(2, "0")}:00 ·{" "}
-                  {schedule.recipients.length} recipient
+                  {String(schedule.send_hour).padStart(2, "0")}:00 · {schedule.recipients.length}{" "}
+                  recipient
                   {schedule.recipients.length === 1 ? "" : "s"}
                 </p>
               </div>
@@ -162,7 +163,11 @@ export function ScheduledReports() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label className="text-xs">Name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} className="h-9 text-sm" />
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-9 text-sm"
+              />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Recipients</Label>
@@ -227,7 +232,11 @@ export function ScheduledReports() {
             disabled={create.isPending || !name.trim()}
             onClick={() => create.mutate()}
           >
-            {create.isPending ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+            {create.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Plus className="size-4" />
+            )}
             Create schedule
           </Button>
         </div>

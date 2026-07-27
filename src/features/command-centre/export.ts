@@ -142,7 +142,12 @@ function buildSheets(overview: ExecutiveOverview, filters: CommandFilters): Shee
       name: "Daily trend",
       rows: [
         ["Date", "Conversations", "Negative", "Avg sentiment"],
-        ...overview.daily.map((d) => [d.day, d.conversations, d.negatives, d.avg_sentiment.toFixed(3)]),
+        ...overview.daily.map((d) => [
+          d.day,
+          d.conversations,
+          d.negatives,
+          d.avg_sentiment.toFixed(3),
+        ]),
       ],
     },
   ];
@@ -227,7 +232,9 @@ function kpiBlock(overview: ExecutiveOverview): string {
     ["Active outlets", `${k.active_outlets}/${k.total_outlets}`],
   ];
   return `<div class="kpis">${items
-    .map(([label, value]) => `<div class="kpi"><span>${label}</span><strong>${value}</strong></div>`)
+    .map(
+      ([label, value]) => `<div class="kpi"><span>${label}</span><strong>${value}</strong></div>`,
+    )
     .join("")}</div>`;
 }
 
@@ -253,7 +260,9 @@ function exportPdf(overview: ExecutiveOverview, filters: CommandFilters) {
     <h1>AegisIQ CX — Executive Command Centre</h1>
     <p class="muted">${escapeHtml(rangeLabel(filters))} · generated ${new Date(overview.generatedAt).toLocaleString("en-GB")} · CX score ${score} (${cxBand(score).label})</p>
     <h2>Executive summary</h2>
-    ${executiveBriefing(overview).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
+    ${executiveBriefing(overview)
+      .map((line) => `<p>${escapeHtml(line)}</p>`)
+      .join("")}
     <h2>Key indicators</h2>
     ${kpiBlock(overview)}
     <h2>Outlet performance</h2>

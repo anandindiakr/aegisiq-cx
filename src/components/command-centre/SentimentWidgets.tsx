@@ -85,7 +85,11 @@ export function SentimentOverview({ overview }: { overview: ExecutiveOverview })
           <div style={{ height: 280 }} className="w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stacked} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--color-border)"
+                  vertical={false}
+                />
                 <XAxis
                   dataKey="label"
                   stroke="var(--color-muted-foreground)"
@@ -100,7 +104,10 @@ export function SentimentOverview({ overview }: { overview: ExecutiveOverview })
                   axisLine={false}
                   width={44}
                 />
-                <Tooltip contentStyle={tooltipStyle()} cursor={{ fill: "var(--color-muted)", opacity: 0.35 }} />
+                <Tooltip
+                  contentStyle={tooltipStyle()}
+                  cursor={{ fill: "var(--color-muted)", opacity: 0.35 }}
+                />
                 <Legend
                   formatter={(value: string) => (
                     <span className="text-[11px] text-muted-foreground">{value}</span>
@@ -150,7 +157,8 @@ export function CxScoreGauge({ overview }: { overview: ExecutiveOverview }) {
               band.tone === "positive" && "border-success/40 bg-success/10 text-success",
               band.tone === "neutral" && "border-info/40 bg-info/10 text-info",
               band.tone === "warning" && "border-warning/40 bg-warning/10 text-warning",
-              band.tone === "negative" && "border-destructive/40 bg-destructive/10 text-destructive",
+              band.tone === "negative" &&
+                "border-destructive/40 bg-destructive/10 text-destructive",
             )}
           >
             {band.label}
@@ -159,7 +167,10 @@ export function CxScoreGauge({ overview }: { overview: ExecutiveOverview }) {
       </div>
       <dl className="mt-2 grid grid-cols-3 gap-2 text-center">
         {[
-          { label: "Positive", value: `${((k.positive / Math.max(1, k.total)) * 100).toFixed(0)}%` },
+          {
+            label: "Positive",
+            value: `${((k.positive / Math.max(1, k.total)) * 100).toFixed(0)}%`,
+          },
           { label: "Sentiment", value: k.avg_sentiment.toFixed(2) },
           {
             label: "Escalation",
@@ -180,8 +191,7 @@ export function CxScoreGauge({ overview }: { overview: ExecutiveOverview }) {
 
 export function RegionalComparison({ overview }: { overview: ExecutiveOverview }) {
   const rows = useMemo(
-    () =>
-      [...overview.regions].sort((a, b) => b.avg_sentiment - a.avg_sentiment),
+    () => [...overview.regions].sort((a, b) => b.avg_sentiment - a.avg_sentiment),
     [overview.regions],
   );
   const best = rows[0]?.region;

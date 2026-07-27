@@ -150,7 +150,9 @@ export function AlertOverview({ overview }: { overview: ExecutiveOverview }) {
         {categories.map(([category, count]) => (
           <div key={category}>
             <div className="flex items-center justify-between text-xs">
-              <span className="capitalize text-muted-foreground">{category.replace(/_/g, " ")}</span>
+              <span className="capitalize text-muted-foreground">
+                {category.replace(/_/g, " ")}
+              </span>
               <span className="tabular-nums">{formatNumber(count)}</span>
             </div>
             <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">

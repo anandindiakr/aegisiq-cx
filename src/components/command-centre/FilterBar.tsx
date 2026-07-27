@@ -167,9 +167,7 @@ export function FilterBar({
             <Input
               type="date"
               value={filters.from.slice(0, 10)}
-              onChange={(e) =>
-                set("from", new Date(`${e.target.value}T00:00:00`).toISOString())
-              }
+              onChange={(e) => set("from", new Date(`${e.target.value}T00:00:00`).toISOString())}
               className="h-9 w-[140px] text-xs"
               aria-label="From date"
             />
@@ -190,7 +188,8 @@ export function FilterBar({
               size="sm"
               className={cn(
                 "h-9 gap-2 border-border bg-surface/60 text-xs",
-                (filters.hourFrom !== 0 || filters.hourTo !== 23) && "border-primary/50 text-primary",
+                (filters.hourFrom !== 0 || filters.hourTo !== 23) &&
+                  "border-primary/50 text-primary",
               )}
             >
               Time {String(filters.hourFrom).padStart(2, "0")}:00–
@@ -223,7 +222,10 @@ export function FilterBar({
               <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                 To hour
               </p>
-              <Select value={String(filters.hourTo)} onValueChange={(v) => set("hourTo", Number(v))}>
+              <Select
+                value={String(filters.hourTo)}
+                onValueChange={(v) => set("hourTo", Number(v))}
+              >
                 <SelectTrigger className="h-8 text-xs">
                   <SelectValue />
                 </SelectTrigger>

@@ -138,12 +138,17 @@ export function CategoryBarChart({
         <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
         <XAxis dataKey="label" {...AXIS} />
         <YAxis {...AXIS} width={44} />
-        <Tooltip contentStyle={tooltipStyle()} cursor={{ fill: "var(--color-muted)", opacity: 0.4 }} />
+        <Tooltip
+          contentStyle={tooltipStyle()}
+          cursor={{ fill: "var(--color-muted)", opacity: 0.4 }}
+        />
         <Bar dataKey="value" name={valueName} radius={[6, 6, 0, 0]}>
           {data.map((entry, index) => (
             <Cell
               key={entry.label}
-              fill={colors?.[index % (colors.length || 1)] ?? CHART_COLORS[index % CHART_COLORS.length]}
+              fill={
+                colors?.[index % (colors.length || 1)] ?? CHART_COLORS[index % CHART_COLORS.length]
+              }
             />
           ))}
         </Bar>

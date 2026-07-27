@@ -64,7 +64,8 @@ export function OutletPerformanceTable({
         }}
       >
         {label}
-        {sort === key && (desc ? <TrendingDown className="size-3" /> : <TrendingUp className="size-3" />)}
+        {sort === key &&
+          (desc ? <TrendingDown className="size-3" /> : <TrendingUp className="size-3" />)}
       </button>
     </TableHead>
   );
