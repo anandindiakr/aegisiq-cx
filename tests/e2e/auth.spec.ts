@@ -24,7 +24,14 @@ test.describe("sign-in page", () => {
 
   test("switches to the workspace request tab", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("tab", { name: "Request workspace" }).click();
+    const tab = page.getByRole("tab", { name: "Request workspace" });
+
+    // Retry the click until React has hydrated the tab control.
+    await expect(async () => {
+      await tab.click();
+      await expect(tab).toHaveAttribute("aria-selected", "true");
+    }).toPass({ timeout: 30_000 });
+
     await expect(page.getByLabel("Full name")).toBeVisible();
   });
 
