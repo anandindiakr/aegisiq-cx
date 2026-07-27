@@ -253,7 +253,7 @@ export function ConversationTable({
         summaries,
         alerts,
         tags,
-      });
+      }, { canRevealRedactions: access.can("revealRedactions") });
       toast.success(`Exported ${count} conversations with transcripts and keywords`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Export failed");
@@ -267,7 +267,11 @@ export function ConversationTable({
     const source = selected.size > 0 ? sorted.filter((r) => selected.has(r.id)) : sorted;
     setExporting(true);
     try {
-      const count = await exportComplianceCsv(source, { outlets, cameras, summaries, alerts });
+      const count = await exportComplianceCsv(
+        source,
+        { outlets, cameras, summaries, alerts },
+        { canRevealRedactions: access.can("revealRedactions") },
+      );
       toast.success(`Compliance pack exported for ${count} conversations`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Export failed");
