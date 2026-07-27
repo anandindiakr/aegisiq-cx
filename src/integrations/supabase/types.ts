@@ -890,6 +890,88 @@ export type Database = {
           },
         ]
       }
+      review_assignments: {
+        Row: {
+          alert_id: string | null
+          assignee_id: string | null
+          assignee_name: string | null
+          company_id: string
+          completed_at: string | null
+          conversation_id: string | null
+          created_at: string
+          created_by: string | null
+          due_at: string
+          id: string
+          notes: string | null
+          priority: Database["public"]["Enums"]["review_priority"]
+          sla_minutes: number
+          started_at: string | null
+          status: Database["public"]["Enums"]["review_queue_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          alert_id?: string | null
+          assignee_id?: string | null
+          assignee_name?: string | null
+          company_id: string
+          completed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_at?: string
+          id?: string
+          notes?: string | null
+          priority?: Database["public"]["Enums"]["review_priority"]
+          sla_minutes?: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["review_queue_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          alert_id?: string | null
+          assignee_id?: string | null
+          assignee_name?: string | null
+          company_id?: string
+          completed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_at?: string
+          id?: string
+          notes?: string | null
+          priority?: Database["public"]["Enums"]["review_priority"]
+          sla_minutes?: number
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["review_queue_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_assignments_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_assignments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_assignments_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sso_role_mappings: {
         Row: {
           claim_key: string
@@ -1002,6 +1084,79 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transcript_anchors: {
+        Row: {
+          author_name: string | null
+          company_id: string
+          conversation_id: string
+          created_at: string
+          created_by: string | null
+          end_ms: number
+          id: string
+          labels: string[]
+          note: string | null
+          quote: string
+          speaker: string
+          start_ms: number
+          transcript_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_name?: string | null
+          company_id: string
+          conversation_id: string
+          created_at?: string
+          created_by?: string | null
+          end_ms?: number
+          id?: string
+          labels?: string[]
+          note?: string | null
+          quote: string
+          speaker?: string
+          start_ms?: number
+          transcript_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string | null
+          company_id?: string
+          conversation_id?: string
+          created_at?: string
+          created_by?: string | null
+          end_ms?: number
+          id?: string
+          labels?: string[]
+          note?: string | null
+          quote?: string
+          speaker?: string
+          start_ms?: number
+          transcript_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcript_anchors_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcript_anchors_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcript_anchors_transcript_id_fkey"
+            columns: ["transcript_id"]
+            isOneToOne: false
+            referencedRelation: "transcripts"
             referencedColumns: ["id"]
           },
         ]
@@ -1154,6 +1309,8 @@ export type Database = {
         | "angry"
         | "neutral"
       entity_status: "active" | "inactive" | "suspended" | "archived"
+      review_priority: "low" | "normal" | "high" | "urgent"
+      review_queue_status: "open" | "in_progress" | "done" | "cancelled"
       risk_level: "low" | "medium" | "high"
       sentiment_label:
         | "very_negative"
@@ -1315,6 +1472,8 @@ export const Constants = {
         "neutral",
       ],
       entity_status: ["active", "inactive", "suspended", "archived"],
+      review_priority: ["low", "normal", "high", "urgent"],
+      review_queue_status: ["open", "in_progress", "done", "cancelled"],
       risk_level: ["low", "medium", "high"],
       sentiment_label: [
         "very_negative",
