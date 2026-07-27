@@ -123,7 +123,7 @@ function ConversationViewer() {
     () =>
       speakerFilter.size === 0
         ? allTranscripts
-        : allTranscripts.filter((line) => speakerFilter.has(line.speaker)),
+        : allTranscripts.filter((line) => speakerFilter.has(line.speaker.trim().toLowerCase())),
     [allTranscripts, speakerFilter],
   );
 
