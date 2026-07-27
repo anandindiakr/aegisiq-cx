@@ -112,9 +112,7 @@ function AuditLogsPage() {
                         {log.action}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-xs">
-                      {log.entity_type}
-                    </TableCell>
+                    <TableCell className="text-xs">{log.entity_type}</TableCell>
                     <TableCell className="font-mono text-[11px] text-muted-foreground">
                       {log.ip_address ?? "—"}
                     </TableCell>

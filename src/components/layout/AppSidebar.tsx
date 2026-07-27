@@ -110,7 +110,12 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="gap-0">
-        <NavGroup label="Intelligence" items={OPERATIONS} collapsed={collapsed} pathname={pathname} />
+        <NavGroup
+          label="Intelligence"
+          items={OPERATIONS}
+          collapsed={collapsed}
+          pathname={pathname}
+        />
         <NavGroup label="Estate" items={ESTATE} collapsed={collapsed} pathname={pathname} />
         <NavGroup label="Governance" items={GOVERNANCE} collapsed={collapsed} pathname={pathname} />
       </SidebarContent>

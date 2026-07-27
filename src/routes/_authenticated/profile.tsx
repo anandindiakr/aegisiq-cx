@@ -14,7 +14,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { ROLE_LABELS, useSession } from "@/features/auth/useSession";
-import { companyQuery, myProfileQuery, myRolesQuery, outletsQuery } from "@/features/platform/queries";
+import {
+  companyQuery,
+  myProfileQuery,
+  myRolesQuery,
+  outletsQuery,
+} from "@/features/platform/queries";
 import { formatDateTime, formatRelative } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -88,9 +93,7 @@ function ProfilePage() {
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="text-lg font-semibold">
-                  {profile.data?.full_name ?? "Unnamed user"}
-                </p>
+                <p className="text-lg font-semibold">{profile.data?.full_name ?? "Unnamed user"}</p>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {profile.data?.status ? (
@@ -120,7 +123,10 @@ function ProfilePage() {
           <Panel title="Tenant" description="Workspace your account is scoped to">
             <dl className="grid gap-4">
               <Field label="Company" value={company.data?.name ?? "—"} />
-              <Field label="Plan" value={(company.data?.subscription_plan ?? "—").replace(/_/g, " ")} />
+              <Field
+                label="Plan"
+                value={(company.data?.subscription_plan ?? "—").replace(/_/g, " ")}
+              />
               <Field label="Time zone" value={company.data?.timezone ?? "—"} />
               <Field
                 label="Session started"

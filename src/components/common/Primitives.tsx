@@ -117,9 +117,7 @@ export function Panel({
       <CardHeader className="flex flex-row items-start justify-between gap-3 border-b border-border px-5 py-4">
         <div className="min-w-0">
           <CardTitle className="text-sm font-semibold">{title}</CardTitle>
-          {description && (
-            <p className="mt-1 text-xs text-muted-foreground">{description}</p>
-          )}
+          {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
         </div>
         {actions}
       </CardHeader>

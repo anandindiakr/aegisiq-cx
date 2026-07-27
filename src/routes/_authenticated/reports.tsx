@@ -15,12 +15,7 @@ import {
 } from "recharts";
 import { Download, FileBarChart } from "lucide-react";
 
-import {
-  ErrorState,
-  LoadingState,
-  PageHeader,
-  Panel,
-} from "@/components/common/Primitives";
+import { ErrorState, LoadingState, PageHeader, Panel } from "@/components/common/Primitives";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -194,7 +189,10 @@ function ReportsPage() {
             </Panel>
           </div>
 
-          <Panel title="Outlet benchmark" description="Volume, sentiment and escalation rate by site">
+          <Panel
+            title="Outlet benchmark"
+            description="Volume, sentiment and escalation rate by site"
+          >
             {isPending ? (
               <LoadingState rows={5} />
             ) : (

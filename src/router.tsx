@@ -1,11 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
-import {
-  RouteErrorBoundary,
-  RouteNotFound,
-  RoutePending,
-} from "./components/common/RouteBoundary";
+import { RouteErrorBoundary, RouteNotFound, RoutePending } from "./components/common/RouteBoundary";
 
 export const getRouter = () => {
   const queryClient = new QueryClient({

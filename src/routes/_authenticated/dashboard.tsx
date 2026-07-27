@@ -14,14 +14,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import {
-  Cctv,
-  Gauge,
-  Languages,
-  MessagesSquare,
-  Siren,
-  Store,
-} from "lucide-react";
+import { Cctv, Gauge, Languages, MessagesSquare, Siren, Store } from "lucide-react";
 
 import {
   ErrorState,
@@ -116,8 +109,9 @@ function DashboardPage() {
     : 0;
 
   const todayIso = new Date().toISOString().slice(0, 10);
-  const alertsToday = (alerts.data ?? []).filter((a) => a.triggered_at.slice(0, 10) === todayIso)
-    .length;
+  const alertsToday = (alerts.data ?? []).filter(
+    (a) => a.triggered_at.slice(0, 10) === todayIso,
+  ).length;
   const openAlerts = (alerts.data ?? []).filter((a) => a.status === "open").length;
   const activeCameras = (cameras.data ?? []).filter((c) => c.status === "online").length;
   const detectedLanguages = new Set(rows.map((r) => r.language_code)).size;
@@ -210,7 +204,10 @@ function DashboardPage() {
                 <CartesianGrid stroke="var(--color-border)" vertical={false} />
                 <XAxis dataKey="day" tick={AXIS} tickLine={false} axisLine={false} />
                 <YAxis tick={AXIS} tickLine={false} axisLine={false} width={32} />
-                <Tooltip contentStyle={chartTooltipStyle()} cursor={{ stroke: "var(--color-border)" }} />
+                <Tooltip
+                  contentStyle={chartTooltipStyle()}
+                  cursor={{ stroke: "var(--color-border)" }}
+                />
                 <Area
                   type="monotone"
                   dataKey="conversations"
@@ -239,7 +236,10 @@ function DashboardPage() {
                   axisLine={false}
                   width={86}
                 />
-                <Tooltip contentStyle={chartTooltipStyle()} cursor={{ fill: "var(--color-muted)" }} />
+                <Tooltip
+                  contentStyle={chartTooltipStyle()}
+                  cursor={{ fill: "var(--color-muted)" }}
+                />
                 <Bar dataKey="mentions" fill="var(--color-chart-2)" radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>

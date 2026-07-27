@@ -133,8 +133,8 @@ function SignInPage() {
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
             AegisIQ CX™ ingests CCTV audio and front-line conversations across retail, banking,
-            healthcare, government and hospitality estates — then converts them into sentiment,
-            risk and revenue signals your executives can act on.
+            healthcare, government and hospitality estates — then converts them into sentiment, risk
+            and revenue signals your executives can act on.
           </p>
 
           <div className="mt-10 space-y-5">
