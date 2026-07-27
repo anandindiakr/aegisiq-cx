@@ -79,15 +79,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AegisIQ CX™ — AI Customer Experience Intelligence" },
+      { title: "Sign in — AegisIQ CX™ Intelligence Console" },
       {
         name: "description",
         content:
-          "AegisIQ CX™ turns CCTV audio and customer conversations into searchable enterprise intelligence.",
+          "Secure company sign-in for AegisIQ CX™, the AI customer experience intelligence platform for multi-site enterprises.",
       },
       { name: "author", content: "AegisIQ" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "Sign in — AegisIQ CX™ Intelligence Console" },
+      { name: "twitter:title", content: "Sign in — AegisIQ CX™ Intelligence Console" },
+      { property: "og:description", content: "Secure company sign-in for AegisIQ CX™, the AI customer experience intelligence platform for multi-site enterprises." },
+      { name: "twitter:description", content: "Secure company sign-in for AegisIQ CX™, the AI customer experience intelligence platform for multi-site enterprises." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8acf25c6-8ba8-40c4-bfc6-b450e3efe058/id-preview-3898d00a--35d0fc92-2ca0-4b69-b273-98865699a05d.lovable.app-1785135165345.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8acf25c6-8ba8-40c4-bfc6-b450e3efe058/id-preview-3898d00a--35d0fc92-2ca0-4b69-b273-98865699a05d.lovable.app-1785135165345.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
