@@ -46,7 +46,24 @@ export async function loadTenantContext(): Promise<TenantContext> {
     throw redirect({ to: "/" });
   }
 
-  const roles = (roleRows ?? []).map((r) => r.role as AppRole);
+  let roles = (roleRows ?? []).map((r) => r.role as AppRole);
+
+  // Directory-driven access: apply the tenant's SSO claim mappings on each
+  // sign-in so roles/outlet follow the identity provider, never manual drift.
+  try {
+    const result = await syncSsoRoles();
+    if (result?.applied) {
+      const { data: refreshed } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", auth.user.id);
+      roles = (refreshed ?? []).map((r) => r.role as AppRole);
+    }
+  } catch (ssoError) {
+    // Mapping failures must never lock a valid user out of the console.
+    captureError(ssoError, { guard: "sso-mapping", userId: auth.user.id });
+  }
+
   const tenant: TenantContext = {
     userId: auth.user.id,
     email: profile.email ?? auth.user.email ?? null,
