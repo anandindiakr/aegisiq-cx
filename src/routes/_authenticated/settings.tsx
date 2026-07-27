@@ -32,6 +32,7 @@ import {
   updateCompany,
 } from "@/features/platform/queries";
 import { applyBrandColor, DEFAULT_BRANDING, isValidHex } from "@/features/platform/branding";
+import { SsoMappings } from "@/components/settings/SsoMappings";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   // Tenant-scoped role gate: administrative surface for company admins only.
@@ -137,6 +138,7 @@ function SettingsPage() {
           <TabsTrigger value="branding">Branding</TabsTrigger>
           <TabsTrigger value="localisation">Localisation</TabsTrigger>
           <TabsTrigger value="detection">Detection</TabsTrigger>
+          <TabsTrigger value="sso">SSO mapping</TabsTrigger>
         </TabsList>
 
         <TabsContent value="company" className="mt-4">
@@ -403,6 +405,10 @@ function SettingsPage() {
               </div>
             )}
           </Panel>
+        </TabsContent>
+
+        <TabsContent value="sso" className="mt-4">
+          <SsoMappings />
         </TabsContent>
       </Tabs>
     </div>

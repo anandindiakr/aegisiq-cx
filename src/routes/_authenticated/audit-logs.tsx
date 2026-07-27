@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { requireRoles } from "@/features/platform/tenant";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, RotateCcw, Search, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
+import { ChevronLeft, ChevronRight, Download, RotateCcw, Search, ShieldCheck } from "lucide-react";
 
 import {
   EmptyState,
@@ -33,8 +34,11 @@ import {
 import {
   auditLogFilterOptionsQuery,
   auditLogsPageQuery,
+  fetchAuditLogsForExport,
   outletsQuery,
+  toAuditCsv,
 } from "@/features/platform/queries";
+
 import { formatDateTime, formatNumber } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/audit-logs")({
@@ -68,6 +72,7 @@ function AuditLogsPage() {
   const [pageSize, setPageSize] = useState(25);
   const [page, setPage] = useState(0);
   const [term, setTerm] = useState("");
+  const [exporting, setExporting] = useState<"page" | "filtered" | null>(null);
 
   const options = useQuery(auditLogFilterOptionsQuery);
   const outlets = useQuery(outletsQuery);
@@ -107,15 +112,61 @@ function AuditLogsPage() {
     };
   }
 
+  const filters = { actor, action, entityType, outletId, page, pageSize };
+
+  async function exportCsv(scope: "page" | "filtered") {
+    try {
+      setExporting(scope);
+      const exportRows = await fetchAuditLogsForExport(filters, scope);
+      if (exportRows.length === 0) {
+        toast.error("No audit events match the current filters");
+        return;
+      }
+      const blob = new Blob([`\uFEFF${toAuditCsv(exportRows)}`], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `audit-logs-${scope}-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${formatNumber(exportRows.length)} events`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Export failed");
+    } finally {
+      setExporting(null);
+    }
+  }
+
   return (
     <div>
       <PageHeader
         title="Audit logs"
         description="Append-only record of configuration, access and triage events. Retained for compliance review."
         actions={
-          <Button variant="outline" size="sm" onClick={reset}>
-            <RotateCcw className="mr-2 size-4" /> Reset filters
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={exporting !== null}
+              onClick={() => exportCsv("page")}
+            >
+              <Download className="mr-2 size-4" /> Export page
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={exporting !== null}
+              onClick={() => exportCsv("filtered")}
+            >
+              <Download className="mr-2 size-4" />
+              {exporting === "filtered" ? "Exporting…" : "Export all filtered"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={reset}>
+              <RotateCcw className="mr-2 size-4" /> Reset filters
+            </Button>
+          </div>
         }
       />
 
