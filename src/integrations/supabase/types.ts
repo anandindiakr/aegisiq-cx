@@ -972,6 +972,54 @@ export type Database = {
           },
         ]
       }
+      review_audit_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string | null
+          after_state: Json
+          assignment_id: string | null
+          before_state: Json
+          changed_fields: string[]
+          company_id: string
+          conversation_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string | null
+          after_state?: Json
+          assignment_id?: string | null
+          before_state?: Json
+          changed_fields?: string[]
+          company_id: string
+          conversation_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string | null
+          after_state?: Json
+          assignment_id?: string | null
+          before_state?: Json
+          changed_fields?: string[]
+          company_id?: string
+          conversation_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
       sso_role_mappings: {
         Row: {
           claim_key: string
@@ -1264,6 +1312,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      actor_display_name: { Args: never; Returns: string }
       can_operate: { Args: never; Returns: boolean }
       current_company_id: { Args: never; Returns: string }
       has_role: {
