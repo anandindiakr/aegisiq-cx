@@ -236,27 +236,30 @@ export function ReviewNotesPanel({ conversationId }: { conversationId: string })
               ) : (
                 <>
                   <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed">{note.body}</p>
-                  <div className="mt-2 flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-[11px]"
-                      onClick={() => {
-                        setEditingId(note.id);
-                        setEditingBody(note.body);
-                      }}
-                    >
-                      <Pencil className="mr-1 size-3" /> Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-[11px] text-destructive"
-                      onClick={() => removeNote.mutate(note.id)}
-                    >
-                      <Trash2 className="mr-1 size-3" /> Delete
-                    </Button>
-                  </div>
+                  {canEdit && (
+                    <div className="mt-2 flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-[11px]"
+                        onClick={() => {
+                          setEditingId(note.id);
+                          setEditingBody(note.body);
+                        }}
+                      >
+                        <Pencil className="mr-1 size-3" /> Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-[11px] text-destructive"
+                        onClick={() => removeNote.mutate(note.id)}
+                      >
+                        <Trash2 className="mr-1 size-3" /> Delete
+                      </Button>
+                    </div>
+                  )}
+
                 </>
               )}
             </div>
