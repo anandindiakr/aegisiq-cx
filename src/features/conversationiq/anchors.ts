@@ -88,17 +88,36 @@ export async function createTranscriptAnchor(input: {
 
 export async function updateTranscriptAnchor(
   id: string,
-  patch: { note?: string | null; labels?: string[] },
+  patch: {
+    note?: string | null;
+    labels?: string[];
+    speaker?: string;
+    startMs?: number;
+    endMs?: number;
+    quote?: string;
+  },
 ) {
   const company = getActiveTenant();
   const body: Record<string, unknown> = {};
   if (patch.note !== undefined) body.note = patch.note?.trim() ? patch.note.trim() : null;
   if (patch.labels) body.labels = patch.labels.map((l) => l.trim().toLowerCase()).filter(Boolean);
+  if (patch.speaker !== undefined) body.speaker = patch.speaker.trim();
+  if (patch.startMs !== undefined) body.start_ms = Math.max(0, Math.round(patch.startMs));
+  if (patch.endMs !== undefined) body.end_ms = Math.max(0, Math.round(patch.endMs));
+  if (patch.quote !== undefined) body.quote = patch.quote.slice(0, 2000);
+  if (
+    body.start_ms !== undefined &&
+    body.end_ms !== undefined &&
+    (body.end_ms as number) < (body.start_ms as number)
+  ) {
+    throw new Error("The anchor end time must be after its start time.");
+  }
   let query = raw.from("transcript_anchors").update(body).eq("id", id);
   if (company) query = query.eq("company_id", company);
   const { error } = await query;
   if (error) throw new Error(error.message);
 }
+
 
 export async function deleteTranscriptAnchor(id: string) {
   const company = getActiveTenant();
