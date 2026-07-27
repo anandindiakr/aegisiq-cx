@@ -172,7 +172,10 @@ export function SsoMappings() {
         )}
       </Panel>
 
-      <Panel title="Add mapping" description="Lower priority numbers take precedence when several rules match">
+      <Panel
+        title="Add mapping"
+        description="Lower priority numbers take precedence when several rules match"
+      >
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
           <div className="space-y-1.5">
             <Label className="text-[11px] text-muted-foreground">Provider</Label>

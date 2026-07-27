@@ -25,7 +25,6 @@ import {
 import type { AlertStatus } from "@/features/platform/queries";
 import { formatDateTime, formatNumber, titleCase } from "@/lib/format";
 
-
 export const Route = createFileRoute("/_authenticated/alerts")({
   head: () => ({
     meta: [
@@ -128,7 +127,6 @@ function AlertsPage() {
           </Tabs>
         }
       >
-
         {error ? (
           <ErrorState message={error.message} onRetry={() => refetch()} />
         ) : isPending ? (
@@ -143,77 +141,78 @@ function AlertsPage() {
             {rows.slice(0, 60).map((alert) => {
               const unread = !readSet.has(alert.id);
               return (
-              <li
-                key={alert.id}
-                className={`rounded-xl border p-4 transition-colors hover:border-primary/40 ${
-                  unread ? "border-primary/40 bg-surface" : "border-border bg-surface/60"
-                }`}
-              >
-                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {unread && (
-                        <span
-                          className="size-2 rounded-full bg-primary"
-                          aria-label="Unread alert"
+                <li
+                  key={alert.id}
+                  className={`rounded-xl border p-4 transition-colors hover:border-primary/40 ${
+                    unread ? "border-primary/40 bg-surface" : "border-border bg-surface/60"
+                  }`}
+                >
+                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {unread && (
+                          <span
+                            className="size-2 rounded-full bg-primary"
+                            aria-label="Unread alert"
+                          />
+                        )}
+                        <StatusPill
+                          label={alert.severity}
+                          tone={SEVERITY_TONE[alert.severity] ?? "neutral"}
                         />
-                      )}
-                      <StatusPill
-                        label={alert.severity}
-                        tone={SEVERITY_TONE[alert.severity] ?? "neutral"}
-                      />
-                      <StatusPill
-                        label={alert.status}
-                        tone={alert.status === "resolved" ? "positive" : "neutral"}
-                      />
-                      <span className="text-[11px] text-muted-foreground">
-                        {titleCase(alert.category)}
-                      </span>
+                        <StatusPill
+                          label={alert.status}
+                          tone={alert.status === "resolved" ? "positive" : "neutral"}
+                        />
+                        <span className="text-[11px] text-muted-foreground">
+                          {titleCase(alert.category)}
+                        </span>
+                      </div>
+                      <p className={`mt-2 text-sm ${unread ? "font-semibold" : "font-medium"}`}>
+                        {alert.title}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">{alert.description}</p>
+                      <p className="mt-2 text-[11px] text-muted-foreground">
+                        {outletName(alert.outlet_id)} · {formatDateTime(alert.triggered_at)}
+                      </p>
                     </div>
-                    <p className={`mt-2 text-sm ${unread ? "font-semibold" : "font-medium"}`}>
-                      {alert.title}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">{alert.description}</p>
-                    <p className="mt-2 text-[11px] text-muted-foreground">
-                      {outletName(alert.outlet_id)} · {formatDateTime(alert.triggered_at)}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      disabled={readState.isPending}
-                      onClick={() => readState.mutate({ ids: [alert.id], read: unread })}
-                      aria-label={unread ? "Mark as read" : "Mark as unread"}
-                    >
-                      {unread ? <Mail className="size-4" /> : <MailOpen className="size-4" />}
-                    </Button>
+                    <div className="flex shrink-0 gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={readState.isPending}
+                        onClick={() => readState.mutate({ ids: [alert.id], read: unread })}
+                        aria-label={unread ? "Mark as read" : "Mark as unread"}
+                      >
+                        {unread ? <Mail className="size-4" /> : <MailOpen className="size-4" />}
+                      </Button>
 
-                    {alert.status === "open" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={acknowledge.isPending}
-                        onClick={() => acknowledge.mutate({ id: alert.id, status: "acknowledged" })}
-                      >
-                        Acknowledge
-                      </Button>
-                    )}
-                    {alert.status !== "resolved" && (
-                      <Button
-                        size="sm"
-                        disabled={acknowledge.isPending}
-                        onClick={() => acknowledge.mutate({ id: alert.id, status: "resolved" })}
-                      >
-                        <CheckCircle2 className="mr-2 size-4" /> Resolve
-                      </Button>
-                    )}
+                      {alert.status === "open" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={acknowledge.isPending}
+                          onClick={() =>
+                            acknowledge.mutate({ id: alert.id, status: "acknowledged" })
+                          }
+                        >
+                          Acknowledge
+                        </Button>
+                      )}
+                      {alert.status !== "resolved" && (
+                        <Button
+                          size="sm"
+                          disabled={acknowledge.isPending}
+                          onClick={() => acknowledge.mutate({ id: alert.id, status: "resolved" })}
+                        >
+                          <CheckCircle2 className="mr-2 size-4" /> Resolve
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </li>
+                </li>
               );
             })}
-
           </ul>
         )}
       </Panel>

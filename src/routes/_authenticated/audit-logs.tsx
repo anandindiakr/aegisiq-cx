@@ -3,15 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { requireRoles } from "@/features/platform/tenant";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  RotateCcw,
-  Search,
-  ShieldCheck,
-} from "lucide-react";
-
+import { ChevronLeft, ChevronRight, Download, RotateCcw, Search, ShieldCheck } from "lucide-react";
 
 import {
   EmptyState,
@@ -81,7 +73,6 @@ function AuditLogsPage() {
   const [page, setPage] = useState(0);
   const [term, setTerm] = useState("");
   const [exporting, setExporting] = useState<"page" | "filtered" | null>(null);
-
 
   const options = useQuery(auditLogFilterOptionsQuery);
   const outlets = useQuery(outletsQuery);
@@ -178,7 +169,6 @@ function AuditLogsPage() {
           </div>
         }
       />
-
 
       <Panel
         title={`${formatNumber(total)} events`}

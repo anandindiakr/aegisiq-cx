@@ -49,7 +49,10 @@ export const syncSsoRoles = createServerFn({ method: "POST" })
           .filter((v) => typeof v === "string" || typeof v === "number")
           .map((v) => String(v).toLowerCase());
         if (strings.length === 0) continue;
-        claimValues.set(key.toLowerCase(), [...(claimValues.get(key.toLowerCase()) ?? []), ...strings]);
+        claimValues.set(key.toLowerCase(), [
+          ...(claimValues.get(key.toLowerCase()) ?? []),
+          ...strings,
+        ]);
       }
     }
 
@@ -64,12 +67,10 @@ export const syncSsoRoles = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const roles = [...new Set(matched.map((m) => m.role))];
 
-    await supabaseAdmin
-      .from("user_roles")
-      .upsert(
-        roles.map((role) => ({ user_id: userId, company_id: profile.company_id, role })),
-        { onConflict: "user_id,role" },
-      );
+    await supabaseAdmin.from("user_roles").upsert(
+      roles.map((role) => ({ user_id: userId, company_id: profile.company_id, role })),
+      { onConflict: "user_id,role" },
+    );
 
     // Remove roles this tenant's directory no longer grants.
     await supabaseAdmin

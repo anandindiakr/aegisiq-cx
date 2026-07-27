@@ -457,7 +457,12 @@ export async function markAlertsRead(alertIds: string[]) {
   const userId = await currentUserId();
   const readAt = new Date().toISOString();
   const { error } = await rawDb.from("alert_reads").upsert(
-    alertIds.map((alert_id) => ({ company_id: companyId, user_id: userId, alert_id, read_at: readAt })),
+    alertIds.map((alert_id) => ({
+      company_id: companyId,
+      user_id: userId,
+      alert_id,
+      read_at: readAt,
+    })),
     { onConflict: "user_id,alert_id" },
   );
   if (error) throw new Error(error.message);
@@ -465,7 +470,11 @@ export async function markAlertsRead(alertIds: string[]) {
 
 export async function markAlertUnread(alertId: string) {
   const userId = await currentUserId();
-  const { error } = await db.from("alert_reads").delete().eq("user_id", userId).eq("alert_id", alertId);
+  const { error } = await db
+    .from("alert_reads")
+    .delete()
+    .eq("user_id", userId)
+    .eq("alert_id", alertId);
   if (error) throw new Error(error.message);
 }
 
