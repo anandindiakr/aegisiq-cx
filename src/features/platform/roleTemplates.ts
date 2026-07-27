@@ -158,7 +158,7 @@ export async function applyTemplateToMembers(
 ) {
   const company = getActiveTenant();
   if (!company) throw new Error("No active workspace.");
-  const wanted = template.roles.filter((role) => role !== "super_admin");
+  const wanted: AppRole[] = template.roles.filter((role) => role !== "super_admin");
   let granted = 0;
   let revoked = 0;
   const failures: string[] = [];
