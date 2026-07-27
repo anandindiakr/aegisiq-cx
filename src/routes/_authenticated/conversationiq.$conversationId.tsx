@@ -17,7 +17,6 @@ import {
   ListChecks,
   Play,
   Highlighter,
-  Quote,
   ScanFace,
   ShieldCheck,
   Siren,
@@ -145,7 +144,6 @@ function ConversationViewer() {
   const [speakerFilter, setSpeakerFilter] = useState<Set<string>>(new Set());
   const [anchorDraft, setAnchorDraft] = useState<AnchorDraft | null>(null);
   const anchors = useQuery(transcriptAnchorsQuery(conversationId));
-
 
   const allTranscripts = useMemo(() => detail.data?.transcripts ?? [], [detail.data]);
   const speakerStats = useMemo(() => {

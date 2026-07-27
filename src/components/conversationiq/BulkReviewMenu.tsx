@@ -41,7 +41,8 @@ export function BulkReviewMenu({
   }
 
   const review = useMutation({
-    mutationFn: (action: BulkAction) => bulkReviewConversations({ conversationIds: selected, action }),
+    mutationFn: (action: BulkAction) =>
+      bulkReviewConversations({ conversationIds: selected, action }),
     onMutate: (action) => setPending(action),
     onSettled: () => setPending(null),
     onSuccess: (result, action) => {

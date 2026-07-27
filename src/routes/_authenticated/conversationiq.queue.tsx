@@ -166,7 +166,12 @@ function ReviewerQueuePage() {
           { label: "Open", value: stats.open, icon: ListChecks, tone: "warning" as const },
           { label: "In progress", value: stats.progress, icon: Timer, tone: "info" as const },
           { label: "Done", value: stats.done, icon: ListChecks, tone: "positive" as const },
-          { label: "SLA breached", value: stats.breached, icon: AlarmClock, tone: "negative" as const },
+          {
+            label: "SLA breached",
+            value: stats.breached,
+            icon: AlarmClock,
+            tone: "negative" as const,
+          },
         ].map((card) => (
           <div key={card.label} className="panel p-4">
             <div className="flex items-center justify-between">

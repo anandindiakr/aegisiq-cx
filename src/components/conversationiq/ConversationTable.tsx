@@ -332,7 +332,6 @@ export function ConversationTable({
             alerts={alerts}
           />
           <DropdownMenu>
-
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
                 <Columns3 className="mr-2 size-4" /> Columns

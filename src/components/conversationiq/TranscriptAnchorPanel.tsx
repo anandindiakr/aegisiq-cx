@@ -181,8 +181,7 @@ export function TranscriptAnchorPanel({
         </div>
       ) : (
         <p className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-          <Highlighter className="size-3.5" /> Select text inside an utterance, then press
-          “Anchor”.
+          <Highlighter className="size-3.5" /> Select text inside an utterance, then press “Anchor”.
         </p>
       )}
 
