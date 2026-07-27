@@ -251,10 +251,7 @@ export async function assignmentsForConversations(conversationIds: string[]) {
   const out: ReviewAssignment[] = [];
   for (let i = 0; i < conversationIds.length; i += 80) {
     const chunk = conversationIds.slice(i, i + 80);
-    let builder = raw
-      .from("review_assignments")
-      .select(QUEUE_COLUMNS)
-      .in("conversation_id", chunk);
+    let builder = raw.from("review_assignments").select(QUEUE_COLUMNS).in("conversation_id", chunk);
     if (company) builder = builder.eq("company_id", company);
     const { data, error } = await builder;
     if (error) throw new Error(error.message);

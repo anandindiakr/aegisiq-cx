@@ -182,7 +182,9 @@ function ReviewerQueuePage() {
         <div className="flex items-start gap-3">
           <TriangleAlert
             className={
-              sla.breached.length > 0 ? "mt-0.5 size-5 text-destructive" : "mt-0.5 size-5 text-muted-foreground"
+              sla.breached.length > 0
+                ? "mt-0.5 size-5 text-destructive"
+                : "mt-0.5 size-5 text-muted-foreground"
             }
           />
           <div>
@@ -205,14 +207,11 @@ function ReviewerQueuePage() {
               const next = !emailAlerts;
               setEmailAlerts(next);
               setEmailEscalation(next);
-              toast.success(
-                next ? "Email escalations enabled" : "Email escalations disabled",
-                {
-                  description: next
-                    ? "Breached items can now be sent as an escalation email digest."
-                    : "You will only receive in-app notifications.",
-                },
-              );
+              toast.success(next ? "Email escalations enabled" : "Email escalations disabled", {
+                description: next
+                  ? "Breached items can now be sent as an escalation email digest."
+                  : "You will only receive in-app notifications.",
+              });
             }}
           >
             <Mail className="mr-2 size-4" /> Email escalations {emailAlerts ? "on" : "off"}

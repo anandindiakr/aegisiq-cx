@@ -57,7 +57,10 @@ export function BulkReviewMenu({
   const byId = new Map(rows.map((r) => [r.id, r]));
   const staff = useQuery(staffQuery);
   const titles = new Map(
-    selected.map((id) => [id, byId.get(id) ? `Review ${byId.get(id)!.reference}` : "Review conversation"]),
+    selected.map((id) => [
+      id,
+      byId.get(id) ? `Review ${byId.get(id)!.reference}` : "Review conversation",
+    ]),
   );
 
   function refresh() {
