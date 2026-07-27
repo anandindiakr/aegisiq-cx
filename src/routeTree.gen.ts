@@ -28,6 +28,7 @@ import { Route as AuthenticatedConversationiqIndexRouteImport } from './routes/_
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as AuthenticatedConversationiqSearchRouteImport } from './routes/_authenticated/conversationiq.search'
 import { Route as AuthenticatedConversationiqReviewRouteImport } from './routes/_authenticated/conversationiq.review'
+import { Route as AuthenticatedConversationiqQueueRouteImport } from './routes/_authenticated/conversationiq.queue'
 import { Route as AuthenticatedConversationiqLanguagesRouteImport } from './routes/_authenticated/conversationiq.languages'
 import { Route as AuthenticatedConversationiqKeywordsRouteImport } from './routes/_authenticated/conversationiq.keywords'
 import { Route as AuthenticatedConversationiqConversationIdRouteImport } from './routes/_authenticated/conversationiq.$conversationId'
@@ -130,6 +131,12 @@ const AuthenticatedConversationiqReviewRoute =
     path: '/conversationiq/review',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedConversationiqQueueRoute =
+  AuthenticatedConversationiqQueueRouteImport.update({
+    id: '/conversationiq/queue',
+    path: '/conversationiq/queue',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConversationiqLanguagesRoute =
   AuthenticatedConversationiqLanguagesRouteImport.update({
     id: '/conversationiq/languages',
@@ -167,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
   '/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
+  '/conversationiq/queue': typeof AuthenticatedConversationiqQueueRoute
   '/conversationiq/review': typeof AuthenticatedConversationiqReviewRoute
   '/conversationiq/search': typeof AuthenticatedConversationiqSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -190,6 +198,7 @@ export interface FileRoutesByTo {
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
   '/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
+  '/conversationiq/queue': typeof AuthenticatedConversationiqQueueRoute
   '/conversationiq/review': typeof AuthenticatedConversationiqReviewRoute
   '/conversationiq/search': typeof AuthenticatedConversationiqSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -215,6 +224,7 @@ export interface FileRoutesById {
   '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/_authenticated/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
   '/_authenticated/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
+  '/_authenticated/conversationiq/queue': typeof AuthenticatedConversationiqQueueRoute
   '/_authenticated/conversationiq/review': typeof AuthenticatedConversationiqReviewRoute
   '/_authenticated/conversationiq/search': typeof AuthenticatedConversationiqSearchRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/conversationiq/$conversationId'
     | '/conversationiq/keywords'
     | '/conversationiq/languages'
+    | '/conversationiq/queue'
     | '/conversationiq/review'
     | '/conversationiq/search'
     | '/api/public/telemetry'
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/conversationiq/$conversationId'
     | '/conversationiq/keywords'
     | '/conversationiq/languages'
+    | '/conversationiq/queue'
     | '/conversationiq/review'
     | '/conversationiq/search'
     | '/api/public/telemetry'
@@ -287,6 +299,7 @@ export interface FileRouteTypes {
     | '/_authenticated/conversationiq/$conversationId'
     | '/_authenticated/conversationiq/keywords'
     | '/_authenticated/conversationiq/languages'
+    | '/_authenticated/conversationiq/queue'
     | '/_authenticated/conversationiq/review'
     | '/_authenticated/conversationiq/search'
     | '/api/public/telemetry'
@@ -436,6 +449,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConversationiqReviewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/conversationiq/queue': {
+      id: '/_authenticated/conversationiq/queue'
+      path: '/conversationiq/queue'
+      fullPath: '/conversationiq/queue'
+      preLoaderRoute: typeof AuthenticatedConversationiqQueueRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/conversationiq/languages': {
       id: '/_authenticated/conversationiq/languages'
       path: '/conversationiq/languages'
@@ -475,6 +495,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConversationiqConversationIdRoute: typeof AuthenticatedConversationiqConversationIdRoute
   AuthenticatedConversationiqKeywordsRoute: typeof AuthenticatedConversationiqKeywordsRoute
   AuthenticatedConversationiqLanguagesRoute: typeof AuthenticatedConversationiqLanguagesRoute
+  AuthenticatedConversationiqQueueRoute: typeof AuthenticatedConversationiqQueueRoute
   AuthenticatedConversationiqReviewRoute: typeof AuthenticatedConversationiqReviewRoute
   AuthenticatedConversationiqSearchRoute: typeof AuthenticatedConversationiqSearchRoute
   AuthenticatedConversationiqIndexRoute: typeof AuthenticatedConversationiqIndexRoute
@@ -498,6 +519,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedConversationiqKeywordsRoute,
   AuthenticatedConversationiqLanguagesRoute:
     AuthenticatedConversationiqLanguagesRoute,
+  AuthenticatedConversationiqQueueRoute: AuthenticatedConversationiqQueueRoute,
   AuthenticatedConversationiqReviewRoute:
     AuthenticatedConversationiqReviewRoute,
   AuthenticatedConversationiqSearchRoute:

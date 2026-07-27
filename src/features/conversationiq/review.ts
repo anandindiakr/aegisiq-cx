@@ -234,3 +234,202 @@ export async function reviewAlert(input: {
   });
   if (eventError) throw new Error(eventError.message);
 }
+
+// --- Bulk review -----------------------------------------------------------
+
+export type BulkAction = "acknowledged" | "resolved" | "dismissed";
+
+/** Conversation status applied alongside each bulk alert transition. */
+const CONVERSATION_STATUS: Record<BulkAction, string> = {
+  acknowledged: "in_review",
+  resolved: "resolved",
+  dismissed: "closed",
+};
+
+/**
+ * Applies an acknowledge / resolve / dismiss decision to every alert linked to
+ * the selected conversations, records each transition in the alert history and
+ * moves the conversations themselves to the matching review status.
+ *
+ * The caller's filters, sorting and pagination are untouched — only the data
+ * behind them changes, so the list re-renders in place.
+ */
+export async function bulkReviewConversations(input: {
+  conversationIds: string[];
+  action: BulkAction;
+  note?: string;
+}) {
+  const company = getActiveTenant();
+  if (!company) throw new Error("No active workspace.");
+  if (input.conversationIds.length === 0) throw new Error("Select at least one conversation.");
+  const actor = await currentActor();
+  const note = input.note?.trim() ? input.note.trim() : null;
+
+  let alertsUpdated = 0;
+  const chunkSize = 80;
+
+  for (let i = 0; i < input.conversationIds.length; i += chunkSize) {
+    const chunk = input.conversationIds.slice(i, i + chunkSize);
+
+    const alerts = await run<{ id: string; status: AlertStatus }[]>(
+      scoped("alerts", "id,status").in("conversation_id", chunk).neq("status", input.action),
+      "iq.bulk_alerts",
+    );
+
+    if (alerts.length > 0) {
+      const patch: Record<string, unknown> = { status: input.action };
+      if (input.action === "acknowledged") {
+        patch.acknowledged_at = new Date().toISOString();
+        patch.acknowledged_by = actor.id;
+      }
+      const { error } = await raw
+        .from("alerts")
+        .update(patch)
+        .eq("company_id", company)
+        .in(
+          "id",
+          alerts.map((a) => a.id),
+        );
+      if (error) throw new Error(error.message);
+
+      const { error: eventError } = await raw.from("alert_events").insert(
+        alerts.map((alert) => ({
+          company_id: company,
+          alert_id: alert.id,
+          actor_id: actor.id,
+          actor_name: actor.name,
+          from_status: alert.status,
+          to_status: input.action,
+          note,
+        })),
+      );
+      if (eventError) throw new Error(eventError.message);
+      alertsUpdated += alerts.length;
+    }
+
+    const { error: convError } = await raw
+      .from("conversations")
+      .update({ status: CONVERSATION_STATUS[input.action] })
+      .eq("company_id", company)
+      .in("id", chunk);
+    if (convError) throw new Error(convError.message);
+  }
+
+  return { conversations: input.conversationIds.length, alerts: alertsUpdated };
+}
+
+// --- Review search ---------------------------------------------------------
+
+export interface ReviewSearchHit {
+  conversationId: string;
+  kind: "note" | "tag" | "anchor";
+  text: string;
+  detail: string | null;
+  author: string | null;
+  createdAt: string;
+}
+
+/**
+ * Full-text search across internal review notes, review tags and saved
+ * transcript anchors so a reviewer can find a previously reviewed case by what
+ * the team wrote about it rather than by conversation metadata.
+ */
+export function reviewSearchQuery(term: string) {
+  const trimmed = term.trim();
+  return queryOptions({
+    queryKey: ["iq", "review-search", trimmed.toLowerCase()],
+    enabled: trimmed.length >= 2,
+    queryFn: async (): Promise<ReviewSearchHit[]> => {
+      const websearch = trimmed
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((word) => word.replace(/[^\p{L}\p{N}]/gu, ""))
+        .filter(Boolean)
+        .join(" & ");
+      const like = `%${trimmed.replace(/[%_]/g, "")}%`;
+
+      const [notes, tags, anchors] = await Promise.all([
+        run<ConversationNote[]>(
+          websearch
+            ? scoped("conversation_notes", NOTE_COLUMNS)
+                .textSearch("body", websearch, { type: "plain", config: "english" })
+                .order("created_at", { ascending: false })
+                .limit(100)
+            : scoped("conversation_notes", NOTE_COLUMNS)
+                .ilike("body", like)
+                .order("created_at", { ascending: false })
+                .limit(100),
+          "iq.search_notes",
+        ).catch(() =>
+          run<ConversationNote[]>(
+            scoped("conversation_notes", NOTE_COLUMNS)
+              .ilike("body", like)
+              .order("created_at", { ascending: false })
+              .limit(100),
+            "iq.search_notes_fallback",
+          ),
+        ),
+        run<ConversationTag[]>(
+          scoped("conversation_tags", TAG_COLUMNS)
+            .ilike("tag", like)
+            .order("created_at", { ascending: false })
+            .limit(200),
+          "iq.search_tags",
+        ),
+        run<
+          {
+            id: string;
+            conversation_id: string;
+            quote: string;
+            note: string | null;
+            speaker: string;
+            author_name: string | null;
+            created_at: string;
+          }[]
+        >(
+          scoped(
+            "transcript_anchors",
+            "id,conversation_id,quote,note,speaker,author_name,created_at",
+          )
+            .or(`quote.ilike.${like},note.ilike.${like}`)
+            .order("created_at", { ascending: false })
+            .limit(100),
+          "iq.search_anchors",
+        ),
+      ]);
+
+      return [
+        ...notes.map(
+          (n): ReviewSearchHit => ({
+            conversationId: n.conversation_id,
+            kind: "note",
+            text: n.body,
+            detail: null,
+            author: n.author_name,
+            createdAt: n.created_at,
+          }),
+        ),
+        ...tags.map(
+          (t): ReviewSearchHit => ({
+            conversationId: t.conversation_id,
+            kind: "tag",
+            text: t.tag,
+            detail: null,
+            author: null,
+            createdAt: t.created_at,
+          }),
+        ),
+        ...anchors.map(
+          (a): ReviewSearchHit => ({
+            conversationId: a.conversation_id,
+            kind: "anchor",
+            text: a.quote,
+            detail: a.note,
+            author: a.author_name,
+            createdAt: a.created_at,
+          }),
+        ),
+      ].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    },
+  });
+}

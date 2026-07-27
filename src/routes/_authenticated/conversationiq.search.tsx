@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Search, SearchX } from "lucide-react";
+import { Highlighter, NotebookPen, Search, SearchX, Tag } from "lucide-react";
 
 import { PageHeader, Panel } from "@/components/common/Primitives";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
   iqSummaryIndexQuery,
 } from "@/features/conversationiq/queries";
 import { DEFAULT_FILTERS, applyFilters } from "@/features/conversationiq/filters";
+import { reviewSearchQuery } from "@/features/conversationiq/review";
 import { outletsQuery } from "@/features/platform/queries";
 import { formatDate, formatDuration, formatNumber } from "@/lib/format";
 
@@ -59,6 +60,7 @@ function ConversationSearchPage() {
   const summaryIndex = useQuery(iqSummaryIndexQuery);
   const alertIndex = useQuery(iqAlertIndexQuery);
   const outlets = useQuery(outletsQuery);
+  const reviewHits = useQuery(reviewSearchQuery(term));
 
   const results = useMemo(() => {
     if (!term.trim()) return [];
@@ -103,6 +105,57 @@ function ConversationSearchPage() {
           ))}
         </div>
       </div>
+
+      {term.trim().length >= 2 && (
+        <Panel
+          title={`${formatNumber(reviewHits.data?.length ?? 0)} review matches`}
+          description="Full-text search across internal review notes, review tags and saved transcript anchors."
+        >
+          {reviewHits.isLoading && (
+            <p className="text-sm text-muted-foreground">Searching review records…</p>
+          )}
+          {!reviewHits.isLoading && (reviewHits.data?.length ?? 0) === 0 && (
+            <p className="text-sm text-muted-foreground">
+              No notes, tags or anchors mention “{term}”.
+            </p>
+          )}
+          <ul className="divide-y divide-border/60">
+            {(reviewHits.data ?? []).slice(0, 60).map((hit, index) => {
+              const conversation = conversations.data?.find((c) => c.id === hit.conversationId);
+              const Icon =
+                hit.kind === "note" ? NotebookPen : hit.kind === "tag" ? Tag : Highlighter;
+              return (
+                <li key={`${hit.kind}-${hit.conversationId}-${index}`}>
+                  <Link
+                    to="/conversationiq/$conversationId"
+                    params={{ conversationId: hit.conversationId }}
+                    className="block rounded-lg px-2 py-3 transition-colors hover:bg-surface/60"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Chip tone="info">
+                        <Icon className="size-3" /> {hit.kind}
+                      </Chip>
+                      <span className="font-mono text-xs text-primary">
+                        {conversation?.reference ?? "Conversation"}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {hit.author ? `${hit.author} · ` : ""}
+                        {formatDate(hit.createdAt)}
+                      </span>
+                    </div>
+                    <p className="mt-1 line-clamp-2 text-sm">{hit.text}</p>
+                    {hit.detail && (
+                      <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                        {hit.detail}
+                      </p>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </Panel>
+      )}
 
       <Panel
         title={term ? `${formatNumber(results.length)} matches` : "Start searching"}

@@ -43,6 +43,8 @@ import {
 } from "@/components/conversationiq/Badges";
 import type { IqConversation, IqSummary } from "@/features/conversationiq/queries";
 import { exportConversationsDeepCsv } from "@/features/conversationiq/export";
+import { BulkReviewMenu } from "@/components/conversationiq/BulkReviewMenu";
+
 import type { AlertRow, Camera, Outlet } from "@/features/platform/queries";
 
 type ColumnKey =
@@ -324,6 +326,11 @@ export function ConversationTable({
           {selected.size > 0 && <Chip tone="info">{selected.size} selected</Chip>}
         </div>
         <div className="flex items-center gap-2">
+          <BulkReviewMenu
+            selected={sorted.filter((r) => selected.has(r.id)).map((r) => r.id)}
+            rows={sorted}
+            alerts={alerts}
+          />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
