@@ -436,6 +436,9 @@ function ReviewerQueuePage() {
                   </Select>
                   {busyId === item.id && <Loader2 className="size-4 animate-spin text-primary" />}
                   <div className="ml-auto flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => setTimelineItem(item)}>
+                      SLA timeline
+                    </Button>
                     {item.conversation_id && (
                       <Button asChild variant="ghost" size="sm">
                         <Link
@@ -458,6 +461,21 @@ function ReviewerQueuePage() {
           })}
         </ul>
       </Panel>
+
+      <Dialog open={timelineItem !== null} onOpenChange={(open) => !open && setTimelineItem(null)}>
+        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>SLA escalation timeline</DialogTitle>
+            <DialogDescription>{timelineItem?.title}</DialogDescription>
+          </DialogHeader>
+          {timelineItem && (
+            <SlaTimeline
+              item={timelineItem}
+              policy={policyFor(policies.data, timelineItem.priority)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
