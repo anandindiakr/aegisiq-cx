@@ -186,3 +186,155 @@ export async function exportConversationsDeepCsv(
   URL.revokeObjectURL(url);
   return rows.length;
 }
+
+/**
+ * Compliance pack export — one row per conversation with a transcript snippet,
+ * reviewer notes, tags, saved anchors and the immutable audit entries recorded
+ * against the case. Intended for handing evidence to a compliance reviewer.
+ */
+export async function exportComplianceCsv(
+  rows: IqConversation[],
+  ctx: Pick<DeepExportContext, "outlets" | "cameras" | "summaries" | "alerts">,
+  options: { snippetLines?: number } = {},
+): Promise<number> {
+  if (rows.length === 0) return 0;
+  const ids = rows.map((r) => r.id);
+  const snippetLines = options.snippetLines ?? 12;
+
+  const [transcripts, notes, tags, anchors, audit] = await Promise.all([
+    fetchScoped<IqTranscript>(
+      "transcripts",
+      "id,conversation_id,speaker,sequence,content,start_ms,end_ms,confidence,language_code",
+      ids,
+      "iq.compliance_transcripts",
+    ),
+    fetchScoped<{ conversation_id: string; author_name: string | null; body: string; created_at: string }>(
+      "conversation_notes",
+      "conversation_id,author_name,body,created_at",
+      ids,
+      "iq.compliance_notes",
+    ),
+    fetchScoped<{ conversation_id: string; tag: string }>(
+      "conversation_tags",
+      "conversation_id,tag",
+      ids,
+      "iq.compliance_tags",
+    ),
+    fetchScoped<{
+      conversation_id: string;
+      speaker: string;
+      start_ms: number;
+      end_ms: number;
+      quote: string;
+      note: string | null;
+      labels: string[];
+    }>(
+      "transcript_anchors",
+      "conversation_id,speaker,start_ms,end_ms,quote,note,labels",
+      ids,
+      "iq.compliance_anchors",
+    ),
+    fetchScoped<{
+      conversation_id: string;
+      action: string;
+      actor_name: string | null;
+      changed_fields: string[];
+      created_at: string;
+    }>(
+      "review_audit_events",
+      "conversation_id,action,actor_name,changed_fields,created_at",
+      ids,
+      "iq.compliance_audit",
+    ),
+  ]);
+
+  function group<T extends { conversation_id: string }>(items: T[]) {
+    const map = new Map<string, T[]>();
+    for (const item of items) {
+      const list = map.get(item.conversation_id) ?? [];
+      list.push(item);
+      map.set(item.conversation_id, list);
+    }
+    return map;
+  }
+
+  const transcriptsBy = group(transcripts);
+  for (const list of transcriptsBy.values()) list.sort((a, b) => a.sequence - b.sequence);
+  const notesBy = group(notes);
+  const tagsBy = group(tags);
+  const anchorsBy = group(anchors);
+  const auditBy = group(audit);
+
+  const header = [
+    "Conversation ID",
+    "Outlet",
+    "Camera",
+    "Date",
+    "Risk",
+    "Status",
+    "Sentiment",
+    "Escalated",
+    "Alerts",
+    "AI summary",
+    "Transcript snippet",
+    "Reviewer notes",
+    "Tags",
+    "Saved anchors",
+    "Audit trail",
+  ];
+
+  const lines = [header.join(",")];
+  for (const row of rows) {
+    const lineItems = transcriptsBy.get(row.id) ?? [];
+    const alerts = ctx.alerts.get(row.id) ?? [];
+    const summary = ctx.summaries.get(row.id);
+
+    lines.push(
+      [
+        row.reference,
+        ctx.outlets.get(row.outlet_id ?? "")?.name ?? "",
+        ctx.cameras.get(row.camera_id ?? "")?.name ?? "",
+        formatDate(row.started_at),
+        row.risk_level,
+        row.status,
+        row.sentiment,
+        row.escalated ? "yes" : "no",
+        alerts.map((a) => `${a.title} (${a.severity}/${a.status})`).join(" | "),
+        summary?.summary ?? "",
+        lineItems
+          .slice(0, snippetLines)
+          .map((l) => `[${offsetLabel(l.start_ms)}] ${l.speaker}: ${l.content}`)
+          .join("\n"),
+        (notesBy.get(row.id) ?? [])
+          .map((n) => `${n.author_name ?? "Unknown"} (${formatDate(n.created_at)}): ${n.body}`)
+          .join("\n"),
+        (tagsBy.get(row.id) ?? []).map((t) => t.tag).join(" | "),
+        (anchorsBy.get(row.id) ?? [])
+          .map(
+            (a) =>
+              `[${offsetLabel(a.start_ms)}-${offsetLabel(a.end_ms)}] ${a.speaker}: “${a.quote}”${
+                a.note ? ` — ${a.note}` : ""
+              }${a.labels.length ? ` {${a.labels.join(", ")}}` : ""}`,
+          )
+          .join("\n"),
+        (auditBy.get(row.id) ?? [])
+          .map(
+            (e) =>
+              `${formatDate(e.created_at)} · ${e.actor_name ?? "System"} · ${e.action} (${e.changed_fields.join(", ")})`,
+          )
+          .join("\n"),
+      ]
+        .map(escape)
+        .join(","),
+    );
+  }
+
+  const blob = new Blob([`\uFEFF${lines.join("\n")}`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `conversationiq-compliance-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+  return rows.length;
+}
