@@ -274,9 +274,15 @@ function RoleAdminPage() {
         )}
       </Panel>
 
+      <RoleTemplatesPanel members={members} />
+
       <Panel
         title="Permission matrix"
-        description="What each role tier unlocks across ConversationIQ™. The database enforces the same boundaries."
+        description={
+          activeTemplate.data
+            ? `Live matrix from the “${activeTemplate.data.name}” template. The database enforces the same boundaries.`
+            : "What each role tier unlocks across ConversationIQ™. The database enforces the same boundaries."
+        }
       >
         <div className="overflow-x-auto">
           <Table>
