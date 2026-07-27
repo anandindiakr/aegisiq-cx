@@ -153,13 +153,50 @@ export async function createAssignments(items: CreateAssignmentInput[]) {
     };
   });
   if (rows.length === 0) return 0;
-  const { data, error } = await raw
-    .from("review_assignments")
-    .upsert(rows, { onConflict: "alert_id", ignoreDuplicates: true })
-    .select("id");
+
+  // No unique index exists on the table, so de-duplicate in the app: skip any
+  // conversation or alert that already has an active (open/in progress) item.
+  const conversationIds = rows.map((r) => r.conversation_id).filter(Boolean) as string[];
+  const alertIds = rows.map((r) => r.alert_id).filter(Boolean) as string[];
+  const existingConversations = new Set<string>();
+  const existingAlerts = new Set<string>();
+  if (conversationIds.length > 0 || alertIds.length > 0) {
+    let query = raw
+      .from("review_assignments")
+      .select("conversation_id, alert_id")
+      .in("status", ["open", "in_progress"])
+      .eq("company_id", company);
+    if (conversationIds.length > 0 && alertIds.length > 0) {
+      query = query.or(
+        `conversation_id.in.(${conversationIds.join(",")}),alert_id.in.(${alertIds.join(",")})`,
+      );
+    } else if (conversationIds.length > 0) {
+      query = query.in("conversation_id", conversationIds);
+    } else {
+      query = query.in("alert_id", alertIds);
+    }
+    const { data: existing } = await query;
+    for (const row of (existing ?? []) as {
+      conversation_id: string | null;
+      alert_id: string | null;
+    }[]) {
+      if (row.conversation_id) existingConversations.add(row.conversation_id);
+      if (row.alert_id) existingAlerts.add(row.alert_id);
+    }
+  }
+
+  const fresh = rows.filter(
+    (row) =>
+      !(row.conversation_id && existingConversations.has(row.conversation_id)) &&
+      !(row.alert_id && existingAlerts.has(row.alert_id)),
+  );
+  if (fresh.length === 0) return 0;
+
+  const { data, error } = await raw.from("review_assignments").insert(fresh).select("id");
   if (error) throw new Error(error.message);
   return ((data ?? []) as { id: string }[]).length;
 }
+
 
 export async function updateAssignment(
   id: string,
