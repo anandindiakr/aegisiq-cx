@@ -102,10 +102,12 @@ function ReviewerQueuePage() {
   const access = useIqAccess();
 
   const staff = useQuery(staffQuery);
+  const policies = useQuery(slaPoliciesQuery);
 
   const [statusFilter, setStatusFilter] = useState<string>("active");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [timelineItem, setTimelineItem] = useState<ReviewAssignment | null>(null);
 
   function refresh() {
     void queryClient.invalidateQueries({ queryKey: ["iq", "review-queue"] });
