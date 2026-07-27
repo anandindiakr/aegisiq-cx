@@ -1,6 +1,8 @@
 import { redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { captureError, setObservabilityContext } from "@/lib/observability";
+import { syncSsoRoles } from "@/lib/sso-provisioning.functions";
+
 import type { AppRole } from "./queries";
 
 export interface TenantContext {
