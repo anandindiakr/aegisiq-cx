@@ -19,7 +19,11 @@ export type IqCapability =
   | "assignQueue"
   | "reviewAlerts"
   | "exportCompliance"
-  | "viewAudit";
+  | "viewAudit"
+  | "manageSla"
+  | "manageRedactions"
+  | "revealRedactions"
+  | "manageRoles";
 
 const MATRIX: Record<IqCapability, AppRole[]> = {
   viewTranscripts: [
@@ -42,6 +46,10 @@ const MATRIX: Record<IqCapability, AppRole[]> = {
   reviewAlerts: ["super_admin", "tenant_admin", "regional_manager", "outlet_manager", "supervisor"],
   exportCompliance: ["super_admin", "tenant_admin", "regional_manager"],
   viewAudit: ["super_admin", "tenant_admin", "regional_manager"],
+  manageSla: ["super_admin", "tenant_admin", "regional_manager"],
+  manageRedactions: ["super_admin", "tenant_admin", "regional_manager", "outlet_manager"],
+  revealRedactions: ["super_admin", "tenant_admin"],
+  manageRoles: ["super_admin", "tenant_admin"],
 };
 
 export const CAPABILITY_LABELS: Record<IqCapability, string> = {
@@ -53,6 +61,10 @@ export const CAPABILITY_LABELS: Record<IqCapability, string> = {
   reviewAlerts: "Acknowledge and resolve alerts",
   exportCompliance: "Export compliance packs",
   viewAudit: "View the audit trail",
+  manageSla: "Configure SLA thresholds and escalation steps",
+  manageRedactions: "Create and remove transcript redactions",
+  revealRedactions: "Reveal redacted transcript text",
+  manageRoles: "Assign roles and manage workspace members",
 };
 
 export function can(roles: AppRole[] | undefined, capability: IqCapability) {

@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -10,6 +10,8 @@ import {
   Cctv,
   Clock3,
   Copy,
+  Eye,
+  EyeOff,
   Filter,
   Gauge,
   GraduationCap,
@@ -46,6 +48,13 @@ import { AlertReviewPanel } from "@/components/conversationiq/AlertReviewPanel";
 import { ReviewNotesPanel } from "@/components/conversationiq/ReviewNotesPanel";
 import { iqConversationQuery } from "@/features/conversationiq/queries";
 import { transcriptAnchorsQuery } from "@/features/conversationiq/anchors";
+import {
+  applyRedactions,
+  byTranscript,
+  createRedaction,
+  deleteRedaction,
+  redactionsQuery,
+} from "@/features/conversationiq/redaction";
 import { useIqAccess } from "@/features/conversationiq/access";
 import {
   TranscriptAnchorPanel,
@@ -139,6 +148,7 @@ function MetaRow({
 
 function ConversationViewer() {
   const { conversationId } = Route.useParams();
+  const queryClient = useQueryClient();
   const detail = useQuery(iqConversationQuery(conversationId));
   const outlets = useQuery(outletsQuery);
   const cameras = useQuery(camerasQuery);
@@ -149,6 +159,54 @@ function ConversationViewer() {
   const anchors = useQuery(transcriptAnchorsQuery(conversationId));
   const [activeAnchorId, setActiveAnchorId] = useState<string | null>(null);
   const transcriptRefs = useRef(new Map<string, HTMLDivElement>());
+  const redactions = useQuery(redactionsQuery(conversationId));
+  const canManageRedactions = access.can("manageRedactions");
+  const canRevealRedactions = access.can("revealRedactions");
+  const [revealed, setRevealed] = useState(false);
+  const reveal = canRevealRedactions && revealed;
+  const redactionsByLine = useMemo(() => byTranscript(redactions.data ?? []), [redactions.data]);
+
+  /** Masks the sensitive ranges saved against an utterance. */
+  function displayContent(lineId: string, content: string) {
+    return applyRedactions(content, redactionsByLine.get(lineId) ?? [], reveal);
+  }
+
+  /** Saves the reviewer's current text selection as a redacted range. */
+  async function redactSelection(line: { id: string; content: string }) {
+    const selection = window.getSelection()?.toString() ?? "";
+    const snippet = selection.trim();
+    if (!snippet || !line.content.includes(snippet)) {
+      toast.error("Select the sensitive text inside this utterance first.");
+      return;
+    }
+    const start = line.content.indexOf(snippet);
+    try {
+      await createRedaction({
+        conversationId,
+        transcriptId: line.id,
+        startOffset: start,
+        endOffset: start + snippet.length,
+        category: "pii",
+        label: "Redacted",
+        originalSnippet: snippet,
+        reason: "Marked sensitive during review",
+      });
+      await queryClient.invalidateQueries({ queryKey: ["iq", "redactions"] });
+      toast.success("Segment redacted");
+    } catch (error) {
+      toast.error((error as Error).message);
+    }
+  }
+
+  async function liftRedaction(id: string) {
+    try {
+      await deleteRedaction(id);
+      await queryClient.invalidateQueries({ queryKey: ["iq", "redactions"] });
+      toast.success("Redaction lifted");
+    } catch (error) {
+      toast.error((error as Error).message);
+    }
+  }
 
   const allTranscripts = useMemo(() => detail.data?.transcripts ?? [], [detail.data]);
   const speakerStats = useMemo(() => {
@@ -358,7 +416,26 @@ function ConversationViewer() {
           {canViewTranscripts && (
             <Panel
               title="Transcript"
-              description={`${visibleTranscripts.length} of ${transcripts.length} utterances · diarised by speaker`}
+              description={`${visibleTranscripts.length} of ${transcripts.length} utterances · diarised by speaker${
+                (redactions.data ?? []).length > 0
+                  ? ` · ${(redactions.data ?? []).length} redacted segment(s)`
+                  : ""
+              }`}
+              actions={
+                canRevealRedactions && (redactions.data ?? []).length > 0 ? (
+                  <Button variant="outline" size="sm" onClick={() => setRevealed((v) => !v)}>
+                    {reveal ? (
+                      <>
+                        <EyeOff className="mr-1.5 size-3.5" /> Hide redacted
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="mr-1.5 size-3.5" /> Reveal redacted
+                      </>
+                    )}
+                  </Button>
+                ) : undefined
+              }
             >
               <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-border pb-3">
                 <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
@@ -431,7 +508,10 @@ function ConversationViewer() {
                           </span>
                         </div>
                         <p className="text-sm leading-relaxed">
-                          {renderHighlighted(line.content, anchorQuotes.get(line.id) ?? [])}
+                          {renderHighlighted(
+                            displayContent(line.id, line.content),
+                            anchorQuotes.get(line.id) ?? [],
+                          )}
                         </p>
                         <div className="mt-1.5 hidden gap-1 group-hover:flex">
                           <Button
@@ -439,7 +519,9 @@ function ConversationViewer() {
                             size="sm"
                             className="h-6 px-2 text-[11px]"
                             onClick={() => {
-                              void navigator.clipboard.writeText(line.content);
+                              void navigator.clipboard.writeText(
+                                displayContent(line.id, line.content),
+                              );
                               toast.success("Utterance copied");
                             }}
                           >
@@ -467,6 +549,28 @@ function ConversationViewer() {
                           >
                             <Highlighter className="mr-1 size-3" /> Anchor
                           </Button>
+                          {canManageRedactions && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-[11px]"
+                              onClick={() => void redactSelection(line)}
+                            >
+                              <EyeOff className="mr-1 size-3" /> Redact
+                            </Button>
+                          )}
+                          {canManageRedactions &&
+                            (redactionsByLine.get(line.id) ?? []).map((item) => (
+                              <Button
+                                key={item.id}
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-2 text-[11px]"
+                                onClick={() => void liftRedaction(item.id)}
+                              >
+                                <Eye className="mr-1 size-3" /> Lift {item.label}
+                              </Button>
+                            ))}
                         </div>
                       </div>
                     </motion.div>

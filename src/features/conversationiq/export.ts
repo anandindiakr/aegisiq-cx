@@ -4,6 +4,13 @@ import { getActiveTenant } from "@/features/platform/queries";
 import type { Camera, Outlet, AlertRow } from "@/features/platform/queries";
 import { formatDate } from "@/lib/format";
 import { languageName } from "@/components/conversationiq/Badges";
+import {
+  applyRedactions,
+  byTranscript,
+  fetchRedactionsFor,
+  resolveExportBehaviour,
+  type RedactionExportMode,
+} from "@/features/conversationiq/redaction";
 import type {
   IqConversation,
   IqDetectedKeyword,
@@ -61,6 +68,31 @@ function offsetLabel(ms: number) {
 
 const escape = (value: string) => `"${value.replace(/"/g, '""')}"`;
 
+/**
+ * Builds the masking function an export must apply, honouring the tenant's
+ * configured behaviour for redacted segments. Throws when the workspace blocks
+ * exports that would contain redacted text.
+ */
+async function redactionGate(canReveal: boolean, conversationIds: string[]) {
+  const { data } = await raw
+    .from("companies")
+    .select("redaction_export_mode")
+    .limit(1)
+    .maybeSingle();
+  const mode = ((data as { redaction_export_mode?: string } | null)?.redaction_export_mode ??
+    "masked") as RedactionExportMode;
+  const redactions = await fetchRedactionsFor(conversationIds);
+  const behaviour = resolveExportBehaviour({ mode, canReveal });
+  if (behaviour.blocked && redactions.length > 0) {
+    throw new Error(
+      "This selection contains redacted transcript segments and your workspace blocks exporting them.",
+    );
+  }
+  const map = byTranscript(redactions);
+  return (lineId: string, content: string) =>
+    applyRedactions(content, map.get(lineId) ?? [], behaviour.reveal);
+}
+
 export interface DeepExportContext {
   outlets: Map<string, Outlet>;
   cameras: Map<string, Camera>;
@@ -76,9 +108,11 @@ export interface DeepExportContext {
 export async function exportConversationsDeepCsv(
   rows: IqConversation[],
   ctx: DeepExportContext,
+  options: { canRevealRedactions?: boolean } = {},
 ): Promise<number> {
   if (rows.length === 0) return 0;
   const ids = rows.map((r) => r.id);
+  const mask = await redactionGate(options.canRevealRedactions ?? false, ids);
 
   const [transcripts, keywords] = await Promise.all([
     fetchScoped<IqTranscript>(
@@ -170,7 +204,9 @@ export async function exportConversationsDeepCsv(
         (summary?.key_points ?? []).join(" | "),
         detected.map((k) => `${k.keyword} [${k.category}]`).join(" | "),
         speakers.join(" | "),
-        lineItems.map((l) => `[${offsetLabel(l.start_ms)}] ${l.speaker}: ${l.content}`).join("\n"),
+        lineItems
+          .map((l) => `[${offsetLabel(l.start_ms)}] ${l.speaker}: ${mask(l.id, l.content)}`)
+          .join("\n"),
       ]
         .map(escape)
         .join(","),
@@ -195,11 +231,12 @@ export async function exportConversationsDeepCsv(
 export async function exportComplianceCsv(
   rows: IqConversation[],
   ctx: Pick<DeepExportContext, "outlets" | "cameras" | "summaries" | "alerts">,
-  options: { snippetLines?: number } = {},
+  options: { snippetLines?: number; canRevealRedactions?: boolean } = {},
 ): Promise<number> {
   if (rows.length === 0) return 0;
   const ids = rows.map((r) => r.id);
   const snippetLines = options.snippetLines ?? 12;
+  const mask = await redactionGate(options.canRevealRedactions ?? false, ids);
 
   const [transcripts, notes, tags, anchors, audit] = await Promise.all([
     fetchScoped<IqTranscript>(
@@ -308,7 +345,7 @@ export async function exportComplianceCsv(
         summary?.summary ?? "",
         lineItems
           .slice(0, snippetLines)
-          .map((l) => `[${offsetLabel(l.start_ms)}] ${l.speaker}: ${l.content}`)
+          .map((l) => `[${offsetLabel(l.start_ms)}] ${l.speaker}: ${mask(l.id, l.content)}`)
           .join("\n"),
         (notesBy.get(row.id) ?? [])
           .map((n) => `${n.author_name ?? "Unknown"} (${formatDate(n.created_at)}): ${n.body}`)

@@ -5,6 +5,14 @@ import { toast } from "sonner";
 import { reviewQueueQuery, slaMinutesLeft, slaState, formatSla } from "./queue";
 import type { ReviewAssignment } from "./queue";
 import { DEFAULT_PREFERENCES, notificationPreferencesQuery, slaCooldownMs } from "./notifications";
+import {
+  ESCALATION_ACTION_LABELS,
+  dueEscalations,
+  policyFor,
+  slaPoliciesQuery,
+  warningMinutes,
+  type SlaPolicyWithSteps,
+} from "./slaPolicies";
 
 /**
  * SLA watch — polls the reviewer queue and raises an in-app notification when
@@ -39,12 +47,23 @@ export interface SlaSnapshot {
   active: ReviewAssignment[];
 }
 
-export function summariseSla(items: ReviewAssignment[]): SlaSnapshot {
+export function summariseSla(
+  items: ReviewAssignment[],
+  policies?: SlaPolicyWithSteps[],
+): SlaSnapshot {
   const active = items.filter((item) => item.status === "open" || item.status === "in_progress");
+  /** Due-soon uses the tenant's configured warning threshold when one exists. */
+  const isDueSoon = (item: ReviewAssignment) => {
+    const left = slaMinutesLeft(item);
+    if (left < 0) return false;
+    const policy = policyFor(policies, item.priority);
+    if (!policy) return slaState(item) === "due_soon";
+    return left <= warningMinutes(policy, item.sla_minutes);
+  };
   return {
     active,
-    breached: active.filter((item) => slaState(item) === "breached"),
-    dueSoon: active.filter((item) => slaState(item) === "due_soon"),
+    breached: active.filter((item) => slaMinutesLeft(item) < 0),
+    dueSoon: active.filter(isDueSoon),
   };
 }
 
@@ -55,6 +74,8 @@ export function summariseSla(items: ReviewAssignment[]): SlaSnapshot {
 export function useSlaWatch(options: { enabled?: boolean } = {}) {
   const prefsQuery = useQuery(notificationPreferencesQuery);
   const prefs = prefsQuery.data ?? DEFAULT_PREFERENCES;
+  const policiesQuery = useQuery(slaPoliciesQuery);
+  const policies = policiesQuery.data;
   const enabled = options.enabled ?? true;
 
   const queue = useQuery({
@@ -71,7 +92,7 @@ export function useSlaWatch(options: { enabled?: boolean } = {}) {
   useEffect(() => {
     if (!notify || !items) return;
     if (seen.current === null) seen.current = readNotified();
-    const snapshot = summariseSla(items);
+    const snapshot = summariseSla(items, policies);
     const next: NotifiedMap = { ...seen.current };
     const now = Date.now();
     let changed = false;
@@ -84,13 +105,21 @@ export function useSlaWatch(options: { enabled?: boolean } = {}) {
     };
 
     for (const item of snapshot.breached) {
-      if (!fresh(item.id, "breached")) continue;
-      next[item.id] = { state: "breached", at: now };
+      const steps = dueEscalations(item, policyFor(policies, item.priority), now);
+      const reached = steps.at(-1);
+      const state = reached ? `breached:${reached.id}` : "breached";
+      if (!fresh(item.id, state)) continue;
+      next[item.id] = { state, at: now };
       changed = true;
+      const escalation = reached
+        ? ` · escalation ${reached.step_order}: ${ESCALATION_ACTION_LABELS[reached.action]}${
+            reached.notify_role ? ` ${reached.notify_role.replace(/_/g, " ")}` : ""
+          }`
+        : "";
       toast.error(`SLA breached — ${item.title}`, {
         description: `${formatSla(slaMinutesLeft(item))} · ${
           item.assignee_name ?? "Unassigned"
-        } · ${item.priority} priority`,
+        } · ${item.priority} priority${escalation}`,
         duration: 10_000,
       });
     }
@@ -108,10 +137,10 @@ export function useSlaWatch(options: { enabled?: boolean } = {}) {
       seen.current = next;
       writeNotified(next);
     }
-  }, [items, notify, cooldown]);
+  }, [items, notify, cooldown, policies]);
 
   return {
-    ...summariseSla(items ?? []),
+    ...summariseSla(items ?? [], policies),
     isLoading: queue.isLoading,
     refetch: queue.refetch,
     preferences: prefs,

@@ -7,6 +7,8 @@ import {
   MessagesSquare,
   Search,
   Tags,
+  Timer,
+  EyeOff,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -16,6 +18,8 @@ const TABS = [
   { label: "Search", to: "/conversationiq/search", icon: Search },
   { label: "AI Review", to: "/conversationiq/review", icon: BrainCircuit },
   { label: "Reviewer Queue", to: "/conversationiq/queue", icon: ListChecks },
+  { label: "SLA Policies", to: "/conversationiq/sla", icon: Timer },
+  { label: "Redactions", to: "/conversationiq/redactions", icon: EyeOff },
   { label: "Audit Trail", to: "/conversationiq/audit", icon: FileClock },
   { label: "Keywords", to: "/conversationiq/keywords", icon: Tags },
   { label: "Languages", to: "/conversationiq/languages", icon: Languages },

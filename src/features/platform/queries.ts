@@ -29,6 +29,7 @@ export interface Company {
   preferred_languages: string[];
   brand_primary_color: string;
   brand_tagline: string | null;
+  redaction_export_mode: "masked" | "unmasked_for_admins" | "blocked";
   created_at: string;
 }
 
