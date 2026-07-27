@@ -366,3 +366,156 @@ export function auditLogsPageQuery(filters: AuditLogFilters) {
       }),
   });
 }
+
+// ---------------------------------------------------------------------------
+// Audit logs: CSV export (same tenant-scoped filters)
+// ---------------------------------------------------------------------------
+
+const EXPORT_LIMIT = 5000;
+
+function csvCell(value: unknown) {
+  const text = value === null || value === undefined ? "" : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+export function toAuditCsv(rows: AuditLog[]) {
+  const header = ["Timestamp", "Actor", "Action", "Entity type", "Source IP", "Metadata"];
+  const lines = rows.map((row) =>
+    [
+      row.created_at,
+      row.actor_name ?? "system",
+      row.action,
+      row.entity_type,
+      row.ip_address ?? "",
+      JSON.stringify(row.metadata ?? {}),
+    ]
+      .map(csvCell)
+      .join(","),
+  );
+  return [header.map(csvCell).join(","), ...lines].join("\r\n");
+}
+
+/**
+ * Fetches audit rows for export.
+ * `scope: "page"` mirrors the table exactly; `scope: "filtered"` walks the
+ * whole filtered result set (capped) so an auditor can export more than the
+ * visible page without losing the active filters.
+ */
+export async function fetchAuditLogsForExport(
+  filters: AuditLogFilters,
+  scope: "page" | "filtered",
+): Promise<AuditLog[]> {
+  return traced("supabase.audit_logs_export", async () => {
+    const from = scope === "page" ? filters.page * filters.pageSize : 0;
+    const to = scope === "page" ? from + filters.pageSize - 1 : EXPORT_LIMIT - 1;
+
+    let query = db
+      .from("audit_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (filters.actor !== "all") query = query.eq("actor_name", filters.actor);
+    if (filters.action !== "all") query = query.eq("action", filters.action);
+    if (filters.entityType !== "all") query = query.eq("entity_type", filters.entityType);
+    if (filters.outletId !== "all")
+      query = query.filter("metadata->>outlet_id", "eq", filters.outletId);
+
+    const { data, error } = await query;
+    if (error) throw new Error(error.message);
+    return (data ?? []) as AuditLog[];
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Alert read state (per user, persisted inside the tenant)
+// ---------------------------------------------------------------------------
+
+export const alertReadsQuery = queryOptions({
+  queryKey: ["alert-reads"],
+  queryFn: async () => {
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) return [] as string[];
+    const rows = await run<{ alert_id: string }[]>(
+      db.from("alert_reads").select("alert_id").eq("user_id", auth.user.id),
+      "supabase.alert_reads",
+    );
+    return rows.map((r) => r.alert_id);
+  },
+});
+
+async function currentUserId() {
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) throw new Error("Your session expired. Please sign in again.");
+  return data.user.id;
+}
+
+export async function markAlertsRead(alertIds: string[]) {
+  if (alertIds.length === 0) return;
+  const companyId = getActiveTenant();
+  if (!companyId) throw new Error("No active workspace.");
+  const userId = await currentUserId();
+  const readAt = new Date().toISOString();
+  const { error } = await rawDb.from("alert_reads").upsert(
+    alertIds.map((alert_id) => ({ company_id: companyId, user_id: userId, alert_id, read_at: readAt })),
+    { onConflict: "user_id,alert_id" },
+  );
+  if (error) throw new Error(error.message);
+}
+
+export async function markAlertUnread(alertId: string) {
+  const userId = await currentUserId();
+  const { error } = await db.from("alert_reads").delete().eq("user_id", userId).eq("alert_id", alertId);
+  if (error) throw new Error(error.message);
+}
+
+// ---------------------------------------------------------------------------
+// SSO role / outlet mapping
+// ---------------------------------------------------------------------------
+
+export interface SsoRoleMapping {
+  id: string;
+  provider: string;
+  claim_key: string;
+  claim_value: string;
+  role: AppRole;
+  outlet_id: string | null;
+  priority: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export const ssoMappingsQuery = queryOptions({
+  queryKey: ["sso-mappings"],
+  queryFn: () =>
+    run<SsoRoleMapping[]>(
+      db
+        .from("sso_role_mappings")
+        .select("*")
+        .is("deleted_at", null)
+        .order("priority")
+        .order("claim_value"),
+      "supabase.sso_mappings",
+    ),
+});
+
+export type SsoMappingInput = Omit<SsoRoleMapping, "id" | "created_at">;
+
+export async function createSsoMapping(input: SsoMappingInput) {
+  const companyId = getActiveTenant();
+  if (!companyId) throw new Error("No active workspace.");
+  const { error } = await rawDb
+    .from("sso_role_mappings")
+    .insert({ ...input, company_id: companyId });
+  if (error) throw new Error(error.message);
+}
+
+export async function updateSsoMapping(id: string, patch: Partial<SsoMappingInput>) {
+  const { error } = await db.from("sso_role_mappings").update(patch).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteSsoMapping(id: string) {
+  const { error } = await db.from("sso_role_mappings").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
