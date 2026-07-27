@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Highlighter, Loader2, Quote, Trash2, Users2 } from "lucide-react";
+import { Crosshair, Highlighter, Loader2, Quote, Trash2, Users2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -42,16 +42,20 @@ export function TranscriptAnchorPanel({
   conversationId,
   draft,
   onClearDraft,
+  onJump,
 }: {
   conversationId: string;
   draft: AnchorDraft | null;
   onClearDraft: () => void;
+  /** Sends the transcript viewer to this anchor's speaker and time range. */
+  onJump?: (anchor: TranscriptAnchor) => void;
 }) {
   const queryClient = useQueryClient();
   const anchors = useQuery(transcriptAnchorsQuery(conversationId));
   const [note, setNote] = useState("");
   const [labels, setLabels] = useState<string[]>([]);
   const [labelInput, setLabelInput] = useState("");
+  const [labelFilter, setLabelFilter] = useState<string | null>(null);
 
   useEffect(() => {
     if (draft) {
@@ -190,54 +194,83 @@ export function TranscriptAnchorPanel({
         <p className="text-sm text-muted-foreground">No anchors saved for this conversation yet.</p>
       )}
 
+      {rows.length > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-1.5">
+          <button type="button" onClick={() => setLabelFilter(null)}>
+            <Chip tone={labelFilter === null ? "info" : "neutral"}>All · {rows.length}</Chip>
+          </button>
+          {Array.from(new Set(rows.flatMap((a: TranscriptAnchor) => a.labels))).map(
+            (label: string) => (
+              <button key={label} type="button" onClick={() => setLabelFilter(label)}>
+                <Chip tone={labelFilter === label ? "info" : "neutral"}>{label}</Chip>
+              </button>
+            ),
+          )}
+        </div>
+      )}
+
       <ul className="space-y-3">
-        {rows.map((anchor: TranscriptAnchor) => (
-          <li key={anchor.id} className="rounded-lg border border-border bg-surface/50 p-3">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                <Chip tone="neutral">
-                  <Users2 className="size-3" /> {titleCase(anchor.speaker)}
-                </Chip>
-                <span className="font-mono">
-                  {offsetLabel(anchor.start_ms)} – {offsetLabel(anchor.end_ms)}
+        {rows
+          .filter((anchor: TranscriptAnchor) => !labelFilter || anchor.labels.includes(labelFilter))
+          .map((anchor: TranscriptAnchor) => (
+            <li key={anchor.id} className="rounded-lg border border-border bg-surface/50 p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                  <Chip tone="neutral">
+                    <Users2 className="size-3" /> {titleCase(anchor.speaker)}
+                  </Chip>
+                  <span className="font-mono">
+                    {offsetLabel(anchor.start_ms)} – {offsetLabel(anchor.end_ms)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {onJump && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-[11px]"
+                      onClick={() => onJump(anchor)}
+                    >
+                      <Crosshair className="mr-1 size-3.5" /> Jump
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7"
+                    aria-label="Delete anchor"
+                    onClick={() => remove.mutate(anchor.id)}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                </div>
+              </div>
+              <p className="mt-2 flex gap-2 text-sm">
+                <Quote className="mt-0.5 size-3.5 shrink-0 text-primary" />
+                <span className="italic">“{anchor.quote}”</span>
+              </p>
+              <Textarea
+                defaultValue={anchor.note ?? ""}
+                placeholder="Add a reviewer note..."
+                className="mt-2 min-h-12 bg-surface text-xs"
+                onBlur={(e) => {
+                  if (e.target.value.trim() !== (anchor.note ?? "").trim()) {
+                    editNote.mutate({ id: anchor.id, note: e.target.value });
+                  }
+                }}
+              />
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {anchor.labels.map((label) => (
+                  <Chip key={label} tone="info">
+                    {label}
+                  </Chip>
+                ))}
+                <span className="ml-auto text-[10px] text-muted-foreground">
+                  {anchor.author_name ?? "Unknown"} · {formatDate(anchor.created_at)}
                 </span>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-7"
-                aria-label="Delete anchor"
-                onClick={() => remove.mutate(anchor.id)}
-              >
-                <Trash2 className="size-3.5" />
-              </Button>
-            </div>
-            <p className="mt-2 flex gap-2 text-sm">
-              <Quote className="mt-0.5 size-3.5 shrink-0 text-primary" />
-              <span className="italic">“{anchor.quote}”</span>
-            </p>
-            <Textarea
-              defaultValue={anchor.note ?? ""}
-              placeholder="Add a reviewer note..."
-              className="mt-2 min-h-12 bg-surface text-xs"
-              onBlur={(e) => {
-                if (e.target.value.trim() !== (anchor.note ?? "").trim()) {
-                  editNote.mutate({ id: anchor.id, note: e.target.value });
-                }
-              }}
-            />
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              {anchor.labels.map((label) => (
-                <Chip key={label} tone="info">
-                  {label}
-                </Chip>
-              ))}
-              <span className="ml-auto text-[10px] text-muted-foreground">
-                {anchor.author_name ?? "Unknown"} · {formatDate(anchor.created_at)}
-              </span>
-            </div>
-          </li>
-        ))}
+            </li>
+          ))}
       </ul>
     </Panel>
   );
