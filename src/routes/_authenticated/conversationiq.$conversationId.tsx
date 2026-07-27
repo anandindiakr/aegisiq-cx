@@ -115,7 +115,8 @@ function ConversationViewer() {
   const allTranscripts = useMemo(() => detail.data?.transcripts ?? [], [detail.data]);
   const speakerStats = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const line of allTranscripts) counts.set(line.speaker, (counts.get(line.speaker) ?? 0) + 1);
+    for (const line of allTranscripts)
+      counts.set(line.speaker, (counts.get(line.speaker) ?? 0) + 1);
     return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
   }, [allTranscripts]);
   const visibleTranscripts = useMemo(

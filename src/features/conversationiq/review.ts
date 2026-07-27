@@ -64,8 +64,7 @@ export interface AlertEvent {
 
 const NOTE_COLUMNS = "id,conversation_id,author_id,author_name,body,created_at,updated_at";
 const TAG_COLUMNS = "id,conversation_id,tag,created_by,created_at";
-const ALERT_EVENT_COLUMNS =
-  "id,alert_id,actor_id,actor_name,from_status,to_status,note,created_at";
+const ALERT_EVENT_COLUMNS = "id,alert_id,actor_id,actor_name,from_status,to_status,note,created_at";
 
 async function currentActor() {
   const { data } = await supabase.auth.getUser();

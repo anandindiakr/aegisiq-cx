@@ -40,7 +40,6 @@ async function fetchScoped<T>(
   const company = getActiveTenant();
   const results: T[] = [];
   for (const batch of chunk(ids, 80)) {
-    // eslint-disable-next-line no-await-in-loop
     const rows = await traced(op, async () => {
       let query = raw.from(table).select(columns).in("conversation_id", batch);
       if (company) query = query.eq("company_id", company);
@@ -171,9 +170,7 @@ export async function exportConversationsDeepCsv(
         (summary?.key_points ?? []).join(" | "),
         detected.map((k) => `${k.keyword} [${k.category}]`).join(" | "),
         speakers.join(" | "),
-        lineItems
-          .map((l) => `[${offsetLabel(l.start_ms)}] ${l.speaker}: ${l.content}`)
-          .join("\n"),
+        lineItems.map((l) => `[${offsetLabel(l.start_ms)}] ${l.speaker}: ${l.content}`).join("\n"),
       ]
         .map(escape)
         .join(","),
