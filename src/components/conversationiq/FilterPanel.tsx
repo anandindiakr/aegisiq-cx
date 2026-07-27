@@ -28,6 +28,7 @@ interface Props {
   cameras: Camera[];
   employees: string[];
   keywords: string[];
+  tags: string[];
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -41,7 +42,15 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-export function FilterPanel({ filters, onChange, outlets, cameras, employees, keywords }: Props) {
+export function FilterPanel({
+  filters,
+  onChange,
+  outlets,
+  cameras,
+  employees,
+  keywords,
+  tags,
+}: Props) {
   const set = <K extends keyof IqFilters>(key: K, value: IqFilters[K]) =>
     onChange({ ...filters, [key]: value });
 
@@ -167,6 +176,23 @@ export function FilterPanel({ filters, onChange, outlets, cameras, employees, ke
               {keywords.map((k) => (
                 <SelectItem key={k} value={k}>
                   {k}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+
+        <Field label="Review tag">
+          <Select value={filters.tag} onValueChange={(v) => set("tag", v)}>
+            <SelectTrigger className="bg-surface">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="max-h-72">
+              <SelectItem value="all">Any tag</SelectItem>
+              <SelectItem value="untagged">Not yet tagged</SelectItem>
+              {tags.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t}
                 </SelectItem>
               ))}
             </SelectContent>

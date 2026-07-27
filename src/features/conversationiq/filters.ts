@@ -14,6 +14,7 @@ export interface IqFilters {
   sentiment: string;
   risk: string;
   keyword: string;
+  tag: string;
   employee: string;
   minDuration: number;
   maxDuration: number;
@@ -32,6 +33,7 @@ export const DEFAULT_FILTERS: IqFilters = {
   sentiment: "all",
   risk: "all",
   keyword: "all",
+  tag: "all",
   employee: "all",
   minDuration: 0,
   maxDuration: 3600,
@@ -52,6 +54,7 @@ export function activeFilterCount(filters: IqFilters) {
     "sentiment",
     "risk",
     "keyword",
+    "tag",
     "employee",
     "alertStatus",
   ] as const) {
@@ -69,6 +72,7 @@ export interface FilterContext {
   keywordsByConversation: Map<string, IqDetectedKeyword[]>;
   summaries: Map<string, IqSummary>;
   alertsByConversation: Map<string, AlertRow[]>;
+  tagsByConversation?: Map<string, string[]>;
 }
 
 /**
@@ -99,6 +103,11 @@ export function applyFilters(
     if (filters.maxDuration < 3600 && row.duration_seconds > filters.maxDuration) return false;
     if (filters.escalatedOnly && !row.escalated) return false;
 
+    const tags = ctx.tagsByConversation?.get(row.id) ?? [];
+    if (filters.tag !== "all") {
+      if (filters.tag === "untagged" ? tags.length > 0 : !tags.includes(filters.tag)) return false;
+    }
+
     const keywords = ctx.keywordsByConversation.get(row.id) ?? [];
     if (filters.keyword !== "all" && !keywords.some((k) => k.keyword === filters.keyword)) {
       return false;
@@ -128,6 +137,7 @@ export function applyFilters(
         summary?.summary ?? "",
         summary?.intent ?? "",
         ...keywords.map((k) => `${k.keyword} ${k.category}`),
+        ...tags,
       ]
         .join(" ")
         .toLowerCase();
