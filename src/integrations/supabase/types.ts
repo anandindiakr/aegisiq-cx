@@ -667,6 +667,90 @@ export type Database = {
           },
         ]
       }
+      dashboard_layouts: {
+        Row: {
+          auto_refresh: boolean
+          company_id: string
+          created_at: string
+          dashboard_key: string
+          hidden_widgets: string[]
+          id: string
+          refresh_interval_seconds: number
+          updated_at: string
+          user_id: string
+          widget_order: string[]
+        }
+        Insert: {
+          auto_refresh?: boolean
+          company_id: string
+          created_at?: string
+          dashboard_key?: string
+          hidden_widgets?: string[]
+          id?: string
+          refresh_interval_seconds?: number
+          updated_at?: string
+          user_id: string
+          widget_order?: string[]
+        }
+        Update: {
+          auto_refresh?: boolean
+          company_id?: string
+          created_at?: string
+          dashboard_key?: string
+          hidden_widgets?: string[]
+          id?: string
+          refresh_interval_seconds?: number
+          updated_at?: string
+          user_id?: string
+          widget_order?: string[]
+        }
+        Relationships: []
+      }
+      executive_report_schedules: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          format: string
+          frequency: string
+          id: string
+          is_active: boolean
+          last_sent_at: string | null
+          name: string
+          recipients: string[]
+          send_hour: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          format?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          name: string
+          recipients?: string[]
+          send_hour?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          format?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          name?: string
+          recipients?: string[]
+          send_hour?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       keywords: {
         Row: {
           category: string
@@ -823,6 +907,8 @@ export type Database = {
           created_by: string | null
           deleted_at: string | null
           id: string
+          latitude: number | null
+          longitude: number | null
           manager_email: string | null
           manager_name: string | null
           name: string
@@ -842,6 +928,8 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           manager_email?: string | null
           manager_name?: string | null
           name: string
@@ -861,6 +949,8 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           manager_email?: string | null
           manager_name?: string | null
           name?: string
