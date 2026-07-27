@@ -209,7 +209,7 @@ function documentShell(title: string, body: string): string {
   .kpi strong { font-size: 18px; }
   .slide { page-break-after: always; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px; margin-bottom: 20px; min-height: 420px; }
   @media print { body { padding: 0; } .slide { border: none; } }
-</style></head><body>${body}<script>window.onload=function(){setTimeout(function(){window.print()},350)}<\/script></body></html>`;
+</style></head><body>${body}<script>window.onload=function(){setTimeout(function(){window.print()},350)}</scr"+"ipt></body></html>`;
 }
 
 function openPrintable(html: string) {
