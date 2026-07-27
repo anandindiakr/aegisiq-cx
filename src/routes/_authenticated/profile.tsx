@@ -20,6 +20,8 @@ import {
   myRolesQuery,
   outletsQuery,
 } from "@/features/platform/queries";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
+import { IqAccessPanel } from "@/components/settings/IqAccessPanel";
 import { formatDateTime, formatRelative } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -134,6 +136,12 @@ function ProfilePage() {
               />
             </dl>
           </Panel>
+
+          <div className="lg:col-span-2">
+            <NotificationSettings />
+          </div>
+
+          <IqAccessPanel />
         </div>
       )}
     </div>
