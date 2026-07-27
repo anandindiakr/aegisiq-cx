@@ -1,12 +1,19 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Download, FileClock, Loader2, ShieldCheck } from "lucide-react";
+import { Download, FileClock, Loader2, Search, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader, Panel } from "@/components/common/Primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -18,6 +25,7 @@ import { Chip } from "@/components/conversationiq/Badges";
 import { ConversationIqTabs } from "@/components/conversationiq/ModuleTabs";
 import {
   describeAuditEvent,
+  type ReviewAuditEvent,
   downloadCsv,
   fetchAuditForExport,
   reviewAuditQuery,
@@ -54,6 +62,7 @@ function ReviewAuditPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [exporting, setExporting] = useState(false);
+  const [detail, setDetail] = useState<ReviewAuditEvent | null>(null);
 
   const filters = useMemo(
     () => ({
@@ -174,6 +183,9 @@ function ReviewAuditPage() {
                 <Chip tone={event.entity_type === "conversation" ? "info" : "neutral"}>
                   {event.entity_type === "conversation" ? "Conversation" : "Queue"}
                 </Chip>
+                <Button variant="ghost" size="sm" onClick={() => setDetail(event)}>
+                  <Search className="mr-1.5 size-3.5" /> Details
+                </Button>
                 {event.conversation_id && (
                   <Button asChild variant="ghost" size="sm">
                     <Link
@@ -189,6 +201,65 @@ function ReviewAuditPage() {
           ))}
         </ul>
       </Panel>
+
+      <Dialog open={detail !== null} onOpenChange={(open) => !open && setDetail(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Change detail</DialogTitle>
+            <DialogDescription>
+              {detail
+                ? `${detail.actor_name ?? "System"} · ${formatDate(detail.created_at)}`
+                : null}
+            </DialogDescription>
+          </DialogHeader>
+          {detail && (
+            <div className="space-y-4">
+              <p className="text-sm">{describeAuditEvent(detail)}</p>
+              <div className="overflow-hidden rounded-lg border border-border/60">
+                <table className="w-full text-sm">
+                  <thead className="bg-surface text-xs uppercase text-muted-foreground">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-medium">Field</th>
+                      <th className="px-3 py-2 text-left font-medium">Before</th>
+                      <th className="px-3 py-2 text-left font-medium">After</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/60">
+                    {Array.from(
+                      new Set([
+                        ...detail.changed_fields,
+                        ...Object.keys(detail.before_state ?? {}),
+                        ...Object.keys(detail.after_state ?? {}),
+                      ]),
+                    ).map((field) => (
+                      <tr key={field}>
+                        <td className="px-3 py-2 font-medium">{field.replace(/_/g, " ")}</td>
+                        <td className="px-3 py-2 text-muted-foreground">
+                          {formatStateValue((detail.before_state as Record<string, unknown>)[field])}
+                        </td>
+                        <td className="px-3 py-2">
+                          {formatStateValue((detail.after_state as Record<string, unknown>)[field])}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Record {detail.entity_type} · {detail.entity_id}
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
+}
+
+/** Renders a JSON audit snapshot value for the drilldown table. */
+function formatStateValue(value: unknown) {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "boolean") return value ? "yes" : "no";
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
 }
