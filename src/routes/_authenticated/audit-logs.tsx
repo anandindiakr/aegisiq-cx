@@ -52,7 +52,7 @@ function AuditLogsPage() {
     return (
       log.action.toLowerCase().includes(q) ||
       log.entity_type.toLowerCase().includes(q) ||
-      (log.actor_email ?? "").toLowerCase().includes(q)
+      (log.actor_name ?? "").toLowerCase().includes(q)
     );
   });
 
@@ -105,7 +105,7 @@ function AuditLogsPage() {
                     <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
                       {formatDateTime(log.created_at)}
                     </TableCell>
-                    <TableCell className="text-xs">{log.actor_email ?? "system"}</TableCell>
+                    <TableCell className="text-xs">{log.actor_name ?? "system"}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="border-border font-mono text-[11px]">
                         <ShieldCheck className="mr-1.5 size-3 text-primary" />
@@ -114,11 +114,6 @@ function AuditLogsPage() {
                     </TableCell>
                     <TableCell className="text-xs">
                       {log.entity_type}
-                      {log.entity_id ? (
-                        <span className="ml-2 font-mono text-[11px] text-muted-foreground">
-                          {log.entity_id.slice(0, 8)}
-                        </span>
-                      ) : null}
                     </TableCell>
                     <TableCell className="font-mono text-[11px] text-muted-foreground">
                       {log.ip_address ?? "—"}
