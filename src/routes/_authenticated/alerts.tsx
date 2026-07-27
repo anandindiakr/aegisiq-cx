@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCheck, CheckCircle2, Mail, MailOpen } from "lucide-react";
 
 import {
   EmptyState,
@@ -14,9 +14,17 @@ import {
 } from "@/components/common/Primitives";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { alertsQuery, outletsQuery, updateAlertStatus } from "@/features/platform/queries";
+import {
+  alertReadsQuery,
+  alertsQuery,
+  markAlertsRead,
+  markAlertUnread,
+  outletsQuery,
+  updateAlertStatus,
+} from "@/features/platform/queries";
 import type { AlertStatus } from "@/features/platform/queries";
 import { formatDateTime, formatNumber, titleCase } from "@/lib/format";
+
 
 export const Route = createFileRoute("/_authenticated/alerts")({
   head: () => ({
