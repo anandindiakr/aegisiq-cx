@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowUpDown,
@@ -8,6 +9,8 @@ import {
   Columns3,
   Download,
   Eye,
+  FileText,
+  Loader2,
   Siren,
 } from "lucide-react";
 
@@ -39,6 +42,7 @@ import {
   languageName,
 } from "@/components/conversationiq/Badges";
 import type { IqConversation, IqSummary } from "@/features/conversationiq/queries";
+import { exportConversationsDeepCsv } from "@/features/conversationiq/export";
 import type { AlertRow, Camera, Outlet } from "@/features/platform/queries";
 
 type ColumnKey =
@@ -86,6 +90,7 @@ interface Props {
   cameras: Map<string, Camera>;
   summaries: Map<string, IqSummary>;
   alerts: Map<string, AlertRow[]>;
+  tags?: Map<string, string[]>;
   isLoading?: boolean;
 }
 
@@ -95,7 +100,16 @@ function timeOf(value: string) {
   );
 }
 
-export function ConversationTable({ rows, outlets, cameras, summaries, alerts, isLoading }: Props) {
+export function ConversationTable({
+  rows,
+  outlets,
+  cameras,
+  summaries,
+  alerts,
+  tags,
+  isLoading,
+}: Props) {
+  const [exporting, setExporting] = useState(false);
   const [sortKey, setSortKey] = useState<ColumnKey>("date");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(0);
@@ -223,6 +237,26 @@ export function ConversationTable({ rows, outlets, cameras, summaries, alerts, i
     URL.revokeObjectURL(url);
   }
 
+  /** Full export: re-fetches transcripts and keywords for the current result set. */
+  async function exportDeepCsv() {
+    const source = selected.size > 0 ? sorted.filter((r) => selected.has(r.id)) : sorted;
+    setExporting(true);
+    try {
+      const count = await exportConversationsDeepCsv(source, {
+        outlets,
+        cameras,
+        summaries,
+        alerts,
+        tags,
+      });
+      toast.success(`Exported ${count} conversations with transcripts and keywords`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Export failed");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   function renderCell(column: ColumnKey, row: IqConversation) {
     switch (column) {
       case "reference":
@@ -321,6 +355,19 @@ export function ConversationTable({ rows, outlets, cameras, summaries, alerts, i
           <Button variant="outline" size="sm" onClick={exportCsv} disabled={sorted.length === 0}>
             <Download className="mr-2 size-4" />
             Export{selected.size > 0 ? ` (${selected.size})` : ""}
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => void exportDeepCsv()}
+            disabled={sorted.length === 0 || exporting}
+            title="Includes the full transcript, detected keywords, alerts and review tags"
+          >
+            {exporting ? (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            ) : (
+              <FileText className="mr-2 size-4" />
+            )}
+            Full export{selected.size > 0 ? ` (${selected.size})` : ""}
           </Button>
         </div>
       </div>
