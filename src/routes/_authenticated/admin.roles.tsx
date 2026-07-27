@@ -42,6 +42,8 @@ import {
   setDirectoryRole,
 } from "@/features/platform/roles";
 import { CAPABILITY_LABELS, can, type IqCapability } from "@/features/conversationiq/access";
+import { activeCapabilityMatrixQuery } from "@/features/platform/roleTemplates";
+import { RoleTemplatesPanel } from "@/components/platform/RoleTemplatesPanel";
 import { ROLE_LABELS } from "@/features/auth/useSession";
 import { formatRelative } from "@/lib/format";
 
