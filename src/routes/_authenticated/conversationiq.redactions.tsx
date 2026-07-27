@@ -3,7 +3,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { EyeOff, ShieldAlert, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { EmptyState, ErrorState, LoadingState, PageHeader, Panel } from "@/components/common/Primitives";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  Panel,
+} from "@/components/common/Primitives";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -142,7 +148,13 @@ function RedactionRegisterPage() {
                     ? (item.original_snippet ?? "—")
                     : applyRedactions(
                         item.original_snippet ?? "",
-                        [{ ...item, start_offset: 0, end_offset: (item.original_snippet ?? "").length }],
+                        [
+                          {
+                            ...item,
+                            start_offset: 0,
+                            end_offset: (item.original_snippet ?? "").length,
+                          },
+                        ],
                         false,
                       )}
                 </p>

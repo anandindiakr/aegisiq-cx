@@ -235,7 +235,9 @@ function ReviewAuditPage() {
                       <tr key={field}>
                         <td className="px-3 py-2 font-medium">{field.replace(/_/g, " ")}</td>
                         <td className="px-3 py-2 text-muted-foreground">
-                          {formatStateValue((detail.before_state as Record<string, unknown>)[field])}
+                          {formatStateValue(
+                            (detail.before_state as Record<string, unknown>)[field],
+                          )}
                         </td>
                         <td className="px-3 py-2">
                           {formatStateValue((detail.after_state as Record<string, unknown>)[field])}

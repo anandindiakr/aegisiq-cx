@@ -247,13 +247,17 @@ export function ConversationTable({
     const source = selected.size > 0 ? sorted.filter((r) => selected.has(r.id)) : sorted;
     setExporting(true);
     try {
-      const count = await exportConversationsDeepCsv(source, {
-        outlets,
-        cameras,
-        summaries,
-        alerts,
-        tags,
-      }, { canRevealRedactions: access.can("revealRedactions") });
+      const count = await exportConversationsDeepCsv(
+        source,
+        {
+          outlets,
+          cameras,
+          summaries,
+          alerts,
+          tags,
+        },
+        { canRevealRedactions: access.can("revealRedactions") },
+      );
       toast.success(`Exported ${count} conversations with transcripts and keywords`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Export failed");

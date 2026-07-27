@@ -20,12 +20,7 @@ const raw = supabase as unknown as { from: (table: string) => AnyBuilder };
 
 export type EscalationAction = "notify" | "escalate" | "reassign" | "page";
 
-export const ESCALATION_ACTIONS: EscalationAction[] = [
-  "notify",
-  "escalate",
-  "reassign",
-  "page",
-];
+export const ESCALATION_ACTIONS: EscalationAction[] = ["notify", "escalate", "reassign", "page"];
 
 export const ESCALATION_ACTION_LABELS: Record<EscalationAction, string> = {
   notify: "Notify",

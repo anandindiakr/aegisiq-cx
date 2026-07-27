@@ -140,7 +140,10 @@ function RoleAdminPage() {
       >
         {(staff.isPending || grants.isPending) && <LoadingState />}
         {grants.error && (
-          <ErrorState message={(grants.error as Error).message} onRetry={() => void grants.refetch()} />
+          <ErrorState
+            message={(grants.error as Error).message}
+            onRetry={() => void grants.refetch()}
+          />
         )}
         {!staff.isPending && !grants.isPending && rows.length === 0 && (
           <EmptyState

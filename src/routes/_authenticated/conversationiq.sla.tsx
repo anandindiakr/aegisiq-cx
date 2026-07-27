@@ -4,7 +4,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDownWideNarrow, Plus, Timer, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { EmptyState, ErrorState, LoadingState, PageHeader, Panel } from "@/components/common/Primitives";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+  Panel,
+} from "@/components/common/Primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +25,11 @@ import {
 import { Chip } from "@/components/conversationiq/Badges";
 import { ConversationIqTabs } from "@/components/conversationiq/ModuleTabs";
 import { useIqAccess } from "@/features/conversationiq/access";
-import { QUEUE_PRIORITIES, reviewQueueQuery, type QueuePriority } from "@/features/conversationiq/queue";
+import {
+  QUEUE_PRIORITIES,
+  reviewQueueQuery,
+  type QueuePriority,
+} from "@/features/conversationiq/queue";
 import {
   ESCALATION_ACTIONS,
   ESCALATION_ACTION_LABELS,
@@ -200,7 +210,10 @@ function SlaPolicyPage() {
             </div>
             <div>
               <Label className="text-xs">Queue priority</Label>
-              <Select value={priority} onValueChange={(value) => setPriority(value as QueuePriority)}>
+              <Select
+                value={priority}
+                onValueChange={(value) => setPriority(value as QueuePriority)}
+              >
                 <SelectTrigger className="mt-1.5 h-9 bg-surface">
                   <SelectValue />
                 </SelectTrigger>
@@ -311,7 +324,10 @@ function SlaPolicyPage() {
                     defaultValue={policy.target_minutes}
                     className="mt-1.5 h-9 bg-surface"
                     onBlur={(event) => {
-                      const value = Math.max(5, Number(event.target.value) || policy.target_minutes);
+                      const value = Math.max(
+                        5,
+                        Number(event.target.value) || policy.target_minutes,
+                      );
                       if (value !== policy.target_minutes) {
                         patchPolicy.mutate({ id: policy.id, patch: { targetMinutes: value } });
                       }
@@ -457,7 +473,9 @@ function SlaPolicyPage() {
                     <>
                       <Chip tone="info">{ESCALATION_ACTION_LABELS[step.action]}</Chip>
                       <span className="text-xs text-muted-foreground">
-                        {step.notify_role ? (ROLE_LABELS[step.notify_role] ?? step.notify_role) : "—"}
+                        {step.notify_role
+                          ? (ROLE_LABELS[step.notify_role] ?? step.notify_role)
+                          : "—"}
                         {step.notify_email ? ` · ${step.notify_email}` : ""}
                       </span>
                     </>
