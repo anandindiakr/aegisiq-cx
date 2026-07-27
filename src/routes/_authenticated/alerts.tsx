@@ -57,7 +57,8 @@ function AlertsPage() {
   const { data, isPending, error, refetch } = useQuery(alertsQuery);
   const outlets = useQuery(outletsQuery);
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<"all" | AlertStatus>("open");
+  const [tab, setTab] = useState<"all" | AlertStatus | "unread">("open");
+  const reads = useQuery(alertReadsQuery);
 
   const acknowledge = useMutation({
     mutationFn: ({ id, status }: { id: string; status: AlertStatus }) =>
@@ -69,26 +70,56 @@ function AlertsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const readSet = useMemo(() => new Set(reads.data ?? []), [reads.data]);
+
+  const readState = useMutation({
+    mutationFn: ({ ids, read }: { ids: string[]; read: boolean }) =>
+      read ? markAlertsRead(ids) : markAlertUnread(ids[0]),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["alert-reads"] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const outletName = useMemo(() => {
     const map = new Map((outlets.data ?? []).map((o) => [o.id, o.name]));
     return (id: string | null) => (id ? (map.get(id) ?? "Estate-wide") : "Estate-wide");
   }, [outlets.data]);
 
-  const rows = (data ?? []).filter((a) => (tab === "all" ? true : a.status === tab));
+  const all = data ?? [];
+  const rows = all.filter((a) =>
+    tab === "all" ? true : tab === "unread" ? !readSet.has(a.id) : a.status === tab,
+  );
+  const unreadCount = all.filter((a) => !readSet.has(a.id)).length;
+  const unreadHere = rows.filter((a) => !readSet.has(a.id)).map((a) => a.id);
 
   return (
     <div>
       <PageHeader
         title="Alerts"
         description="Signals raised by sentiment thresholds, escalation keywords and operational anomalies."
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={unreadHere.length === 0 || readState.isPending}
+            onClick={() =>
+              readState.mutate(
+                { ids: unreadHere, read: true },
+                { onSuccess: () => toast.success(`${unreadHere.length} alerts marked read`) },
+              )
+            }
+          >
+            <CheckCheck className="mr-2 size-4" /> Mark all read
+          </Button>
+        }
       />
 
       <Panel
         title={`${formatNumber(rows.length)} alerts`}
-        description="Ordered by most recent trigger time"
+        description={`${formatNumber(unreadCount)} unread · ordered by most recent trigger time`}
         actions={
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
             <TabsList className="bg-surface">
+              <TabsTrigger value="unread">Unread</TabsTrigger>
               <TabsTrigger value="open">Open</TabsTrigger>
               <TabsTrigger value="acknowledged">Acknowledged</TabsTrigger>
               <TabsTrigger value="resolved">Resolved</TabsTrigger>
@@ -97,6 +128,7 @@ function AlertsPage() {
           </Tabs>
         }
       >
+
         {error ? (
           <ErrorState message={error.message} onRetry={() => refetch()} />
         ) : isPending ? (
