@@ -17,6 +17,8 @@ import {
   ScrollText,
   UserCircle2,
   ShieldCheck,
+  Timer,
+  KeyRound,
 } from "lucide-react";
 
 import {
@@ -47,12 +49,14 @@ const CONVERSATION_IQ = [
   { title: "AI Review", url: "/conversationiq/review", icon: BrainCircuit },
   { title: "Keywords", url: "/conversationiq/keywords", icon: Tags },
   { title: "Languages", url: "/conversationiq/languages", icon: Languages },
+  { title: "SLA Policies", url: "/conversationiq/sla", icon: Timer },
 ];
 
 const ESTATE = [
   { title: "Outlets", url: "/outlets", icon: Store },
   { title: "Cameras", url: "/cameras", icon: Cctv },
   { title: "Users", url: "/users", icon: Users },
+  { title: "Roles & Access", url: "/admin/roles", icon: KeyRound },
 ];
 
 const GOVERNANCE = [
