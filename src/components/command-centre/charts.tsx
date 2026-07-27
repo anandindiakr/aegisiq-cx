@@ -15,6 +15,7 @@ import {
   Legend,
   Pie,
   PieChart,
+  PolarAngleAxis,
   RadialBar,
   RadialBarChart,
   ResponsiveContainer,
@@ -210,6 +211,7 @@ export function GaugeChart({ value, height = 220 }: { value: number; height?: nu
         endAngle={-40}
         barSize={16}
       >
+        <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
         <RadialBar background={{ fill: "var(--color-muted)" }} dataKey="value" cornerRadius={12} />
       </RadialBarChart>
     </ChartFrame>
