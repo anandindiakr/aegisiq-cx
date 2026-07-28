@@ -213,7 +213,7 @@ export function ExportMenu({
           {OPTIONS.map((option) => (
             <DropdownMenuItem
               key={option.format}
-              onSelect={() => run(option.format)}
+              onSelect={() => preflight(option.format)}
               className="gap-2.5"
               disabled={active.formats.length > 0 && !active.formats.includes(option.format)}
             >
