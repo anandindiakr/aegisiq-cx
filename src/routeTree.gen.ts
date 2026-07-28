@@ -58,6 +58,7 @@ import { Route as AuthenticatedConversationiqConversationIdRouteImport } from '.
 import { Route as AuthenticatedAdministrationSpeechRouteImport } from './routes/_authenticated/administration.speech'
 import { Route as AuthenticatedAdministrationSecurityRouteImport } from './routes/_authenticated/administration.security'
 import { Route as AuthenticatedAdministrationLanguagesRouteImport } from './routes/_authenticated/administration.languages'
+import { Route as AuthenticatedAdministrationKeywordsRouteImport } from './routes/_authenticated/administration.keywords'
 import { Route as AuthenticatedAdministrationGeneralRouteImport } from './routes/_authenticated/administration.general'
 import { Route as AuthenticatedAdministrationAlertsRouteImport } from './routes/_authenticated/administration.alerts'
 import { Route as AuthenticatedAdministrationAiRouteImport } from './routes/_authenticated/administration.ai'
@@ -341,6 +342,12 @@ const AuthenticatedAdministrationLanguagesRoute =
     path: '/languages',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
+const AuthenticatedAdministrationKeywordsRoute =
+  AuthenticatedAdministrationKeywordsRouteImport.update({
+    id: '/keywords',
+    path: '/keywords',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationGeneralRoute =
   AuthenticatedAdministrationGeneralRouteImport.update({
     id: '/general',
@@ -400,6 +407,7 @@ export interface FileRoutesByFullPath {
   '/administration/ai': typeof AuthenticatedAdministrationAiRoute
   '/administration/alerts': typeof AuthenticatedAdministrationAlertsRoute
   '/administration/general': typeof AuthenticatedAdministrationGeneralRoute
+  '/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
   '/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
   '/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
@@ -454,6 +462,7 @@ export interface FileRoutesByTo {
   '/administration/ai': typeof AuthenticatedAdministrationAiRoute
   '/administration/alerts': typeof AuthenticatedAdministrationAlertsRoute
   '/administration/general': typeof AuthenticatedAdministrationGeneralRoute
+  '/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
   '/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
   '/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
@@ -511,6 +520,7 @@ export interface FileRoutesById {
   '/_authenticated/administration/ai': typeof AuthenticatedAdministrationAiRoute
   '/_authenticated/administration/alerts': typeof AuthenticatedAdministrationAlertsRoute
   '/_authenticated/administration/general': typeof AuthenticatedAdministrationGeneralRoute
+  '/_authenticated/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
   '/_authenticated/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
   '/_authenticated/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/_authenticated/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
@@ -568,6 +578,7 @@ export interface FileRouteTypes {
     | '/administration/ai'
     | '/administration/alerts'
     | '/administration/general'
+    | '/administration/keywords'
     | '/administration/languages'
     | '/administration/security'
     | '/administration/speech'
@@ -622,6 +633,7 @@ export interface FileRouteTypes {
     | '/administration/ai'
     | '/administration/alerts'
     | '/administration/general'
+    | '/administration/keywords'
     | '/administration/languages'
     | '/administration/security'
     | '/administration/speech'
@@ -678,6 +690,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/ai'
     | '/_authenticated/administration/alerts'
     | '/_authenticated/administration/general'
+    | '/_authenticated/administration/keywords'
     | '/_authenticated/administration/languages'
     | '/_authenticated/administration/security'
     | '/_authenticated/administration/speech'
@@ -1059,6 +1072,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationLanguagesRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
+    '/_authenticated/administration/keywords': {
+      id: '/_authenticated/administration/keywords'
+      path: '/keywords'
+      fullPath: '/administration/keywords'
+      preLoaderRoute: typeof AuthenticatedAdministrationKeywordsRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/general': {
       id: '/_authenticated/administration/general'
       path: '/general'
@@ -1101,6 +1121,7 @@ interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationAiRoute: typeof AuthenticatedAdministrationAiRoute
   AuthenticatedAdministrationAlertsRoute: typeof AuthenticatedAdministrationAlertsRoute
   AuthenticatedAdministrationGeneralRoute: typeof AuthenticatedAdministrationGeneralRoute
+  AuthenticatedAdministrationKeywordsRoute: typeof AuthenticatedAdministrationKeywordsRoute
   AuthenticatedAdministrationLanguagesRoute: typeof AuthenticatedAdministrationLanguagesRoute
   AuthenticatedAdministrationSecurityRoute: typeof AuthenticatedAdministrationSecurityRoute
   AuthenticatedAdministrationSpeechRoute: typeof AuthenticatedAdministrationSpeechRoute
@@ -1114,6 +1135,8 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
       AuthenticatedAdministrationAlertsRoute,
     AuthenticatedAdministrationGeneralRoute:
       AuthenticatedAdministrationGeneralRoute,
+    AuthenticatedAdministrationKeywordsRoute:
+      AuthenticatedAdministrationKeywordsRoute,
     AuthenticatedAdministrationLanguagesRoute:
       AuthenticatedAdministrationLanguagesRoute,
     AuthenticatedAdministrationSecurityRoute:
