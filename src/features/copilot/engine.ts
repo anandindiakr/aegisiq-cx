@@ -1136,10 +1136,13 @@ function followUpsFor(response: CopilotResponse): CopilotFollowUp[] {
 }
 
 /**
- * Public entry point: confirms ambiguous entities, resolves the intent
- * (streaming partials where supported) and attaches follow-up chips.
+ * Public entry point: strips an approval prefix, confirms ambiguous entities,
+ * resolves the intent (streaming partials where supported) and attaches
+ * follow-up chips.
  */
-export async function resolveCopilotCommand(opts: ResolveOptions): Promise<CopilotResponse> {
+export async function resolveCopilotCommand(input: ResolveOptions): Promise<CopilotResponse> {
+  const { text, confirmed } = stripConfirmation(input.text.trim());
+  const opts: ResolveOptions = { ...input, text, confirmed: input.confirmed || confirmed };
   const intent = detectIntent(opts.text, opts.context);
   try {
     const clarification = await clarifyEntities(opts, intent);
@@ -1148,6 +1151,7 @@ export async function resolveCopilotCommand(opts: ResolveOptions): Promise<Copil
     // Clarification is best-effort — never block the command on it.
   }
   const response = await resolveIntent(opts);
-  if (!response.clarification) response.followUps = followUpsFor(response);
+  if (!response.clarification && !response.preview) response.followUps = followUpsFor(response);
   return response;
 }
+
