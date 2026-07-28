@@ -103,6 +103,7 @@ function CommandCentrePage() {
   });
   const overview = overviewQuery.data;
 
+  const access = useWidgetAccess();
   const order = useMemo(() => resolveOrder(layout.widget_order), [layout.widget_order]);
   const hidden = useMemo(() => new Set(layout.hidden_widgets), [layout.hidden_widgets]);
 
