@@ -26,6 +26,11 @@ import {
   BellRing,
   Bot,
   FileText,
+  ServerCog,
+  AudioLines,
+  Activity,
+  Network,
+  Database,
 } from "lucide-react";
 
 import {
