@@ -22,6 +22,8 @@ const dispatchSchema = z.object({
   title: z.string().min(1).max(200),
   summary: z.string().max(1000).default(""),
   data: z.record(z.unknown()).default({}),
+  /** Stable key so a repeated dispatch of the same event is not re-sent. */
+  dedupeKey: z.string().min(4).max(200).optional(),
 });
 
 export const dispatchNotificationEvent = createServerFn({ method: "POST" })
@@ -34,7 +36,7 @@ export const dispatchNotificationEvent = createServerFn({ method: "POST" })
       title: data.title,
       summary: data.summary,
       data: data.data as Record<string, unknown>,
-    });
+    }, { dedupeKey: data.dedupeKey });
     return { delivered: results.filter((r) => r.status === "sent").length, results };
   });
 

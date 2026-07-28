@@ -19,6 +19,8 @@ import {
   PageHeader,
   Panel,
 } from "@/components/common/Primitives";
+import { RecipientGroupsPanel } from "@/features/command-centre/RecipientGroupsPanel";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -369,6 +371,10 @@ function CopilotNotifications() {
           )}
         </div>
       </Panel>
+
+      <RecipientGroupsPanel />
+
+
 
       <Panel title="Recent report notifications">
         {deliveries.isLoading ? (
