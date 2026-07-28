@@ -196,15 +196,21 @@ function previewParameters(
   overview: ExecutiveOverview,
 ): { label: string; value: string }[] {
   const f = opts.filters;
+  const list = (values: string[], fallback: string) =>
+    values.length > 0 ? values.join(", ") : fallback;
   return [
     { label: "Format", value: format.toUpperCase() },
     { label: "Period", value: rangeLabel(f) },
-    { label: "Outlet", value: opts.context?.outletName ?? f.outletId ?? "All outlets" },
-    { label: "Region", value: f.region ?? "All regions" },
-    { label: "Language", value: f.language ?? "All languages" },
+    {
+      label: "Outlets",
+      value: opts.context?.outletName ?? list(f.outlets, "All outlets"),
+    },
+    { label: "Regions", value: list(f.regions, "All regions") },
+    { label: "Languages", value: list(f.languages, "All languages") },
     { label: "Conversations", value: formatNumber(overview.kpis.total) },
     { label: "Delivery", value: "Download to this device" },
   ];
+
 }
 
 // ---------------------------------------------------------------------------
