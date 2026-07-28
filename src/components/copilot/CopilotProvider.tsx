@@ -276,6 +276,13 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           const overview = await queryClient.ensureQueryData(executiveOverviewQuery(filters));
           exportExecutiveReport(response.exportFormat, overview, filters);
           toast.success(`Executive report exported (${response.exportFormat.toUpperCase()})`);
+          void notify(
+            "export.completed",
+            `Copilot export ready (${response.exportFormat.toUpperCase()})`,
+            `Board pack for ${rangeLabel(filters)} exported from Aegis Copilot.`,
+            { format: response.exportFormat, command: trimmed },
+          );
+
           if (response.intent === "export_report") {
             const favourites = prefsRef.current?.favorite_reports ?? [];
             if (!favourites.includes(response.exportFormat)) {
