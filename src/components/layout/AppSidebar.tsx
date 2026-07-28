@@ -181,6 +181,12 @@ export function AppSidebar() {
           pathname={pathname}
         />
         <NavGroup label="Estate" items={ESTATE} collapsed={collapsed} pathname={pathname} />
+        <NavGroup
+          label="Infrastructure"
+          items={INFRASTRUCTURE}
+          collapsed={collapsed}
+          pathname={pathname}
+        />
         <NavGroup label="Governance" items={GOVERNANCE} collapsed={collapsed} pathname={pathname} />
       </SidebarContent>
 
