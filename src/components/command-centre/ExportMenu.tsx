@@ -227,11 +227,19 @@ export function ExportMenu({
         </DropdownMenuContent>
       </DropdownMenu>
 
+      <ExportPreviewDialog
+        preview={preview}
+        onOpenChange={(open) => !open && setPreview(null)}
+        onConfirm={run}
+        busy={busy}
+      />
+
       <TemplateManager
         open={manageOpen}
         onOpenChange={setManageOpen}
         templates={templatesQuery.data ?? []}
       />
+
     </>
   );
 }
