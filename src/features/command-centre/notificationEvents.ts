@@ -11,6 +11,8 @@ export const NOTIFICATION_EVENTS = [
   "export.failed",
   "delivery.completed",
   "delivery.failed",
+  "report.completed",
+  "report.failed",
   "access_request.created",
   "access_request.approved",
   "access_request.denied",
@@ -24,6 +26,8 @@ export const EVENT_LABELS: Record<NotificationEvent, string> = {
   "export.failed": "Export failed",
   "delivery.completed": "Scheduled delivery completed",
   "delivery.failed": "Scheduled delivery failed",
+  "report.completed": "Executive report completed",
+  "report.failed": "Executive report failed",
   "access_request.created": "Widget access requested",
   "access_request.approved": "Widget access approved",
   "access_request.denied": "Widget access denied",
@@ -33,7 +37,14 @@ export const EVENT_LABELS: Record<NotificationEvent, string> = {
 export const EVENT_GROUPS: { label: string; events: NotificationEvent[] }[] = [
   {
     label: "Exports & deliveries",
-    events: ["export.completed", "export.failed", "delivery.completed", "delivery.failed"],
+    events: [
+      "export.completed",
+      "export.failed",
+      "delivery.completed",
+      "delivery.failed",
+      "report.completed",
+      "report.failed",
+    ],
   },
   {
     label: "Access requests",
