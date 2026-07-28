@@ -42,31 +42,30 @@ export function CameraWall({
               RING[camera.status] ?? "ring-border",
             )}
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 flex-1 items-center gap-2.5">
-                <span
-                  className={cn(
-                    "grid size-9 shrink-0 place-items-center rounded-lg",
-                    offline ? "bg-destructive/12 text-destructive" : "bg-primary/12 text-primary",
-                  )}
-                >
-                  {offline ? <WifiOff className="size-4" /> : <Cctv className="size-4" />}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{camera.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {outletName(camera.outlet_id)} · {camera.location ?? "Unmapped"}
-                  </p>
-                </div>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span
+                className={cn(
+                  "grid size-9 shrink-0 place-items-center rounded-lg",
+                  offline ? "bg-destructive/12 text-destructive" : "bg-primary/12 text-primary",
+                )}
+              >
+                {offline ? <WifiOff className="size-4" /> : <Cctv className="size-4" />}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{camera.name}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {outletName(camera.outlet_id)} · {camera.location ?? "Unmapped"}
+                </p>
               </div>
-              <span className="shrink-0">
-                <StatusPill label={camera.status} tone={TONE[camera.status] ?? "neutral"} />
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
+              <StatusPill label={camera.status} tone={TONE[camera.status] ?? "neutral"} />
+              <span className="tabular-nums">
+                Audio {camera.audio_enabled ? "on" : "off"} · seen{" "}
+                {formatRelative(camera.last_seen_at)}
               </span>
             </div>
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 text-[11px] text-muted-foreground">
-              <span>Audio {camera.audio_enabled ? "enabled" : "muted"}</span>
-              <span className="tabular-nums">Seen {formatRelative(camera.last_seen_at)}</span>
-            </div>
+
           </motion.article>
         );
       })}
