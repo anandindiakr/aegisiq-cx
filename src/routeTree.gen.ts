@@ -33,6 +33,7 @@ import { Route as AuthenticatedAlertCentreRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAlertAnalyticsRouteImport } from './routes/_authenticated/alert-analytics'
 import { Route as AuthenticatedConversationiqIndexRouteImport } from './routes/_authenticated/conversationiq.index'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
+import { Route as AuthenticatedInfrastructureNetworkRouteImport } from './routes/_authenticated/infrastructure.network'
 import { Route as AuthenticatedInfrastructureHealthRouteImport } from './routes/_authenticated/infrastructure.health'
 import { Route as AuthenticatedInfrastructureGatewaysRouteImport } from './routes/_authenticated/infrastructure.gateways'
 import { Route as AuthenticatedInfrastructureEnginesRouteImport } from './routes/_authenticated/infrastructure.engines'
@@ -181,6 +182,12 @@ const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
   path: '/api/public/telemetry',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedInfrastructureNetworkRoute =
+  AuthenticatedInfrastructureNetworkRouteImport.update({
+    id: '/infrastructure/network',
+    path: '/infrastructure/network',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInfrastructureHealthRoute =
   AuthenticatedInfrastructureHealthRouteImport.update({
     id: '/infrastructure/health',
@@ -336,6 +343,7 @@ export interface FileRoutesByFullPath {
   '/infrastructure/engines': typeof AuthenticatedInfrastructureEnginesRoute
   '/infrastructure/gateways': typeof AuthenticatedInfrastructureGatewaysRoute
   '/infrastructure/health': typeof AuthenticatedInfrastructureHealthRoute
+  '/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
 }
@@ -380,6 +388,7 @@ export interface FileRoutesByTo {
   '/infrastructure/engines': typeof AuthenticatedInfrastructureEnginesRoute
   '/infrastructure/gateways': typeof AuthenticatedInfrastructureGatewaysRoute
   '/infrastructure/health': typeof AuthenticatedInfrastructureHealthRoute
+  '/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/conversationiq': typeof AuthenticatedConversationiqIndexRoute
 }
@@ -426,6 +435,7 @@ export interface FileRoutesById {
   '/_authenticated/infrastructure/engines': typeof AuthenticatedInfrastructureEnginesRoute
   '/_authenticated/infrastructure/gateways': typeof AuthenticatedInfrastructureGatewaysRoute
   '/_authenticated/infrastructure/health': typeof AuthenticatedInfrastructureHealthRoute
+  '/_authenticated/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/_authenticated/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
 }
@@ -472,6 +482,7 @@ export interface FileRouteTypes {
     | '/infrastructure/engines'
     | '/infrastructure/gateways'
     | '/infrastructure/health'
+    | '/infrastructure/network'
     | '/api/public/telemetry'
     | '/conversationiq/'
   fileRoutesByTo: FileRoutesByTo
@@ -516,6 +527,7 @@ export interface FileRouteTypes {
     | '/infrastructure/engines'
     | '/infrastructure/gateways'
     | '/infrastructure/health'
+    | '/infrastructure/network'
     | '/api/public/telemetry'
     | '/conversationiq'
   id:
@@ -561,6 +573,7 @@ export interface FileRouteTypes {
     | '/_authenticated/infrastructure/engines'
     | '/_authenticated/infrastructure/gateways'
     | '/_authenticated/infrastructure/health'
+    | '/_authenticated/infrastructure/network'
     | '/api/public/telemetry'
     | '/_authenticated/conversationiq/'
   fileRoutesById: FileRoutesById
@@ -743,6 +756,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTelemetryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/infrastructure/network': {
+      id: '/_authenticated/infrastructure/network'
+      path: '/infrastructure/network'
+      fullPath: '/infrastructure/network'
+      preLoaderRoute: typeof AuthenticatedInfrastructureNetworkRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/infrastructure/health': {
       id: '/_authenticated/infrastructure/health'
       path: '/infrastructure/health'
@@ -917,6 +937,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInfrastructureEnginesRoute: typeof AuthenticatedInfrastructureEnginesRoute
   AuthenticatedInfrastructureGatewaysRoute: typeof AuthenticatedInfrastructureGatewaysRoute
   AuthenticatedInfrastructureHealthRoute: typeof AuthenticatedInfrastructureHealthRoute
+  AuthenticatedInfrastructureNetworkRoute: typeof AuthenticatedInfrastructureNetworkRoute
   AuthenticatedConversationiqIndexRoute: typeof AuthenticatedConversationiqIndexRoute
 }
 
@@ -970,6 +991,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedInfrastructureGatewaysRoute,
   AuthenticatedInfrastructureHealthRoute:
     AuthenticatedInfrastructureHealthRoute,
+  AuthenticatedInfrastructureNetworkRoute:
+    AuthenticatedInfrastructureNetworkRoute,
   AuthenticatedConversationiqIndexRoute: AuthenticatedConversationiqIndexRoute,
 }
 
