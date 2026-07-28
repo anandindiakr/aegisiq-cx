@@ -62,6 +62,7 @@ import { Route as AuthenticatedAdministrationLanguagesRouteImport } from './rout
 import { Route as AuthenticatedAdministrationKeywordsRouteImport } from './routes/_authenticated/administration.keywords'
 import { Route as AuthenticatedAdministrationIntegrationsRouteImport } from './routes/_authenticated/administration.integrations'
 import { Route as AuthenticatedAdministrationGeneralRouteImport } from './routes/_authenticated/administration.general'
+import { Route as AuthenticatedAdministrationBackupRouteImport } from './routes/_authenticated/administration.backup'
 import { Route as AuthenticatedAdministrationApiKeysRouteImport } from './routes/_authenticated/administration.api-keys'
 import { Route as AuthenticatedAdministrationAlertsRouteImport } from './routes/_authenticated/administration.alerts'
 import { Route as AuthenticatedAdministrationAiRouteImport } from './routes/_authenticated/administration.ai'
@@ -369,6 +370,12 @@ const AuthenticatedAdministrationGeneralRoute =
     path: '/general',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
+const AuthenticatedAdministrationBackupRoute =
+  AuthenticatedAdministrationBackupRouteImport.update({
+    id: '/backup',
+    path: '/backup',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationApiKeysRoute =
   AuthenticatedAdministrationApiKeysRouteImport.update({
     id: '/api-keys',
@@ -428,6 +435,7 @@ export interface FileRoutesByFullPath {
   '/administration/ai': typeof AuthenticatedAdministrationAiRoute
   '/administration/alerts': typeof AuthenticatedAdministrationAlertsRoute
   '/administration/api-keys': typeof AuthenticatedAdministrationApiKeysRoute
+  '/administration/backup': typeof AuthenticatedAdministrationBackupRoute
   '/administration/general': typeof AuthenticatedAdministrationGeneralRoute
   '/administration/integrations': typeof AuthenticatedAdministrationIntegrationsRoute
   '/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
@@ -486,6 +494,7 @@ export interface FileRoutesByTo {
   '/administration/ai': typeof AuthenticatedAdministrationAiRoute
   '/administration/alerts': typeof AuthenticatedAdministrationAlertsRoute
   '/administration/api-keys': typeof AuthenticatedAdministrationApiKeysRoute
+  '/administration/backup': typeof AuthenticatedAdministrationBackupRoute
   '/administration/general': typeof AuthenticatedAdministrationGeneralRoute
   '/administration/integrations': typeof AuthenticatedAdministrationIntegrationsRoute
   '/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
@@ -547,6 +556,7 @@ export interface FileRoutesById {
   '/_authenticated/administration/ai': typeof AuthenticatedAdministrationAiRoute
   '/_authenticated/administration/alerts': typeof AuthenticatedAdministrationAlertsRoute
   '/_authenticated/administration/api-keys': typeof AuthenticatedAdministrationApiKeysRoute
+  '/_authenticated/administration/backup': typeof AuthenticatedAdministrationBackupRoute
   '/_authenticated/administration/general': typeof AuthenticatedAdministrationGeneralRoute
   '/_authenticated/administration/integrations': typeof AuthenticatedAdministrationIntegrationsRoute
   '/_authenticated/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
@@ -608,6 +618,7 @@ export interface FileRouteTypes {
     | '/administration/ai'
     | '/administration/alerts'
     | '/administration/api-keys'
+    | '/administration/backup'
     | '/administration/general'
     | '/administration/integrations'
     | '/administration/keywords'
@@ -666,6 +677,7 @@ export interface FileRouteTypes {
     | '/administration/ai'
     | '/administration/alerts'
     | '/administration/api-keys'
+    | '/administration/backup'
     | '/administration/general'
     | '/administration/integrations'
     | '/administration/keywords'
@@ -726,6 +738,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/ai'
     | '/_authenticated/administration/alerts'
     | '/_authenticated/administration/api-keys'
+    | '/_authenticated/administration/backup'
     | '/_authenticated/administration/general'
     | '/_authenticated/administration/integrations'
     | '/_authenticated/administration/keywords'
@@ -1139,6 +1152,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationGeneralRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
+    '/_authenticated/administration/backup': {
+      id: '/_authenticated/administration/backup'
+      path: '/backup'
+      fullPath: '/administration/backup'
+      preLoaderRoute: typeof AuthenticatedAdministrationBackupRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/api-keys': {
       id: '/_authenticated/administration/api-keys'
       path: '/api-keys'
@@ -1181,6 +1201,7 @@ interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationAiRoute: typeof AuthenticatedAdministrationAiRoute
   AuthenticatedAdministrationAlertsRoute: typeof AuthenticatedAdministrationAlertsRoute
   AuthenticatedAdministrationApiKeysRoute: typeof AuthenticatedAdministrationApiKeysRoute
+  AuthenticatedAdministrationBackupRoute: typeof AuthenticatedAdministrationBackupRoute
   AuthenticatedAdministrationGeneralRoute: typeof AuthenticatedAdministrationGeneralRoute
   AuthenticatedAdministrationIntegrationsRoute: typeof AuthenticatedAdministrationIntegrationsRoute
   AuthenticatedAdministrationKeywordsRoute: typeof AuthenticatedAdministrationKeywordsRoute
@@ -1198,6 +1219,8 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
       AuthenticatedAdministrationAlertsRoute,
     AuthenticatedAdministrationApiKeysRoute:
       AuthenticatedAdministrationApiKeysRoute,
+    AuthenticatedAdministrationBackupRoute:
+      AuthenticatedAdministrationBackupRoute,
     AuthenticatedAdministrationGeneralRoute:
       AuthenticatedAdministrationGeneralRoute,
     AuthenticatedAdministrationIntegrationsRoute:
