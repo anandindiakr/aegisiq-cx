@@ -32,6 +32,7 @@ import { Route as AuthenticatedAssistantRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
 import { Route as AuthenticatedAlertCentreRouteImport } from './routes/_authenticated/alert-centre'
 import { Route as AuthenticatedAlertAnalyticsRouteImport } from './routes/_authenticated/alert-analytics'
+import { Route as AuthenticatedAdministrationRouteImport } from './routes/_authenticated/administration'
 import { Route as AuthenticatedConversationiqIndexRouteImport } from './routes/_authenticated/conversationiq.index'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as AuthenticatedInfrastructureStorageRouteImport } from './routes/_authenticated/infrastructure.storage'
@@ -178,6 +179,12 @@ const AuthenticatedAlertAnalyticsRoute =
     path: '/alert-analytics',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdministrationRoute =
+  AuthenticatedAdministrationRouteImport.update({
+    id: '/administration',
+    path: '/administration',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConversationiqIndexRoute =
   AuthenticatedConversationiqIndexRouteImport.update({
     id: '/conversationiq/',
@@ -320,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
+  '/administration': typeof AuthenticatedAdministrationRoute
   '/alert-analytics': typeof AuthenticatedAlertAnalyticsRoute
   '/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/alerts': typeof AuthenticatedAlertsRoute
@@ -367,6 +375,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
+  '/administration': typeof AuthenticatedAdministrationRoute
   '/alert-analytics': typeof AuthenticatedAlertAnalyticsRoute
   '/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/alerts': typeof AuthenticatedAlertsRoute
@@ -416,6 +425,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
+  '/_authenticated/administration': typeof AuthenticatedAdministrationRoute
   '/_authenticated/alert-analytics': typeof AuthenticatedAlertAnalyticsRoute
   '/_authenticated/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
@@ -465,6 +475,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/reset-password'
     | '/signin'
+    | '/administration'
     | '/alert-analytics'
     | '/alert-centre'
     | '/alerts'
@@ -512,6 +523,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/reset-password'
     | '/signin'
+    | '/administration'
     | '/alert-analytics'
     | '/alert-centre'
     | '/alerts'
@@ -560,6 +572,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/reset-password'
     | '/signin'
+    | '/_authenticated/administration'
     | '/_authenticated/alert-analytics'
     | '/_authenticated/alert-centre'
     | '/_authenticated/alerts'
@@ -775,6 +788,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAlertAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/administration': {
+      id: '/_authenticated/administration'
+      path: '/administration'
+      fullPath: '/administration'
+      preLoaderRoute: typeof AuthenticatedAdministrationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/conversationiq/': {
       id: '/_authenticated/conversationiq/'
       path: '/conversationiq'
@@ -940,6 +960,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdministrationRoute: typeof AuthenticatedAdministrationRoute
   AuthenticatedAlertAnalyticsRoute: typeof AuthenticatedAlertAnalyticsRoute
   AuthenticatedAlertCentreRoute: typeof AuthenticatedAlertCentreRoute
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
@@ -983,6 +1004,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdministrationRoute: AuthenticatedAdministrationRoute,
   AuthenticatedAlertAnalyticsRoute: AuthenticatedAlertAnalyticsRoute,
   AuthenticatedAlertCentreRoute: AuthenticatedAlertCentreRoute,
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
