@@ -214,6 +214,11 @@ function CommandCentrePage() {
               {overview &&
                 ` · updated ${new Date(overview.generatedAt).toLocaleTimeString("en-GB")}`}
             </Badge>
+            {restricted > 0 && (
+              <Badge variant="outline" className="text-[11px] text-muted-foreground">
+                {restricted} widget{restricted === 1 ? "" : "s"} restricted
+              </Badge>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -224,25 +229,9 @@ function CommandCentrePage() {
               <RefreshCw className={overviewQuery.isFetching ? "size-4 animate-spin" : "size-4"} />
               Refresh
             </Button>
-            <Badge
-              variant="outline"
-              className={
-                realtime.connected
-                  ? "gap-1.5 text-[11px] text-emerald-400"
-                  : "gap-1.5 text-[11px] text-muted-foreground"
-              }
-            >
-              <span
-                className={
-                  realtime.connected
-                    ? "size-1.5 rounded-full bg-emerald-400"
-                    : "size-1.5 rounded-full bg-muted-foreground"
-                }
-              />
-              {realtime.connected ? "Live" : "Offline"}
-              {realtime.events > 0 && ` · ${realtime.events}`}
-            </Badge>
+            <LiveStatusPanel status={realtime} />
             <ExportMenu overview={overview} filters={filters} />
+            <ExportHistory />
             <ScheduledReports />
             <DashboardAuditTrail />
             <DashboardSettings layout={layout} />
