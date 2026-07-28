@@ -1,6 +1,18 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, Check, Copy, Loader2, Plus, Share2, Trash2, Users } from "lucide-react";
+import {
+  Bookmark,
+  Check,
+  Copy,
+  Loader2,
+  Plus,
+  Settings2,
+  Share2,
+  Star,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -21,9 +33,11 @@ import {
   filterPresetsQuery,
   presetShareUrl,
   presetToFilters,
+  scopeLabel,
   updateFilterPreset,
   type FilterPreset,
 } from "@/features/command-centre/presets";
+
 
 /**
  * Saved filter presets: capture the current global filter set under a name and
