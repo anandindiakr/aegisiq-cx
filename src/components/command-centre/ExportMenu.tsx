@@ -100,6 +100,8 @@ export function ExportMenu({
   const [busy, setBusy] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [templateId, setTemplateId] = useState<string>(FULL_TEMPLATE.id);
+  const [preview, setPreview] = useState<ExportPreview | null>(null);
+
 
   const templatesQuery = useQuery(reportTemplatesQuery);
   const templates = useMemo(
