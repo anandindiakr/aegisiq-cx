@@ -24,6 +24,7 @@ import {
   Settings2,
   Siren,
   Sparkles,
+  Square,
   Store,
   Tags,
   Timer,
@@ -124,6 +125,7 @@ export function CopilotDock() {
     minimised,
     messages,
     busy,
+    cancel,
     context,
     preferences,
     run,
@@ -315,9 +317,19 @@ export function CopilotDock() {
               )}
 
               {busy && (
-                <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Loader2 className="size-3.5 animate-spin" /> Working on it…
-                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="size-3.5 animate-spin" /> Working on it…
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-destructive"
+                    onClick={() => cancel()}
+                  >
+                    <Square className="size-3" /> Cancel
+                  </Button>
+                </div>
               )}
               {voice.state === "listening" && (
                 <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2">

@@ -9,7 +9,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Clock, PlayCircle, RefreshCw, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, FileDown, PlayCircle, RefreshCw, Send, XCircle } from "lucide-react";
 
 import {
   EmptyState,
@@ -33,6 +33,8 @@ import {
   REPORT_RUN_STATUS_LABELS,
   copilotReportRunsQuery,
   isResumable,
+  reportArtifactsQuery,
+  type CopilotReportArtifact,
   type CopilotReportRun,
   type ReportRunStatus,
 } from "@/features/copilot/reportRuns";
@@ -65,9 +67,10 @@ const STATUS_STYLE: Record<ReportRunStatus, { icon: typeof Clock; className: str
   completed: { icon: CheckCircle2, className: "text-success" },
   partial: { icon: RefreshCw, className: "text-warning" },
   failed: { icon: XCircle, className: "text-destructive" },
+  cancelled: { icon: XCircle, className: "text-muted-foreground" },
 };
 
-function RunRow({ run }: { run: CopilotReportRun }) {
+function RunRow({ run, artifacts }: { run: CopilotReportRun; artifacts: CopilotReportArtifact[] }) {
   const { run: runCommand, setOpen, busy } = useCopilot();
   const [open, setOpenRow] = useState(false);
   const style = STATUS_STYLE[run.status] ?? STATUS_STYLE.running;
@@ -120,6 +123,25 @@ function RunRow({ run }: { run: CopilotReportRun }) {
         </div>
       </div>
 
+      {artifacts.length > 0 && (
+        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">Artifacts:</span>
+          {artifacts.map((artifact) => (
+            <Badge key={artifact.id} variant="outline" className="gap-1 font-normal">
+              {artifact.kind === "delivery" ? (
+                <Send className="size-3" />
+              ) : (
+                <FileDown className="size-3" />
+              )}
+              {artifact.kind === "delivery"
+                ? `${artifact.channel ?? "delivery"} → ${artifact.destination ?? "recipients"}`
+                : (artifact.filename ?? (artifact.format ?? "file").toUpperCase())}
+              <span className="text-muted-foreground">· {artifact.status}</span>
+            </Badge>
+          ))}
+        </div>
+      )}
+
       {run.error_message && (
         <p className="mt-2 text-xs text-warning">Incomplete: {run.error_message}</p>
       )}
@@ -135,6 +157,7 @@ function RunRow({ run }: { run: CopilotReportRun }) {
 
 function MyExecutiveReports() {
   const { data, isLoading, isError, error, refetch } = useQuery(copilotReportRunsQuery);
+  const { data: artifacts } = useQuery(reportArtifactsQuery);
   const [status, setStatus] = useState<string>("all");
 
   const runs = useMemo(
@@ -182,7 +205,11 @@ function MyExecutiveReports() {
         ) : (
           <div className="space-y-2.5">
             {runs.map((run) => (
-              <RunRow key={run.id} run={run} />
+              <RunRow
+                key={run.id}
+                run={run}
+                artifacts={(artifacts ?? []).filter((a) => a.run_id === run.id)}
+              />
             ))}
           </div>
         )}

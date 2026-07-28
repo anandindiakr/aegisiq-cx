@@ -29,9 +29,12 @@ import {
 import { exportExecutiveReport } from "@/features/command-centre/export";
 import { notify } from "@/features/command-centre/notificationChannels";
 import { useIqAccess } from "@/features/conversationiq/access";
-import { resolveCopilotCommand } from "@/features/copilot/engine";
+import { CopilotCancelled, resolveCopilotCommand } from "@/features/copilot/engine";
 import {
+  checkpointReportRun,
   finishReportRun,
+  findInterruptedRun,
+  recordReportArtifact,
   startReportRun,
   type ReportRunStatus,
 } from "@/features/copilot/reportRuns";
@@ -53,6 +56,8 @@ import type {
 /** Extra execution hints — used to resume a partially failed report run. */
 export interface RunOptions {
   resume?: CopilotReportPartial;
+  /** Continue an existing run record instead of opening a new one. */
+  runId?: string;
 }
 
 interface CopilotState {
@@ -69,6 +74,8 @@ interface CopilotState {
   restore: () => void;
   clear: () => void;
   run: (text: string, mode?: CopilotInputMode, options?: RunOptions) => Promise<void>;
+  /** Stops the streaming run in flight; its partial stays resumable. */
+  cancel: () => void;
   publishContext: (context: CopilotSurfaceContext | null) => void;
   savePreferences: (
     patch: Partial<Omit<CopilotPreferences, "id" | "company_id" | "user_id">>,
@@ -119,6 +126,8 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
   const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<CopilotMessage[]>([]);
   const [context, setContext] = useState<CopilotSurfaceContext | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const resumedRef = useRef(false);
   const prefsRef = useRef<CopilotPreferences | null>(null);
   prefsRef.current = preferences ?? null;
 
@@ -183,8 +192,8 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
       // Report runs are recorded in "My executive reports" so a streamed job
       // can be reopened, resumed or re-run later.
       const isReport = /executive (report|summary|brief)|generate report|brief me/i.test(trimmed);
-      let runId: string | null = null;
-      if (isReport) {
+      let runId: string | null = options?.runId ?? null;
+      if (isReport && !runId) {
         runId = await startReportRun({
           command: trimmed,
           intent: "executive_report",
@@ -194,8 +203,13 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
         });
       }
 
+      const controller = new AbortController();
+      abortRef.current = controller;
+      let lastPartial: CopilotReportPartial | undefined = options?.resume;
+
       try {
         const response = await resolveCopilotCommand({
+          signal: controller.signal,
           text: trimmed,
           queryClient,
           context,
@@ -204,7 +218,19 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           canExport: access.can("exportCompliance"),
           canViewTranscripts: access.can("viewTranscripts"),
           resume: options?.resume,
-          onPartial: (partial) =>
+          onPartial: (partial) => {
+            if (partial.report) lastPartial = partial.report;
+            else if (partial.progress) {
+              lastPartial = {
+                sections: partial.progress.sections ?? [],
+                metrics: partial.metrics,
+                body: partial.body,
+                chart: partial.chart,
+              };
+            }
+            // Checkpoint so a refresh or dropped connection leaves a resumable
+            // record instead of an orphaned "running" row.
+            if (runId && lastPartial) void checkpointReportRun(runId, lastPartial);
             upsertAssistant({
               id: assistantId,
               role: "assistant",
@@ -213,7 +239,8 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
               createdAt: new Date().toISOString(),
               response: { ...partial, runId: runId ?? undefined },
               pending: true,
-            }),
+            });
+          },
         });
 
         if (runId) response.runId = runId;
@@ -249,6 +276,17 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
               ? `Generated in ${Math.round(durationMs / 100) / 10}s across ${response.report?.sections.length ?? 0} sections.`
               : `${failed.length} section(s) failed: ${failed.map((s) => s.label).join(", ")}.`,
             { runId, command: trimmed, status },
+          ).then(() =>
+            recordReportArtifact({
+              runId,
+              kind: "delivery",
+              channel: "notification",
+              destination: "configured recipients",
+              status: status === "completed" ? "delivered" : "partial",
+              metadata: { range: rangeLabel(filters) },
+            }).then(() =>
+              queryClient.invalidateQueries({ queryKey: ["copilot", "report-artifacts"] }),
+            ),
           );
           if (status === "partial") {
             toast.warning("Executive report finished with failed sections");
@@ -273,6 +311,17 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           const overview = await queryClient.ensureQueryData(executiveOverviewQuery(filters));
           exportExecutiveReport(response.exportFormat, overview, filters);
           toast.success(`Executive report exported (${response.exportFormat.toUpperCase()})`);
+          if (runId) {
+            void recordReportArtifact({
+              runId,
+              kind: "export",
+              format: response.exportFormat,
+              filename: `aegisiq-executive-${new Date().toISOString().slice(0, 10)}.${response.exportFormat === "powerpoint" ? "pptx" : response.exportFormat === "excel" ? "xls" : response.exportFormat}`,
+              metadata: { range: rangeLabel(filters), command: trimmed },
+            }).then(() =>
+              queryClient.invalidateQueries({ queryKey: ["copilot", "report-artifacts"] }),
+            );
+          }
           void notify(
             "export.completed",
             `Copilot export ready (${response.exportFormat.toUpperCase()})`,
@@ -321,6 +370,48 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           durationMs: Date.now() - started,
         });
       } catch (error) {
+        if (error instanceof CopilotCancelled) {
+          const partial = error.partial ?? lastPartial;
+          upsertAssistant({
+            id: assistantId,
+            role: "assistant",
+            text: "Report cancelled",
+            mode,
+            createdAt: new Date().toISOString(),
+            response: {
+              intent: "executive_report",
+              title: "Report cancelled",
+              body: ["You stopped this run. Completed sections were kept — resume to finish it."],
+              metrics: partial?.metrics ?? [],
+              links: [{ label: "My executive reports", to: "/copilot/reports" }],
+              tone: "warning",
+              outcome: "failed",
+              entities: {},
+              report: partial,
+              runId: runId ?? undefined,
+            },
+          });
+          if (runId) {
+            void finishReportRun(runId, {
+              status: "cancelled",
+              partial,
+              errorMessage: "Cancelled by user",
+              durationMs: Date.now() - started,
+            }).then(() => queryClient.invalidateQueries({ queryKey: ["copilot", "report-runs"] }));
+          }
+          void logCopilotEvent({
+            command: trimmed,
+            intent: "executive_report",
+            inputMode: mode,
+            surface,
+            route: pathname,
+            outcome: "failed",
+            deniedReason: "Cancelled by user",
+            durationMs: Date.now() - started,
+          });
+          toast.info("Executive report cancelled");
+          return;
+        }
         const message = error instanceof Error ? error.message : "The copilot could not respond.";
         setMessages((prev) => [
           ...prev,
@@ -366,11 +457,43 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           durationMs: Date.now() - started,
         });
       } finally {
+        abortRef.current = null;
         setBusy(false);
       }
     },
     [access, busy, context, filters, navigate, pathname, queryClient, savePreferences],
   );
+
+  const cancel = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
+
+  // A run left "running" by a refresh or a dropped connection is picked back up
+  // once, continuing from its last successful section.
+  useEffect(() => {
+    if (resumedRef.current) return;
+    resumedRef.current = true;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void findInterruptedRun().then((interrupted) => {
+        if (cancelled || !interrupted) return;
+        toast.info("Reconnected — resuming your executive report");
+        setOpen(true);
+        setMinimised(false);
+        void run(interrupted.command, "text", {
+          resume: interrupted.partial?.sections?.length
+            ? (interrupted.partial as CopilotReportPartial)
+            : undefined,
+          runId: interrupted.id,
+        });
+      });
+    }, 1200);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ⌘K / Ctrl+K opens the copilot from anywhere.
   useEffect(() => {
@@ -410,11 +533,13 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
       },
       clear: () => setMessages([]),
       run,
+      cancel,
       publishContext,
       savePreferences,
     }),
     [
       busy,
+      cancel,
       context,
       filters,
       messages,
