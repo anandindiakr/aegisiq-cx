@@ -1382,6 +1382,66 @@ export type Database = {
         }
         Relationships: []
       }
+      device_credentials: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          device_id: string
+          device_type: string
+          id: string
+          label: string
+          last_revealed_at: string | null
+          last_revealed_by: string | null
+          notes: string | null
+          onvif_secret_cipher: string | null
+          onvif_username: string | null
+          rotated_at: string | null
+          rtsp_url: string | null
+          secret_cipher: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          device_id: string
+          device_type: string
+          id?: string
+          label?: string
+          last_revealed_at?: string | null
+          last_revealed_by?: string | null
+          notes?: string | null
+          onvif_secret_cipher?: string | null
+          onvif_username?: string | null
+          rotated_at?: string | null
+          rtsp_url?: string | null
+          secret_cipher?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          device_id?: string
+          device_type?: string
+          id?: string
+          label?: string
+          last_revealed_at?: string | null
+          last_revealed_by?: string | null
+          notes?: string | null
+          onvif_secret_cipher?: string | null
+          onvif_username?: string | null
+          rotated_at?: string | null
+          rtsp_url?: string | null
+          secret_cipher?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
       edge_gateways: {
         Row: {
           agent_version: string
@@ -1655,6 +1715,54 @@ export type Database = {
           template_id?: string | null
           template_name?: string | null
           template_version?: number | null
+        }
+        Relationships: []
+      }
+      infra_audit_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string | null
+          after_state: Json
+          before_state: Json
+          changed_fields: string[]
+          company_id: string
+          created_at: string
+          entity_id: string | null
+          entity_name: string | null
+          entity_type: string
+          id: string
+          summary: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string | null
+          after_state?: Json
+          before_state?: Json
+          changed_fields?: string[]
+          company_id: string
+          created_at?: string
+          entity_id?: string | null
+          entity_name?: string | null
+          entity_type: string
+          id?: string
+          summary?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string | null
+          after_state?: Json
+          before_state?: Json
+          changed_fields?: string[]
+          company_id?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_name?: string | null
+          entity_type?: string
+          id?: string
+          summary?: string
         }
         Relationships: []
       }
@@ -3183,6 +3291,20 @@ export type Database = {
       }
       is_company_admin: { Args: never; Returns: boolean }
       preset_by_share_token: { Args: { _token: string }; Returns: Json }
+      reveal_device_credential: { Args: { _id: string }; Returns: Json }
+      save_device_credential: {
+        Args: {
+          _device_id: string
+          _device_type: string
+          _notes?: string
+          _onvif_secret?: string
+          _onvif_username?: string
+          _rtsp_url?: string
+          _secret: string
+          _username: string
+        }
+        Returns: string
+      }
       tenant_branding: {
         Args: never
         Returns: {
