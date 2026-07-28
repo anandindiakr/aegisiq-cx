@@ -32,6 +32,7 @@ import {
   type ReportFrequency,
   type ReportSchedule,
 } from "@/features/command-centre/queries";
+import { logExportRun } from "@/features/command-centre/exportAudit";
 
 const FREQUENCIES: ReportFrequency[] = ["daily", "weekly", "monthly"];
 const FORMATS: ReportFormat[] = ["pdf", "excel", "csv", "powerpoint"];
