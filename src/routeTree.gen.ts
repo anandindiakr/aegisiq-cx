@@ -57,6 +57,7 @@ import { Route as AuthenticatedConversationiqAuditRouteImport } from './routes/_
 import { Route as AuthenticatedConversationiqConversationIdRouteImport } from './routes/_authenticated/conversationiq.$conversationId'
 import { Route as AuthenticatedAdministrationSpeechRouteImport } from './routes/_authenticated/administration.speech'
 import { Route as AuthenticatedAdministrationSecurityRouteImport } from './routes/_authenticated/administration.security'
+import { Route as AuthenticatedAdministrationLanguagesRouteImport } from './routes/_authenticated/administration.languages'
 import { Route as AuthenticatedAdministrationGeneralRouteImport } from './routes/_authenticated/administration.general'
 import { Route as AuthenticatedAdministrationAlertsRouteImport } from './routes/_authenticated/administration.alerts'
 import { Route as AuthenticatedAdministrationAiRouteImport } from './routes/_authenticated/administration.ai'
@@ -334,6 +335,12 @@ const AuthenticatedAdministrationSecurityRoute =
     path: '/security',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
+const AuthenticatedAdministrationLanguagesRoute =
+  AuthenticatedAdministrationLanguagesRouteImport.update({
+    id: '/languages',
+    path: '/languages',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationGeneralRoute =
   AuthenticatedAdministrationGeneralRouteImport.update({
     id: '/general',
@@ -393,6 +400,7 @@ export interface FileRoutesByFullPath {
   '/administration/ai': typeof AuthenticatedAdministrationAiRoute
   '/administration/alerts': typeof AuthenticatedAdministrationAlertsRoute
   '/administration/general': typeof AuthenticatedAdministrationGeneralRoute
+  '/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
   '/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
@@ -446,6 +454,7 @@ export interface FileRoutesByTo {
   '/administration/ai': typeof AuthenticatedAdministrationAiRoute
   '/administration/alerts': typeof AuthenticatedAdministrationAlertsRoute
   '/administration/general': typeof AuthenticatedAdministrationGeneralRoute
+  '/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
   '/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
@@ -502,6 +511,7 @@ export interface FileRoutesById {
   '/_authenticated/administration/ai': typeof AuthenticatedAdministrationAiRoute
   '/_authenticated/administration/alerts': typeof AuthenticatedAdministrationAlertsRoute
   '/_authenticated/administration/general': typeof AuthenticatedAdministrationGeneralRoute
+  '/_authenticated/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
   '/_authenticated/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/_authenticated/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
@@ -558,6 +568,7 @@ export interface FileRouteTypes {
     | '/administration/ai'
     | '/administration/alerts'
     | '/administration/general'
+    | '/administration/languages'
     | '/administration/security'
     | '/administration/speech'
     | '/conversationiq/$conversationId'
@@ -611,6 +622,7 @@ export interface FileRouteTypes {
     | '/administration/ai'
     | '/administration/alerts'
     | '/administration/general'
+    | '/administration/languages'
     | '/administration/security'
     | '/administration/speech'
     | '/conversationiq/$conversationId'
@@ -666,6 +678,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/ai'
     | '/_authenticated/administration/alerts'
     | '/_authenticated/administration/general'
+    | '/_authenticated/administration/languages'
     | '/_authenticated/administration/security'
     | '/_authenticated/administration/speech'
     | '/_authenticated/conversationiq/$conversationId'
@@ -1039,6 +1052,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationSecurityRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
+    '/_authenticated/administration/languages': {
+      id: '/_authenticated/administration/languages'
+      path: '/languages'
+      fullPath: '/administration/languages'
+      preLoaderRoute: typeof AuthenticatedAdministrationLanguagesRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/general': {
       id: '/_authenticated/administration/general'
       path: '/general'
@@ -1081,6 +1101,7 @@ interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationAiRoute: typeof AuthenticatedAdministrationAiRoute
   AuthenticatedAdministrationAlertsRoute: typeof AuthenticatedAdministrationAlertsRoute
   AuthenticatedAdministrationGeneralRoute: typeof AuthenticatedAdministrationGeneralRoute
+  AuthenticatedAdministrationLanguagesRoute: typeof AuthenticatedAdministrationLanguagesRoute
   AuthenticatedAdministrationSecurityRoute: typeof AuthenticatedAdministrationSecurityRoute
   AuthenticatedAdministrationSpeechRoute: typeof AuthenticatedAdministrationSpeechRoute
   AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
@@ -1093,6 +1114,8 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
       AuthenticatedAdministrationAlertsRoute,
     AuthenticatedAdministrationGeneralRoute:
       AuthenticatedAdministrationGeneralRoute,
+    AuthenticatedAdministrationLanguagesRoute:
+      AuthenticatedAdministrationLanguagesRoute,
     AuthenticatedAdministrationSecurityRoute:
       AuthenticatedAdministrationSecurityRoute,
     AuthenticatedAdministrationSpeechRoute:
