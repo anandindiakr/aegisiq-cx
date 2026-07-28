@@ -13,6 +13,7 @@ import { getActiveTenant } from "@/features/platform/queries";
 import type { CommandFilters } from "./filters";
 import { toRpcPayload } from "./filters";
 import type { ExecutiveOverview } from "./types";
+import { describeLayoutChange, logDashboardAudit } from "./audit";
 
 // The generated database types lag behind new migrations; a narrow cast keeps
 // the service layer strongly typed at its own boundary.
@@ -179,22 +180,54 @@ export async function createReportSchedule(input: {
 }) {
   const companyId = getActiveTenant();
   const { data: auth } = await supabase.auth.getUser();
-  const { error } = await table("executive_report_schedules").insert({
-    ...input,
-    company_id: companyId,
-    created_by: auth.user?.id ?? null,
-  });
+  const { data, error } = await table("executive_report_schedules")
+    .insert({
+      ...input,
+      company_id: companyId,
+      created_by: auth.user?.id ?? null,
+    })
+    .select("id")
+    .single();
   if (error) throw new Error(error.message);
+  await logDashboardAudit({
+    entityType: "report_schedule",
+    entityId: data?.id ?? null,
+    action: "created",
+    summary: `Scheduled report "${input.name}" created (${input.frequency}, ${input.format})`,
+    changedFields: ["name", "frequency", "format", "recipients", "send_hour"],
+    after: input as unknown as Record<string, unknown>,
+  });
 }
 
-export async function updateReportSchedule(id: string, patch: Partial<ReportSchedule>) {
+export async function updateReportSchedule(
+  id: string,
+  patch: Partial<ReportSchedule>,
+  before?: ReportSchedule,
+) {
   const { error } = await table("executive_report_schedules").update(patch).eq("id", id);
   if (error) throw new Error(error.message);
+  await logDashboardAudit({
+    entityType: "report_schedule",
+    entityId: id,
+    action: "updated",
+    summary: `Scheduled report "${before?.name ?? id}" updated`,
+    changedFields: Object.keys(patch),
+    before: before as unknown as Record<string, unknown>,
+    after: patch as unknown as Record<string, unknown>,
+  });
 }
 
-export async function deleteReportSchedule(id: string) {
+export async function deleteReportSchedule(id: string, before?: ReportSchedule) {
   const { error } = await table("executive_report_schedules").delete().eq("id", id);
   if (error) throw new Error(error.message);
+  await logDashboardAudit({
+    entityType: "report_schedule",
+    entityId: id,
+    action: "deleted",
+    summary: `Scheduled report "${before?.name ?? id}" deleted`,
+    changedFields: ["name"],
+    before: before as unknown as Record<string, unknown>,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -225,7 +258,7 @@ export const dashboardLayoutQuery = queryOptions({
   },
 });
 
-export async function saveDashboardLayout(layout: DashboardLayout) {
+export async function saveDashboardLayout(layout: DashboardLayout, previous?: DashboardLayout) {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) throw new Error("Not signed in");
   const { error } = await table("dashboard_layouts").upsert(
@@ -238,4 +271,18 @@ export async function saveDashboardLayout(layout: DashboardLayout) {
     { onConflict: "user_id,dashboard_key" },
   );
   if (error) throw new Error(error.message);
+
+  if (previous) {
+    const { fields, summary } = describeLayoutChange(previous, layout);
+    if (fields.length > 0) {
+      await logDashboardAudit({
+        entityType: "dashboard_layout",
+        action: "updated",
+        summary,
+        changedFields: fields,
+        before: previous as unknown as Record<string, unknown>,
+        after: layout as unknown as Record<string, unknown>,
+      });
+    }
+  }
 }
