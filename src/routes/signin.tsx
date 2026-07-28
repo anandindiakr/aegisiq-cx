@@ -128,7 +128,7 @@ function SignInPage() {
   async function handleGoogle() {
     setPending(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}/signin`,
     });
     if (result.error) {
       setPending(false);
@@ -155,7 +155,7 @@ function SignInPage() {
     try {
       const { data, error } = await supabase.auth.signInWithSSO({
         domain,
-        options: { redirectTo: window.location.origin },
+        options: { redirectTo: `${window.location.origin}/signin` },
       });
       if (error) throw error;
       if (data?.url) {

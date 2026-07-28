@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/" });
+    if (error || !data.user) throw redirect({ to: "/signin" });
 
     // Tenant guard: resolve the caller's company once and scope the whole
     // subtree to it. RLS remains the enforcement point in the database.

@@ -25,7 +25,7 @@ const ADMIN_ROLES: AppRole[] = ["super_admin", "tenant_admin"];
  */
 export async function loadTenantContext(): Promise<TenantContext> {
   const { data: auth, error: authError } = await supabase.auth.getUser();
-  if (authError || !auth.user) throw redirect({ to: "/" });
+  if (authError || !auth.user) throw redirect({ to: "/signin" });
 
   const [{ data: profile, error: profileError }, { data: roleRows, error: rolesError }] =
     await Promise.all([
@@ -45,7 +45,7 @@ export async function loadTenantContext(): Promise<TenantContext> {
   if (!profile?.company_id) {
     // Authenticated but not attached to a tenant: deny rather than leak a shell.
     await supabase.auth.signOut();
-    throw redirect({ to: "/" });
+    throw redirect({ to: "/signin" });
   }
 
   let roles = (roleRows ?? []).map((r) => r.role as AppRole);

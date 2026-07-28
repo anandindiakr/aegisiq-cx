@@ -92,7 +92,7 @@ function ForgotPasswordPage() {
         )}
 
         <Link
-          to="/"
+          to="/signin"
           className="mt-6 inline-flex items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-3.5" /> Back to sign in

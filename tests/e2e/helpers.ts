@@ -6,7 +6,7 @@ export function hasCredentials() {
 
 /** Signs into the console with the demo tenant credentials. */
 export async function signIn(page: Page) {
-  await page.goto("/");
+  await page.goto("/signin");
   await page.getByLabel("Work email").fill(process.env.E2E_EMAIL!);
   await page.getByLabel("Password").fill(process.env.E2E_PASSWORD!);
   await page.getByRole("button", { name: "Sign in to console" }).click();
