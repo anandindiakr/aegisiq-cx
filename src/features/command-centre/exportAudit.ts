@@ -11,6 +11,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getActiveTenant } from "@/features/platform/queries";
 import { captureError } from "@/lib/observability";
+import { notify } from "./notificationChannels";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const table = (name: string): any => (supabase as any).from(name);
@@ -95,6 +96,35 @@ export async function logExportRun(input: ExportRunInput): Promise<void> {
   } catch (error) {
     captureError(error, { area: "export-audit" });
   }
+
+  // Fan the outcome out to the configured channels and signed endpoints.
+  const noun = input.kind === "delivery" ? "Scheduled delivery" : "Export";
+  const event =
+    input.kind === "delivery"
+      ? input.status === "success"
+        ? "delivery.completed"
+        : "delivery.failed"
+      : input.status === "success"
+        ? "export.completed"
+        : "export.failed";
+  await notify(
+    event,
+    `${noun} ${input.status === "success" ? "completed" : "failed"} — ${input.format.toUpperCase()}`,
+    input.status === "success"
+      ? `${noun} finished for ${input.templateName ?? "the full board pack"}.`
+      : `${noun} failed: ${input.errorMessage ?? "unknown error"}`,
+    {
+      format: input.format,
+      template: input.templateName ?? "Full board pack",
+      template_version: input.templateVersion ?? null,
+      sections: (input.sections ?? []).join(", "),
+      recipients: (input.recipients ?? []).join(", "),
+      schedule_id: input.scheduleId ?? null,
+      attempt: input.attempt ?? 1,
+      status: input.status,
+      error: input.errorMessage ?? null,
+    },
+  );
 }
 
 export const exportAuditQuery = queryOptions({
