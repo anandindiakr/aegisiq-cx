@@ -26,6 +26,9 @@ export interface DeliveryResult {
 }
 
 const TIMEOUT_MS = 10_000;
+/** Total attempts per HTTP delivery — 1 initial try plus 2 backed-off retries. */
+const MAX_ATTEMPTS = 3;
+const BACKOFF_BASE_MS = 600;
 const SIGNATURE_HEADER = "x-aegisiq-signature";
 
 /** `t=<unix seconds>,v1=<hex hmac of "t.body">` — Stripe-style, replay safe. */
@@ -67,6 +70,70 @@ async function postJson(
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** 5xx, 429 and transport failures are transient; 4xx is a caller mistake. */
+function isRetryable(status: number): boolean {
+  return status === 0 || status === 408 || status === 429 || status >= 500;
+}
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+interface AttemptContext {
+  companyId: string;
+  eventId: string;
+  event: DispatchEvent;
+  channel: string;
+  destination: string;
+  label: string;
+  body: string;
+  headers: Record<string, string>;
+  ruleId?: string;
+  endpointId?: string;
+}
+
+/**
+ * Posts a webhook/chat delivery with exponential backoff and writes one
+ * delivery row per attempt, so the history shows every try (and why it
+ * failed) rather than only the final outcome.
+ */
+async function deliverWithRetry(
+  admin: Admin,
+  ctx: AttemptContext,
+): Promise<{ status: number; error: string | null; attempts: number }> {
+  let outcome = { status: 0, error: "not attempted" as string | null };
+  let attempt = 0;
+
+  while (attempt < MAX_ATTEMPTS) {
+    attempt += 1;
+    const started = Date.now();
+    outcome = await postJson(ctx.destination, ctx.body, {
+      ...ctx.headers,
+      "x-aegisiq-attempt": String(attempt),
+    });
+    const retryable = outcome.error !== null && isRetryable(outcome.status);
+    const willRetry = retryable && attempt < MAX_ATTEMPTS;
+    await record(admin, {
+      company_id: ctx.companyId,
+      rule_id: ctx.ruleId ?? null,
+      endpoint_id: ctx.endpointId ?? null,
+      event_id: ctx.eventId,
+      event_type: ctx.event.type,
+      channel: ctx.channel,
+      destination: ctx.destination,
+      target_label: ctx.label,
+      status: outcome.error ? "failed" : "sent",
+      response_status: outcome.status || null,
+      error_message: willRetry ? `${outcome.error} — retrying (attempt ${attempt})` : outcome.error,
+      duration_ms: Date.now() - started,
+      attempt,
+      payload: ctx.event.data,
+    });
+    if (!outcome.error || !retryable) break;
+    if (willRetry) await wait(BACKOFF_BASE_MS * 2 ** (attempt - 1));
+  }
+
+  return { ...outcome, attempts: attempt };
 }
 
 function chatBody(channel: string, event: DispatchEvent, eventId: string): string {
