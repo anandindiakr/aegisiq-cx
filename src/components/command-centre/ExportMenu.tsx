@@ -128,7 +128,7 @@ export function ExportMenu({
     const started = performance.now();
     try {
       exportExecutiveReport(format, overview, filters, active.sections);
-      audit(format, "success", null ?? undefined, Math.round(performance.now() - started));
+      audit(format, "success", undefined, Math.round(performance.now() - started));
       toast.success("Export started", {
         description: `${format.toUpperCase()} generated from "${active.name}" v${active.version}.`,
       });
