@@ -64,6 +64,8 @@ import {
   templateVersionsQuery,
   updateReportTemplate,
   type ReportTemplate,
+  DEFAULT_DELIVERY,
+  DEFAULT_FORMATTING,
 } from "@/features/command-centre/reportTemplates";
 
 const OPTIONS: { format: ExportFormat; label: string; hint: string; icon: typeof FileText }[] = [
@@ -85,6 +87,9 @@ const FULL_TEMPLATE: ReportTemplate = {
   sections: ALL_SECTIONS,
   formats: ["pdf", "excel", "csv", "powerpoint"],
   is_default: false,
+  language: "en",
+  delivery: DEFAULT_DELIVERY,
+  formatting: DEFAULT_FORMATTING,
   version: 1,
   created_at: "",
 };
@@ -350,7 +355,15 @@ function TemplateManager({
 
   const create = useMutation({
     mutationFn: () =>
-      createReportTemplate({ name: name.trim(), sections, formats, is_default: isDefault }),
+      createReportTemplate({
+        name: name.trim(),
+        sections,
+        formats,
+        is_default: isDefault,
+        language: "en",
+        delivery: DEFAULT_DELIVERY,
+        formatting: DEFAULT_FORMATTING,
+      }),
     onSuccess: async () => {
       await refresh();
       toast.success("Template saved");

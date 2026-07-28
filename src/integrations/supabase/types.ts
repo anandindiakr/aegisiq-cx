@@ -1702,9 +1702,12 @@ export type Database = {
           company_id: string
           created_at: string
           created_by: string | null
+          delivery: Json
           description: string | null
           formats: string[]
+          formatting: Json
           id: string
+          language: string
           name: string
           sections: string[]
           template_id: string
@@ -1716,9 +1719,12 @@ export type Database = {
           company_id: string
           created_at?: string
           created_by?: string | null
+          delivery?: Json
           description?: string | null
           formats?: string[]
+          formatting?: Json
           id?: string
+          language?: string
           name: string
           sections?: string[]
           template_id: string
@@ -1730,9 +1736,12 @@ export type Database = {
           company_id?: string
           created_at?: string
           created_by?: string | null
+          delivery?: Json
           description?: string | null
           formats?: string[]
+          formatting?: Json
           id?: string
+          language?: string
           name?: string
           sections?: string[]
           template_id?: string
@@ -1753,10 +1762,13 @@ export type Database = {
           company_id: string
           created_at: string
           created_by: string | null
+          delivery: Json
           description: string | null
           formats: string[]
+          formatting: Json
           id: string
           is_default: boolean
+          language: string
           name: string
           sections: string[]
           updated_at: string
@@ -1766,10 +1778,13 @@ export type Database = {
           company_id: string
           created_at?: string
           created_by?: string | null
+          delivery?: Json
           description?: string | null
           formats?: string[]
+          formatting?: Json
           id?: string
           is_default?: boolean
+          language?: string
           name: string
           sections?: string[]
           updated_at?: string
@@ -1779,10 +1794,13 @@ export type Database = {
           company_id?: string
           created_at?: string
           created_by?: string | null
+          delivery?: Json
           description?: string | null
           formats?: string[]
+          formatting?: Json
           id?: string
           is_default?: boolean
+          language?: string
           name?: string
           sections?: string[]
           updated_at?: string

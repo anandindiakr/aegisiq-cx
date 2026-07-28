@@ -38,6 +38,32 @@ export const dispatchNotificationEvent = createServerFn({ method: "POST" })
     return { delivered: results.filter((r) => r.status === "sent").length, results };
   });
 
+const sampleSchema = z.object({
+  companyId: z.string().uuid(),
+  type: z.enum(NOTIFICATION_EVENTS),
+});
+
+/**
+ * Fires a clearly-labelled sample event through the real fan-out so the
+ * settings page can show exactly what each configured recipient received.
+ */
+export const sendSampleNotification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => sampleSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertMembership(context.supabase, data.companyId);
+    const failed = data.type.endsWith(".failed");
+    const results = await fanOutEvent(data.companyId, {
+      type: data.type,
+      title: failed ? "[Test] Executive report failed" : "[Test] Executive report ready",
+      summary: failed
+        ? "Sample failure notification from AegisIQ CX — no real report failed."
+        : "Sample completion notification from AegisIQ CX — no real report was generated.",
+      data: { test: true, sections: 5, range: "Last 7 days" },
+    });
+    return { results };
+  });
+
 const testSchema = z.object({
   companyId: z.string().uuid(),
   url: z.string().url(),

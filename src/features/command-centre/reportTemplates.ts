@@ -36,6 +36,44 @@ export const REPORT_SECTIONS: ReportSectionDef[] = [
 
 export const ALL_SECTIONS = REPORT_SECTIONS.map((s) => s.id);
 
+/** Where a template's finished report should go once it is produced. */
+export interface TemplateDelivery {
+  autoExport: boolean;
+  formats: ExportFormat[];
+  notifyOnComplete: boolean;
+  notifyOnFailure: boolean;
+  recipients: string[];
+}
+
+/** Presentation choices applied to the exported artefact. */
+export interface TemplateFormatting {
+  density: "compact" | "comfortable";
+  coverPage: boolean;
+  includeCharts: boolean;
+}
+
+export const DEFAULT_DELIVERY: TemplateDelivery = {
+  autoExport: false,
+  formats: [],
+  notifyOnComplete: true,
+  notifyOnFailure: true,
+  recipients: [],
+};
+
+export const DEFAULT_FORMATTING: TemplateFormatting = {
+  density: "comfortable",
+  coverPage: true,
+  includeCharts: true,
+};
+
+export const TEMPLATE_LANGUAGES = [
+  { code: "en", label: "English" },
+  { code: "ar", label: "Arabic" },
+  { code: "fr", label: "French" },
+  { code: "es", label: "Spanish" },
+  { code: "hi", label: "Hindi" },
+] as const;
+
 export interface ReportTemplate {
   id: string;
   name: string;
@@ -43,6 +81,9 @@ export interface ReportTemplate {
   sections: string[];
   formats: ExportFormat[];
   is_default: boolean;
+  language: string;
+  delivery: TemplateDelivery;
+  formatting: TemplateFormatting;
   version: number;
   created_at: string;
 }
@@ -55,6 +96,9 @@ export interface ReportTemplateVersion {
   description: string | null;
   sections: string[];
   formats: ExportFormat[];
+  language?: string;
+  delivery?: TemplateDelivery;
+  formatting?: TemplateFormatting;
   change_summary: string | null;
   author_name: string | null;
   created_at: string;
@@ -64,7 +108,9 @@ export const reportTemplatesQuery = queryOptions({
   queryKey: ["report-templates"],
   queryFn: async () => {
     const { data, error } = await table("report_templates")
-      .select("id,name,description,sections,formats,is_default,version,created_at")
+      .select(
+        "id,name,description,sections,formats,is_default,language,delivery,formatting,version,created_at",
+      )
       .order("is_default", { ascending: false })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -79,7 +125,7 @@ export function templateVersionsQuery(templateId: string | undefined) {
       if (!templateId) return [] as ReportTemplateVersion[];
       const { data, error } = await table("report_template_versions")
         .select(
-          "id,template_id,version,name,description,sections,formats,change_summary,author_name,created_at",
+          "id,template_id,version,name,description,sections,formats,language,delivery,formatting,change_summary,author_name,created_at",
         )
         .eq("template_id", templateId)
         .order("version", { ascending: false });
@@ -95,6 +141,9 @@ export interface ReportTemplateInput {
   sections: string[];
   formats: ExportFormat[];
   is_default: boolean;
+  language: string;
+  delivery: TemplateDelivery;
+  formatting: TemplateFormatting;
 }
 
 async function currentActor(): Promise<{ id: string | null; name: string | null }> {
@@ -123,6 +172,9 @@ async function snapshot(
     description: state.description ?? null,
     sections: state.sections,
     formats: state.formats,
+    language: state.language,
+    delivery: state.delivery,
+    formatting: state.formatting,
     change_summary: changeSummary,
     created_by: actor.id,
     author_name: actor.name,
@@ -161,6 +213,9 @@ export async function updateReportTemplate(
     sections: patch.sections ?? before.sections,
     formats: patch.formats ?? before.formats,
     is_default: patch.is_default ?? before.is_default,
+    language: patch.language ?? before.language ?? "en",
+    delivery: patch.delivery ?? before.delivery ?? DEFAULT_DELIVERY,
+    formatting: patch.formatting ?? before.formatting ?? DEFAULT_FORMATTING,
   };
   const { error } = await table("report_templates")
     .update({ ...patch, version: nextVersion })
@@ -190,6 +245,9 @@ export async function rollbackReportTemplate(
       description: version.description,
       sections: version.sections,
       formats: version.formats,
+      language: version.language ?? "en",
+      delivery: version.delivery ?? DEFAULT_DELIVERY,
+      formatting: version.formatting ?? DEFAULT_FORMATTING,
     },
     template,
     `Rolled back to v${version.version}`,

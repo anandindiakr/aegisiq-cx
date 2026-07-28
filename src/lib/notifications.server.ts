@@ -23,9 +23,14 @@ export interface DeliveryResult {
   status: "sent" | "failed" | "skipped";
   responseStatus: number | null;
   error: string | null;
+  /** How many HTTP attempts this delivery took (email is always 1). */
+  attempts?: number;
 }
 
 const TIMEOUT_MS = 10_000;
+/** Total attempts per HTTP delivery — 1 initial try plus 2 backed-off retries. */
+const MAX_ATTEMPTS = 3;
+const BACKOFF_BASE_MS = 600;
 const SIGNATURE_HEADER = "x-aegisiq-signature";
 
 /** `t=<unix seconds>,v1=<hex hmac of "t.body">` — Stripe-style, replay safe. */
@@ -67,6 +72,70 @@ async function postJson(
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** 5xx, 429 and transport failures are transient; 4xx is a caller mistake. */
+function isRetryable(status: number): boolean {
+  return status === 0 || status === 408 || status === 429 || status >= 500;
+}
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+interface AttemptContext {
+  companyId: string;
+  eventId: string;
+  event: DispatchEvent;
+  channel: string;
+  destination: string;
+  label: string;
+  body: string;
+  headers: Record<string, string>;
+  ruleId?: string;
+  endpointId?: string;
+}
+
+/**
+ * Posts a webhook/chat delivery with exponential backoff and writes one
+ * delivery row per attempt, so the history shows every try (and why it
+ * failed) rather than only the final outcome.
+ */
+async function deliverWithRetry(
+  admin: Admin,
+  ctx: AttemptContext,
+): Promise<{ status: number; error: string | null; attempts: number }> {
+  let outcome = { status: 0, error: "not attempted" as string | null };
+  let attempt = 0;
+
+  while (attempt < MAX_ATTEMPTS) {
+    attempt += 1;
+    const started = Date.now();
+    outcome = await postJson(ctx.destination, ctx.body, {
+      ...ctx.headers,
+      "x-aegisiq-attempt": String(attempt),
+    });
+    const retryable = outcome.error !== null && isRetryable(outcome.status);
+    const willRetry = retryable && attempt < MAX_ATTEMPTS;
+    await record(admin, {
+      company_id: ctx.companyId,
+      rule_id: ctx.ruleId ?? null,
+      endpoint_id: ctx.endpointId ?? null,
+      event_id: ctx.eventId,
+      event_type: ctx.event.type,
+      channel: ctx.channel,
+      destination: ctx.destination,
+      target_label: ctx.label,
+      status: outcome.error ? "failed" : "sent",
+      response_status: outcome.status || null,
+      error_message: willRetry ? `${outcome.error} — retrying (attempt ${attempt})` : outcome.error,
+      duration_ms: Date.now() - started,
+      attempt,
+      payload: ctx.event.data,
+    });
+    if (!outcome.error || !retryable) break;
+    if (willRetry) await wait(BACKOFF_BASE_MS * 2 ** (attempt - 1));
+  }
+
+  return { ...outcome, attempts: attempt };
 }
 
 function chatBody(channel: string, event: DispatchEvent, eventId: string): string {
@@ -265,72 +334,61 @@ export async function fanOutEvent(
           "x-aegisiq-event": event.type,
           "x-aegisiq-delivery": eventId,
         };
-    const outcome = await postJson(rule.destination, body, headers);
-    const status = outcome.error ? "failed" : "sent";
+    const outcome = await deliverWithRetry(admin, {
+      companyId,
+      eventId,
+      event,
+      channel: rule.channel,
+      destination: rule.destination,
+      label: rule.name,
+      body,
+      headers,
+      ruleId: rule.id,
+    });
     results.push({
       channel: rule.channel,
       destination: rule.destination,
-      status,
+      status: outcome.error ? "failed" : "sent",
       responseStatus: outcome.status || null,
       error: outcome.error,
-    });
-    await record(admin, {
-      company_id: companyId,
-      rule_id: rule.id,
-      event_id: eventId,
-      event_type: event.type,
-      channel: rule.channel,
-      destination: rule.destination,
-      target_label: rule.name,
-      status,
-      response_status: outcome.status || null,
-      error_message: outcome.error,
-      duration_ms: Date.now() - started,
-      payload: event.data,
+      attempts: outcome.attempts,
     });
   }
 
   for (const endpoint of (endpointRows ?? []) as EndpointRow[]) {
-    const started = Date.now();
     const body = webhookBody(companyId, eventId, event);
     const { header } = signPayload(endpoint.secret, body);
-    const outcome = await postJson(endpoint.url, body, {
-      [SIGNATURE_HEADER]: header,
-      "x-aegisiq-event": event.type,
-      "x-aegisiq-delivery": eventId,
+    const outcome = await deliverWithRetry(admin, {
+      companyId,
+      eventId,
+      event,
+      channel: "webhook",
+      destination: endpoint.url,
+      label: endpoint.name,
+      body,
+      headers: {
+        [SIGNATURE_HEADER]: header,
+        "x-aegisiq-event": event.type,
+        "x-aegisiq-delivery": eventId,
+      },
+      endpointId: endpoint.id,
     });
-    const status = outcome.error ? "failed" : "sent";
     results.push({
       channel: "webhook",
       destination: endpoint.url,
-      status,
+      status: outcome.error ? "failed" : "sent",
       responseStatus: outcome.status || null,
       error: outcome.error,
+      attempts: outcome.attempts,
     });
-    await Promise.all([
-      record(admin, {
-        company_id: companyId,
-        endpoint_id: endpoint.id,
-        event_id: eventId,
-        event_type: event.type,
-        channel: "webhook",
-        destination: endpoint.url,
-        target_label: endpoint.name,
-        status,
-        response_status: outcome.status || null,
-        error_message: outcome.error,
-        duration_ms: Date.now() - started,
-        payload: event.data,
-      }),
-      admin
-        .from("webhook_endpoints")
-        .update({
-          last_status: outcome.status || null,
-          last_error: outcome.error,
-          last_delivery_at: new Date().toISOString(),
-        })
-        .eq("id", endpoint.id),
-    ]);
+    await admin
+      .from("webhook_endpoints")
+      .update({
+        last_status: outcome.status || null,
+        last_error: outcome.error,
+        last_delivery_at: new Date().toISOString(),
+      })
+      .eq("id", endpoint.id);
   }
 
   return results;

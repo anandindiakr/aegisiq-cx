@@ -38,6 +38,10 @@ import {
   type CopilotReportRun,
   type ReportRunStatus,
 } from "@/features/copilot/reportRuns";
+import {
+  reportTemplatesQuery,
+  type ReportTemplate,
+} from "@/features/command-centre/reportTemplates";
 import { formatDateTime } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/copilot/reports")({
@@ -70,9 +74,21 @@ const STATUS_STYLE: Record<ReportRunStatus, { icon: typeof Clock; className: str
   cancelled: { icon: XCircle, className: "text-muted-foreground" },
 };
 
-function RunRow({ run, artifacts }: { run: CopilotReportRun; artifacts: CopilotReportArtifact[] }) {
+function RunRow({
+  run,
+  artifacts,
+  templates,
+}: {
+  run: CopilotReportRun;
+  artifacts: CopilotReportArtifact[];
+  templates: ReportTemplate[];
+}) {
   const { run: runCommand, setOpen, busy } = useCopilot();
   const [open, setOpenRow] = useState(false);
+  const [templateId, setTemplateId] = useState<string>(
+    templates.find((t) => t.is_default)?.id ?? "none",
+  );
+  const template = templates.find((t) => t.id === templateId);
   const style = STATUS_STYLE[run.status] ?? STATUS_STYLE.running;
   const Icon = style.icon;
   const sections = run.sections ?? [];
@@ -82,6 +98,7 @@ function RunRow({ run, artifacts }: { run: CopilotReportRun; artifacts: CopilotR
     setOpen(true);
     void runCommand(run.command, "text", {
       resume: resume ? (run.partial as CopilotReportRun["partial"] as never) : undefined,
+      template,
     });
   };
 
@@ -117,6 +134,20 @@ function RunRow({ run, artifacts }: { run: CopilotReportRun; artifacts: CopilotR
               <RefreshCw className="mr-1 size-3" /> Resume
             </Button>
           )}
+          <Select value={templateId} onValueChange={setTemplateId}>
+            <SelectTrigger className="h-8 w-44 text-xs">
+              <SelectValue placeholder="No template" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No template</SelectItem>
+              {templates.map((item) => (
+                <SelectItem key={item.id} value={item.id}>
+                  {item.name}
+                  {item.is_default ? " (default)" : ""}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button size="sm" variant="outline" disabled={busy} onClick={() => execute(false)}>
             <PlayCircle className="mr-1 size-3" /> Re-run
           </Button>
@@ -158,6 +189,7 @@ function RunRow({ run, artifacts }: { run: CopilotReportRun; artifacts: CopilotR
 function MyExecutiveReports() {
   const { data, isLoading, isError, error, refetch } = useQuery(copilotReportRunsQuery);
   const { data: artifacts } = useQuery(reportArtifactsQuery);
+  const { data: templates } = useQuery(reportTemplatesQuery);
   const [status, setStatus] = useState<string>("all");
 
   const runs = useMemo(
@@ -209,6 +241,7 @@ function MyExecutiveReports() {
                 key={run.id}
                 run={run}
                 artifacts={(artifacts ?? []).filter((a) => a.run_id === run.id)}
+                templates={templates ?? []}
               />
             ))}
           </div>

@@ -10,7 +10,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { BellRing, Mail, Plus, Trash2, Webhook } from "lucide-react";
+import { BellRing, Mail, Plus, Send, Trash2, Webhook } from "lucide-react";
 
 import {
   EmptyState,
@@ -43,7 +43,9 @@ import {
   notificationDeliveriesQuery,
   notificationRulesQuery,
   saveNotificationRule,
+  sendTestNotification,
   type NotificationRule,
+  type SampleDeliveryResult,
 } from "@/features/command-centre/notificationChannels";
 import { formatDateTime } from "@/lib/format";
 
@@ -242,10 +244,51 @@ function ChannelRow({ rule }: { rule: NotificationRule }) {
   );
 }
 
+/** Fires a sample completed/failed event and reports per-recipient status. */
+function TestSend({ onResults }: { onResults: (r: SampleDeliveryResult[]) => void }) {
+  const queryClient = useQueryClient();
+  const [pending, setPending] = useState<NotificationEvent | null>(null);
+
+  const run = async (type: NotificationEvent) => {
+    setPending(type);
+    try {
+      const results = await sendTestNotification(type);
+      onResults(results);
+      await queryClient.invalidateQueries({ queryKey: ["notification-deliveries"] });
+      const failed = results.filter((r) => r.status === "failed").length;
+      if (results.length === 0) toast.info("No active channels matched this event");
+      else if (failed) toast.error(`${failed} of ${results.length} test deliveries failed`);
+      else toast.success(`Test sent to ${results.length} recipient(s)`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Test send failed");
+    } finally {
+      setPending(null);
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {REPORT_EVENTS.map((event) => (
+        <Button
+          key={event}
+          size="sm"
+          variant="outline"
+          disabled={pending !== null}
+          onClick={() => void run(event)}
+        >
+          <Send className="mr-1 size-3.5" />
+          {pending === event ? "Sending…" : `Test ${EVENT_LABELS[event].toLowerCase()}`}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
 function CopilotNotifications() {
   const rules = useQuery(notificationRulesQuery);
   const deliveries = useQuery(notificationDeliveriesQuery);
   const [adding, setAdding] = useState(false);
+  const [testResults, setTestResults] = useState<SampleDeliveryResult[] | null>(null);
 
   const reportRules = useMemo(() => (rules.data ?? []).filter(isReportRule), [rules.data]);
   const reportDeliveries = useMemo(
@@ -263,9 +306,12 @@ function CopilotNotifications() {
       <Panel
         title="Delivery channels"
         actions={
-          <Button size="sm" onClick={() => setAdding((v) => !v)}>
-            <Plus className="mr-1 size-4" /> Add channel
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <TestSend onResults={setTestResults} />
+            <Button size="sm" onClick={() => setAdding((v) => !v)}>
+              <Plus className="mr-1 size-4" /> Add channel
+            </Button>
+          </div>
         }
       >
         <div className="space-y-3">
@@ -286,6 +332,40 @@ function CopilotNotifications() {
             />
           ) : (
             reportRules.map((rule) => <ChannelRow key={rule.id} rule={rule} />)
+          )}
+
+          {testResults && (
+            <div className="space-y-2 rounded-xl border border-border/60 bg-card/40 p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Last test send
+              </p>
+              {testResults.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No active channel is subscribed to that event yet.
+                </p>
+              ) : (
+                testResults.map((result) => (
+                  <div
+                    key={`${result.channel}-${result.destination}`}
+                    className="flex flex-wrap items-center justify-between gap-2 text-xs"
+                  >
+                    <span className="truncate text-foreground">{result.destination}</span>
+                    <span className="flex items-center gap-2">
+                      {result.attempts && result.attempts > 1 && (
+                        <span className="text-muted-foreground">{result.attempts} attempts</span>
+                      )}
+                      <Badge
+                        variant="outline"
+                        className={result.status === "sent" ? "text-success" : "text-destructive"}
+                      >
+                        {result.status}
+                        {result.error ? ` · ${result.error}` : ""}
+                      </Badge>
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
           )}
         </div>
       </Panel>
@@ -322,6 +402,9 @@ function CopilotNotifications() {
                 >
                   {delivery.status}
                 </Badge>
+                {delivery.attempt > 1 && (
+                  <span className="text-muted-foreground">attempt {delivery.attempt}</span>
+                )}
                 <span className="text-muted-foreground">{formatDateTime(delivery.created_at)}</span>
               </div>
             ))}

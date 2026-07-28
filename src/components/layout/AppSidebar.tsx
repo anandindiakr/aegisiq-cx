@@ -23,6 +23,7 @@ import {
   Bookmark,
   BellRing,
   Bot,
+  FileText,
 } from "lucide-react";
 
 import {
@@ -49,6 +50,7 @@ const OPERATIONS = [
   { title: "Notifications", url: "/notifications", icon: BellRing },
   { title: "My Reports", url: "/copilot/reports", icon: Bot },
   { title: "Report Alerts", url: "/copilot/notifications", icon: BellRing },
+  { title: "Report Templates", url: "/copilot/report-templates", icon: FileText },
   { title: "AI Assistant", url: "/assistant", icon: Sparkles },
 ];
 
