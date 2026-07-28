@@ -830,6 +830,65 @@ export type Database = {
           },
         ]
       }
+      copilot_report_artifacts: {
+        Row: {
+          channel: string | null
+          company_id: string
+          created_at: string
+          destination: string | null
+          error_message: string | null
+          filename: string | null
+          format: string | null
+          id: string
+          kind: string
+          metadata: Json
+          run_id: string
+          size_bytes: number | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string | null
+          company_id: string
+          created_at?: string
+          destination?: string | null
+          error_message?: string | null
+          filename?: string | null
+          format?: string | null
+          id?: string
+          kind?: string
+          metadata?: Json
+          run_id: string
+          size_bytes?: number | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string | null
+          company_id?: string
+          created_at?: string
+          destination?: string | null
+          error_message?: string | null
+          filename?: string | null
+          format?: string | null
+          id?: string
+          kind?: string
+          metadata?: Json
+          run_id?: string
+          size_bytes?: number | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_report_artifacts_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "copilot_report_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       copilot_report_runs: {
         Row: {
           command: string
