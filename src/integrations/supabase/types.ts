@@ -65,6 +65,44 @@ export type Database = {
           },
         ]
       }
+      alert_notes: {
+        Row: {
+          alert_id: string
+          author_name: string | null
+          body: string
+          company_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          alert_id: string
+          author_name?: string | null
+          body: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Update: {
+          alert_id?: string
+          author_name?: string | null
+          body?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_notes_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alert_reads: {
         Row: {
           alert_id: string
@@ -107,6 +145,8 @@ export type Database = {
         Row: {
           acknowledged_at: string | null
           acknowledged_by: string | null
+          assigned_at: string | null
+          assigned_to: string | null
           category: string
           company_id: string
           conversation_id: string | null
@@ -125,6 +165,8 @@ export type Database = {
         Insert: {
           acknowledged_at?: string | null
           acknowledged_by?: string | null
+          assigned_at?: string | null
+          assigned_to?: string | null
           category?: string
           company_id: string
           conversation_id?: string | null
@@ -143,6 +185,8 @@ export type Database = {
         Update: {
           acknowledged_at?: string | null
           acknowledged_by?: string | null
+          assigned_at?: string | null
+          assigned_to?: string | null
           category?: string
           company_id?: string
           conversation_id?: string | null
