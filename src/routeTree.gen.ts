@@ -55,6 +55,7 @@ import { Route as AuthenticatedConversationiqLanguagesRouteImport } from './rout
 import { Route as AuthenticatedConversationiqKeywordsRouteImport } from './routes/_authenticated/conversationiq.keywords'
 import { Route as AuthenticatedConversationiqAuditRouteImport } from './routes/_authenticated/conversationiq.audit'
 import { Route as AuthenticatedConversationiqConversationIdRouteImport } from './routes/_authenticated/conversationiq.$conversationId'
+import { Route as AuthenticatedAdministrationGeneralRouteImport } from './routes/_authenticated/administration.general'
 import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated/admin.roles'
 import { Route as AuthenticatedAdminCopilotAuditRouteImport } from './routes/_authenticated/admin.copilot-audit'
 
@@ -317,6 +318,12 @@ const AuthenticatedConversationiqConversationIdRoute =
     path: '/conversationiq/$conversationId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdministrationGeneralRoute =
+  AuthenticatedAdministrationGeneralRouteImport.update({
+    id: '/general',
+    path: '/general',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdminRolesRoute = AuthenticatedAdminRolesRouteImport.update({
   id: '/admin/roles',
   path: '/admin/roles',
@@ -355,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/users': typeof AuthenticatedUsersRoute
   '/admin/copilot-audit': typeof AuthenticatedAdminCopilotAuditRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
+  '/administration/general': typeof AuthenticatedAdministrationGeneralRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
@@ -403,6 +411,7 @@ export interface FileRoutesByTo {
   '/users': typeof AuthenticatedUsersRoute
   '/admin/copilot-audit': typeof AuthenticatedAdminCopilotAuditRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
+  '/administration/general': typeof AuthenticatedAdministrationGeneralRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
@@ -454,6 +463,7 @@ export interface FileRoutesById {
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/admin/copilot-audit': typeof AuthenticatedAdminCopilotAuditRoute
   '/_authenticated/admin/roles': typeof AuthenticatedAdminRolesRoute
+  '/_authenticated/administration/general': typeof AuthenticatedAdministrationGeneralRoute
   '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/_authenticated/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/_authenticated/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
@@ -505,6 +515,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/admin/copilot-audit'
     | '/admin/roles'
+    | '/administration/general'
     | '/conversationiq/$conversationId'
     | '/conversationiq/audit'
     | '/conversationiq/keywords'
@@ -553,6 +564,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/admin/copilot-audit'
     | '/admin/roles'
+    | '/administration/general'
     | '/conversationiq/$conversationId'
     | '/conversationiq/audit'
     | '/conversationiq/keywords'
@@ -603,6 +615,7 @@ export interface FileRouteTypes {
     | '/_authenticated/users'
     | '/_authenticated/admin/copilot-audit'
     | '/_authenticated/admin/roles'
+    | '/_authenticated/administration/general'
     | '/_authenticated/conversationiq/$conversationId'
     | '/_authenticated/conversationiq/audit'
     | '/_authenticated/conversationiq/keywords'
@@ -960,6 +973,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConversationiqConversationIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/administration/general': {
+      id: '/_authenticated/administration/general'
+      path: '/general'
+      fullPath: '/administration/general'
+      preLoaderRoute: typeof AuthenticatedAdministrationGeneralRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/admin/roles': {
       id: '/_authenticated/admin/roles'
       path: '/admin/roles'
@@ -978,11 +998,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdministrationRouteChildren {
+  AuthenticatedAdministrationGeneralRoute: typeof AuthenticatedAdministrationGeneralRoute
   AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
 }
 
 const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRouteChildren =
   {
+    AuthenticatedAdministrationGeneralRoute:
+      AuthenticatedAdministrationGeneralRoute,
     AuthenticatedAdministrationIndexRoute:
       AuthenticatedAdministrationIndexRoute,
   }
