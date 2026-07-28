@@ -302,8 +302,12 @@ export type Database = {
           description: string | null
           filters: Json
           id: string
+          is_default: boolean
           is_shared: boolean
           name: string
+          outlet_id: string | null
+          scope: string
+          scope_roles: Database["public"]["Enums"]["app_role"][]
           updated_at: string
           user_id: string
         }
@@ -313,8 +317,12 @@ export type Database = {
           description?: string | null
           filters?: Json
           id?: string
+          is_default?: boolean
           is_shared?: boolean
           name: string
+          outlet_id?: string | null
+          scope?: string
+          scope_roles?: Database["public"]["Enums"]["app_role"][]
           updated_at?: string
           user_id: string
         }
@@ -324,12 +332,24 @@ export type Database = {
           description?: string | null
           filters?: Json
           id?: string
+          is_default?: boolean
           is_shared?: boolean
           name?: string
+          outlet_id?: string | null
+          scope?: string
+          scope_roles?: Database["public"]["Enums"]["app_role"][]
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "command_filter_presets_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       companies: {
         Row: {
@@ -1893,6 +1913,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      widget_access_requests: {
+        Row: {
+          company_id: string
+          context: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decided_by_name: string | null
+          decision_note: string | null
+          id: string
+          reason: string | null
+          requester_email: string | null
+          requester_id: string
+          requester_name: string | null
+          status: string
+          updated_at: string
+          widget_id: string
+        }
+        Insert: {
+          company_id: string
+          context?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decided_by_name?: string | null
+          decision_note?: string | null
+          id?: string
+          reason?: string | null
+          requester_email?: string | null
+          requester_id: string
+          requester_name?: string | null
+          status?: string
+          updated_at?: string
+          widget_id: string
+        }
+        Update: {
+          company_id?: string
+          context?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decided_by_name?: string | null
+          decision_note?: string | null
+          id?: string
+          reason?: string | null
+          requester_email?: string | null
+          requester_id?: string
+          requester_name?: string | null
+          status?: string
+          updated_at?: string
+          widget_id?: string
+        }
+        Relationships: []
       }
       widget_access_rules: {
         Row: {
