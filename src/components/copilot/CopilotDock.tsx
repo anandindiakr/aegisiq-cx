@@ -124,6 +124,7 @@ export function CopilotDock() {
     minimised,
     messages,
     busy,
+    cancel,
     context,
     preferences,
     run,
