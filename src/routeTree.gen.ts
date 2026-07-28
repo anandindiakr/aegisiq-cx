@@ -57,6 +57,7 @@ import { Route as AuthenticatedConversationiqAuditRouteImport } from './routes/_
 import { Route as AuthenticatedConversationiqConversationIdRouteImport } from './routes/_authenticated/conversationiq.$conversationId'
 import { Route as AuthenticatedAdministrationSpeechRouteImport } from './routes/_authenticated/administration.speech'
 import { Route as AuthenticatedAdministrationSecurityRouteImport } from './routes/_authenticated/administration.security'
+import { Route as AuthenticatedAdministrationLicensingRouteImport } from './routes/_authenticated/administration.licensing'
 import { Route as AuthenticatedAdministrationLanguagesRouteImport } from './routes/_authenticated/administration.languages'
 import { Route as AuthenticatedAdministrationKeywordsRouteImport } from './routes/_authenticated/administration.keywords'
 import { Route as AuthenticatedAdministrationIntegrationsRouteImport } from './routes/_authenticated/administration.integrations'
@@ -338,6 +339,12 @@ const AuthenticatedAdministrationSecurityRoute =
     path: '/security',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
+const AuthenticatedAdministrationLicensingRoute =
+  AuthenticatedAdministrationLicensingRouteImport.update({
+    id: '/licensing',
+    path: '/licensing',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationLanguagesRoute =
   AuthenticatedAdministrationLanguagesRouteImport.update({
     id: '/languages',
@@ -425,6 +432,7 @@ export interface FileRoutesByFullPath {
   '/administration/integrations': typeof AuthenticatedAdministrationIntegrationsRoute
   '/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
   '/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
+  '/administration/licensing': typeof AuthenticatedAdministrationLicensingRoute
   '/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
@@ -482,6 +490,7 @@ export interface FileRoutesByTo {
   '/administration/integrations': typeof AuthenticatedAdministrationIntegrationsRoute
   '/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
   '/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
+  '/administration/licensing': typeof AuthenticatedAdministrationLicensingRoute
   '/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
@@ -542,6 +551,7 @@ export interface FileRoutesById {
   '/_authenticated/administration/integrations': typeof AuthenticatedAdministrationIntegrationsRoute
   '/_authenticated/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
   '/_authenticated/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
+  '/_authenticated/administration/licensing': typeof AuthenticatedAdministrationLicensingRoute
   '/_authenticated/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/_authenticated/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
@@ -602,6 +612,7 @@ export interface FileRouteTypes {
     | '/administration/integrations'
     | '/administration/keywords'
     | '/administration/languages'
+    | '/administration/licensing'
     | '/administration/security'
     | '/administration/speech'
     | '/conversationiq/$conversationId'
@@ -659,6 +670,7 @@ export interface FileRouteTypes {
     | '/administration/integrations'
     | '/administration/keywords'
     | '/administration/languages'
+    | '/administration/licensing'
     | '/administration/security'
     | '/administration/speech'
     | '/conversationiq/$conversationId'
@@ -718,6 +730,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/integrations'
     | '/_authenticated/administration/keywords'
     | '/_authenticated/administration/languages'
+    | '/_authenticated/administration/licensing'
     | '/_authenticated/administration/security'
     | '/_authenticated/administration/speech'
     | '/_authenticated/conversationiq/$conversationId'
@@ -1091,6 +1104,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationSecurityRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
+    '/_authenticated/administration/licensing': {
+      id: '/_authenticated/administration/licensing'
+      path: '/licensing'
+      fullPath: '/administration/licensing'
+      preLoaderRoute: typeof AuthenticatedAdministrationLicensingRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/languages': {
       id: '/_authenticated/administration/languages'
       path: '/languages'
@@ -1165,6 +1185,7 @@ interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationIntegrationsRoute: typeof AuthenticatedAdministrationIntegrationsRoute
   AuthenticatedAdministrationKeywordsRoute: typeof AuthenticatedAdministrationKeywordsRoute
   AuthenticatedAdministrationLanguagesRoute: typeof AuthenticatedAdministrationLanguagesRoute
+  AuthenticatedAdministrationLicensingRoute: typeof AuthenticatedAdministrationLicensingRoute
   AuthenticatedAdministrationSecurityRoute: typeof AuthenticatedAdministrationSecurityRoute
   AuthenticatedAdministrationSpeechRoute: typeof AuthenticatedAdministrationSpeechRoute
   AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
@@ -1185,6 +1206,8 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
       AuthenticatedAdministrationKeywordsRoute,
     AuthenticatedAdministrationLanguagesRoute:
       AuthenticatedAdministrationLanguagesRoute,
+    AuthenticatedAdministrationLicensingRoute:
+      AuthenticatedAdministrationLicensingRoute,
     AuthenticatedAdministrationSecurityRoute:
       AuthenticatedAdministrationSecurityRoute,
     AuthenticatedAdministrationSpeechRoute:
