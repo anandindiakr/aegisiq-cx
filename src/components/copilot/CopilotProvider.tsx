@@ -64,7 +64,7 @@ interface CopilotState {
   minimise: () => void;
   restore: () => void;
   clear: () => void;
-  run: (text: string, mode?: CopilotInputMode) => Promise<void>;
+  run: (text: string, mode?: CopilotInputMode, options?: RunOptions) => Promise<void>;
   publishContext: (context: CopilotSurfaceContext | null) => void;
   savePreferences: (
     patch: Partial<Omit<CopilotPreferences, "id" | "company_id" | "user_id">>,
