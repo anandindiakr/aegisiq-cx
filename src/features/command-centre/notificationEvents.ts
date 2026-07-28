@@ -17,6 +17,7 @@ export const NOTIFICATION_EVENTS = [
   "access_request.approved",
   "access_request.denied",
   "access_request.expired",
+  "alert.escalated",
 ] as const;
 
 export type NotificationEvent = (typeof NOTIFICATION_EVENTS)[number];
@@ -32,6 +33,7 @@ export const EVENT_LABELS: Record<NotificationEvent, string> = {
   "access_request.approved": "Widget access approved",
   "access_request.denied": "Widget access denied",
   "access_request.expired": "Widget access request expired",
+  "alert.escalated": "Alert escalated to backup owner",
 };
 
 export const EVENT_GROUPS: { label: string; events: NotificationEvent[] }[] = [
@@ -55,6 +57,10 @@ export const EVENT_GROUPS: { label: string; events: NotificationEvent[] }[] = [
       "access_request.expired",
     ],
   },
+  {
+    label: "Alerts",
+    events: ["alert.escalated"],
+  },
 ];
 
 export type NotificationChannel = "email" | "slack" | "teams" | "webhook";
@@ -67,5 +73,10 @@ export const CHANNEL_LABELS: Record<NotificationChannel, string> = {
 };
 
 export function isFailureEvent(event: string): boolean {
-  return event.endsWith(".failed") || event.endsWith(".denied") || event.endsWith(".expired");
+  return (
+    event.endsWith(".failed") ||
+    event.endsWith(".denied") ||
+    event.endsWith(".expired") ||
+    event === "alert.escalated"
+  );
 }
