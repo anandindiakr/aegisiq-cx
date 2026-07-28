@@ -9,15 +9,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  CheckCircle2,
-  Clock,
-  FileDown,
-  PlayCircle,
-  RefreshCw,
-  Send,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Clock, FileDown, PlayCircle, RefreshCw, Send, XCircle } from "lucide-react";
 
 import {
   EmptyState,
@@ -78,13 +70,7 @@ const STATUS_STYLE: Record<ReportRunStatus, { icon: typeof Clock; className: str
   cancelled: { icon: XCircle, className: "text-muted-foreground" },
 };
 
-function RunRow({
-  run,
-  artifacts,
-}: {
-  run: CopilotReportRun;
-  artifacts: CopilotReportArtifact[];
-}) {
+function RunRow({ run, artifacts }: { run: CopilotReportRun; artifacts: CopilotReportArtifact[] }) {
   const { run: runCommand, setOpen, busy } = useCopilot();
   const [open, setOpenRow] = useState(false);
   const style = STATUS_STYLE[run.status] ?? STATUS_STYLE.running;

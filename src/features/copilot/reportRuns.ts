@@ -137,9 +137,7 @@ export async function checkpointReportRun(
   partial: CopilotReportPartial,
 ): Promise<void> {
   try {
-    await table("copilot_report_runs")
-      .update({ sections: partial.sections, partial })
-      .eq("id", id);
+    await table("copilot_report_runs").update({ sections: partial.sections, partial }).eq("id", id);
   } catch (error) {
     console.warn("copilot report run checkpoint failed", error);
   }
@@ -150,9 +148,7 @@ export async function checkpointReportRun(
  * that went away (refresh, closed tab, lost connection). The provider picks the
  * newest one up on load and continues from its last successful section.
  */
-export async function findInterruptedRun(
-  staleAfterMs = 20_000,
-): Promise<CopilotReportRun | null> {
+export async function findInterruptedRun(staleAfterMs = 20_000): Promise<CopilotReportRun | null> {
   try {
     const { data, error } = await table("copilot_report_runs")
       .select("*")

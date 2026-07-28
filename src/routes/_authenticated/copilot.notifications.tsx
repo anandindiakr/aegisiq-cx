@@ -247,10 +247,7 @@ function CopilotNotifications() {
   const deliveries = useQuery(notificationDeliveriesQuery);
   const [adding, setAdding] = useState(false);
 
-  const reportRules = useMemo(
-    () => (rules.data ?? []).filter(isReportRule),
-    [rules.data],
-  );
+  const reportRules = useMemo(() => (rules.data ?? []).filter(isReportRule), [rules.data]);
   const reportDeliveries = useMemo(
     () => (deliveries.data ?? []).filter((d) => d.event_type.startsWith("report.")).slice(0, 25),
     [deliveries.data],
