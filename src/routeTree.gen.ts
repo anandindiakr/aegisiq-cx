@@ -29,6 +29,7 @@ import { Route as AuthenticatedCamerasRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
+import { Route as AuthenticatedAlertCentreRouteImport } from './routes/_authenticated/alert-centre'
 import { Route as AuthenticatedConversationiqIndexRouteImport } from './routes/_authenticated/conversationiq.index'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as AuthenticatedCopilotReportsRouteImport } from './routes/_authenticated/copilot.reports'
@@ -151,6 +152,12 @@ const AuthenticatedAlertsRoute = AuthenticatedAlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAlertCentreRoute =
+  AuthenticatedAlertCentreRouteImport.update({
+    id: '/alert-centre',
+    path: '/alert-centre',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConversationiqIndexRoute =
   AuthenticatedConversationiqIndexRouteImport.update({
     id: '/conversationiq/',
@@ -250,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/alerts': typeof AuthenticatedAlertsRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
@@ -287,6 +295,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/alerts': typeof AuthenticatedAlertsRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
@@ -326,6 +335,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
@@ -365,6 +375,7 @@ export interface FileRouteTypes {
     | '/'
     | '/forgot-password'
     | '/reset-password'
+    | '/alert-centre'
     | '/alerts'
     | '/assistant'
     | '/audit-logs'
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '/'
     | '/forgot-password'
     | '/reset-password'
+    | '/alert-centre'
     | '/alerts'
     | '/assistant'
     | '/audit-logs'
@@ -440,6 +452,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/forgot-password'
     | '/reset-password'
+    | '/_authenticated/alert-centre'
     | '/_authenticated/alerts'
     | '/_authenticated/assistant'
     | '/_authenticated/audit-logs'
@@ -624,6 +637,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAlertsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/alert-centre': {
+      id: '/_authenticated/alert-centre'
+      path: '/alert-centre'
+      fullPath: '/alert-centre'
+      preLoaderRoute: typeof AuthenticatedAlertCentreRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/conversationiq/': {
       id: '/_authenticated/conversationiq/'
       path: '/conversationiq'
@@ -740,6 +760,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAlertCentreRoute: typeof AuthenticatedAlertCentreRoute
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
@@ -774,6 +795,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAlertCentreRoute: AuthenticatedAlertCentreRoute,
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
