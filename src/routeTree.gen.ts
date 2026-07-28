@@ -33,6 +33,7 @@ import { Route as AuthenticatedAlertCentreRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAlertAnalyticsRouteImport } from './routes/_authenticated/alert-analytics'
 import { Route as AuthenticatedConversationiqIndexRouteImport } from './routes/_authenticated/conversationiq.index'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
+import { Route as AuthenticatedInfrastructureCamerasRouteImport } from './routes/_authenticated/infrastructure.cameras'
 import { Route as AuthenticatedCopilotReportsRouteImport } from './routes/_authenticated/copilot.reports'
 import { Route as AuthenticatedCopilotReportTemplatesRouteImport } from './routes/_authenticated/copilot.report-templates'
 import { Route as AuthenticatedCopilotNotificationsRouteImport } from './routes/_authenticated/copilot.notifications'
@@ -176,6 +177,12 @@ const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
   path: '/api/public/telemetry',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedInfrastructureCamerasRoute =
+  AuthenticatedInfrastructureCamerasRouteImport.update({
+    id: '/infrastructure/cameras',
+    path: '/infrastructure/cameras',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCopilotReportsRoute =
   AuthenticatedCopilotReportsRouteImport.update({
     id: '/copilot/reports',
@@ -296,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/copilot/notifications': typeof AuthenticatedCopilotNotificationsRoute
   '/copilot/report-templates': typeof AuthenticatedCopilotReportTemplatesRoute
   '/copilot/reports': typeof AuthenticatedCopilotReportsRoute
+  '/infrastructure/cameras': typeof AuthenticatedInfrastructureCamerasRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
 }
@@ -335,6 +343,7 @@ export interface FileRoutesByTo {
   '/copilot/notifications': typeof AuthenticatedCopilotNotificationsRoute
   '/copilot/report-templates': typeof AuthenticatedCopilotReportTemplatesRoute
   '/copilot/reports': typeof AuthenticatedCopilotReportsRoute
+  '/infrastructure/cameras': typeof AuthenticatedInfrastructureCamerasRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/conversationiq': typeof AuthenticatedConversationiqIndexRoute
 }
@@ -376,6 +385,7 @@ export interface FileRoutesById {
   '/_authenticated/copilot/notifications': typeof AuthenticatedCopilotNotificationsRoute
   '/_authenticated/copilot/report-templates': typeof AuthenticatedCopilotReportTemplatesRoute
   '/_authenticated/copilot/reports': typeof AuthenticatedCopilotReportsRoute
+  '/_authenticated/infrastructure/cameras': typeof AuthenticatedInfrastructureCamerasRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/_authenticated/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
 }
@@ -417,6 +427,7 @@ export interface FileRouteTypes {
     | '/copilot/notifications'
     | '/copilot/report-templates'
     | '/copilot/reports'
+    | '/infrastructure/cameras'
     | '/api/public/telemetry'
     | '/conversationiq/'
   fileRoutesByTo: FileRoutesByTo
@@ -456,6 +467,7 @@ export interface FileRouteTypes {
     | '/copilot/notifications'
     | '/copilot/report-templates'
     | '/copilot/reports'
+    | '/infrastructure/cameras'
     | '/api/public/telemetry'
     | '/conversationiq'
   id:
@@ -496,6 +508,7 @@ export interface FileRouteTypes {
     | '/_authenticated/copilot/notifications'
     | '/_authenticated/copilot/report-templates'
     | '/_authenticated/copilot/reports'
+    | '/_authenticated/infrastructure/cameras'
     | '/api/public/telemetry'
     | '/_authenticated/conversationiq/'
   fileRoutesById: FileRoutesById
@@ -678,6 +691,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTelemetryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/infrastructure/cameras': {
+      id: '/_authenticated/infrastructure/cameras'
+      path: '/infrastructure/cameras'
+      fullPath: '/infrastructure/cameras'
+      preLoaderRoute: typeof AuthenticatedInfrastructureCamerasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/copilot/reports': {
       id: '/_authenticated/copilot/reports'
       path: '/copilot/reports'
@@ -812,6 +832,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCopilotNotificationsRoute: typeof AuthenticatedCopilotNotificationsRoute
   AuthenticatedCopilotReportTemplatesRoute: typeof AuthenticatedCopilotReportTemplatesRoute
   AuthenticatedCopilotReportsRoute: typeof AuthenticatedCopilotReportsRoute
+  AuthenticatedInfrastructureCamerasRoute: typeof AuthenticatedInfrastructureCamerasRoute
   AuthenticatedConversationiqIndexRoute: typeof AuthenticatedConversationiqIndexRoute
 }
 
@@ -856,6 +877,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCopilotReportTemplatesRoute:
     AuthenticatedCopilotReportTemplatesRoute,
   AuthenticatedCopilotReportsRoute: AuthenticatedCopilotReportsRoute,
+  AuthenticatedInfrastructureCamerasRoute:
+    AuthenticatedInfrastructureCamerasRoute,
   AuthenticatedConversationiqIndexRoute: AuthenticatedConversationiqIndexRoute,
 }
 
