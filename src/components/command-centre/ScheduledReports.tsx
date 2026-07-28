@@ -85,6 +85,50 @@ export function ScheduledReports() {
     },
   });
 
+  /**
+   * Records a delivery run against the schedule. Success or failure, the format,
+   * the recipients and the schedule name all land in the export audit trail.
+   */
+  const deliver = useMutation({
+    mutationFn: async (schedule: ReportSchedule) => {
+      const started = performance.now();
+      try {
+        await updateReportSchedule(
+          schedule.id,
+          { last_sent_at: new Date().toISOString() } as Partial<ReportSchedule>,
+          schedule,
+        );
+        await logExportRun({
+          kind: "delivery",
+          format: schedule.format,
+          templateName: schedule.name,
+          scheduleId: schedule.id,
+          recipients: schedule.recipients,
+          status: "success",
+          durationMs: Math.round(performance.now() - started),
+        });
+      } catch (error) {
+        await logExportRun({
+          kind: "delivery",
+          format: schedule.format,
+          templateName: schedule.name,
+          scheduleId: schedule.id,
+          recipients: schedule.recipients,
+          status: "failed",
+          errorMessage: error instanceof Error ? error.message : "Unknown error",
+          durationMs: Math.round(performance.now() - started),
+        });
+        throw error;
+      }
+    },
+    onSuccess: async () => {
+      await invalidate();
+      await queryClient.invalidateQueries({ queryKey: ["export-audit-events"] });
+      toast.success("Delivery recorded");
+    },
+    onError: (error: Error) => toast.error("Delivery failed", { description: error.message }),
+  });
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
