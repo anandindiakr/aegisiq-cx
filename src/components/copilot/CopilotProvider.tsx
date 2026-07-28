@@ -27,6 +27,7 @@ import {
   type CommandFilters,
 } from "@/features/command-centre/filters";
 import { exportExecutiveReport } from "@/features/command-centre/export";
+import type { ReportTemplate } from "@/features/command-centre/reportTemplates";
 import { notify } from "@/features/command-centre/notificationChannels";
 import { useIqAccess } from "@/features/conversationiq/access";
 import { CopilotCancelled, resolveCopilotCommand } from "@/features/copilot/engine";
@@ -56,6 +57,8 @@ import type {
 /** Extra execution hints — used to resume a partially failed report run. */
 export interface RunOptions {
   resume?: CopilotReportPartial;
+  /** Saved executive-report configuration to apply to this run. */
+  template?: ReportTemplate;
   /** Continue an existing run record instead of opening a new one. */
   runId?: string;
 }
@@ -267,6 +270,34 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
             errorMessage: failed.length > 0 ? failed.map((s) => s.label).join(", ") : undefined,
             durationMs,
           }).then(() => queryClient.invalidateQueries({ queryKey: ["copilot", "report-runs"] }));
+          const delivery = options?.template?.delivery;
+          const shouldNotify =
+            status === "completed"
+              ? (delivery?.notifyOnComplete ?? true)
+              : (delivery?.notifyOnFailure ?? true);
+
+          // Auto-export the finished pack in the template's formats.
+          if (status === "completed" && delivery?.autoExport && delivery.formats.length > 0) {
+            void queryClient.ensureQueryData(executiveOverviewQuery(filters)).then((overview) => {
+              for (const format of delivery.formats) {
+                exportExecutiveReport(format, overview, filters, options?.template?.sections);
+                void recordReportArtifact({
+                  runId,
+                  kind: "export",
+                  format,
+                  filename: `aegisiq-${options?.template?.name.toLowerCase().replace(/\s+/g, "-") ?? "executive"}-${new Date().toISOString().slice(0, 10)}`,
+                  metadata: {
+                    template: options?.template?.name,
+                    language: options?.template?.language,
+                  },
+                });
+              }
+              toast.success(`Template exports ready (${delivery.formats.join(", ").toUpperCase()})`);
+              void queryClient.invalidateQueries({ queryKey: ["copilot", "report-artifacts"] });
+            });
+          }
+
+          if (shouldNotify)
           void notify(
             status === "completed" ? "report.completed" : "report.failed",
             status === "completed"
