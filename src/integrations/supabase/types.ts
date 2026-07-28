@@ -1389,6 +1389,7 @@ export type Database = {
           created_by: string | null
           device_id: string
           device_type: string
+          expires_at: string | null
           id: string
           label: string
           last_revealed_at: string | null
@@ -1397,6 +1398,11 @@ export type Database = {
           onvif_secret_cipher: string | null
           onvif_username: string | null
           rotated_at: string | null
+          rotation_interval_days: number
+          rotation_note: string | null
+          rotation_requested_at: string | null
+          rotation_requested_by: string | null
+          rotation_status: string
           rtsp_url: string | null
           secret_cipher: string | null
           updated_at: string
@@ -1408,6 +1414,7 @@ export type Database = {
           created_by?: string | null
           device_id: string
           device_type: string
+          expires_at?: string | null
           id?: string
           label?: string
           last_revealed_at?: string | null
@@ -1416,6 +1423,11 @@ export type Database = {
           onvif_secret_cipher?: string | null
           onvif_username?: string | null
           rotated_at?: string | null
+          rotation_interval_days?: number
+          rotation_note?: string | null
+          rotation_requested_at?: string | null
+          rotation_requested_by?: string | null
+          rotation_status?: string
           rtsp_url?: string | null
           secret_cipher?: string | null
           updated_at?: string
@@ -1427,6 +1439,7 @@ export type Database = {
           created_by?: string | null
           device_id?: string
           device_type?: string
+          expires_at?: string | null
           id?: string
           label?: string
           last_revealed_at?: string | null
@@ -1435,6 +1448,11 @@ export type Database = {
           onvif_secret_cipher?: string | null
           onvif_username?: string | null
           rotated_at?: string | null
+          rotation_interval_days?: number
+          rotation_note?: string | null
+          rotation_requested_at?: string | null
+          rotation_requested_by?: string | null
+          rotation_status?: string
           rtsp_url?: string | null
           secret_cipher?: string | null
           updated_at?: string
@@ -1451,10 +1469,12 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          diarization_enabled: boolean
           disk_usage: number
           gpu_model: string
           gpu_usage: number
           id: string
+          ingest_enabled: boolean
           ip_address: string | null
           last_heartbeat_at: string | null
           location: string | null
@@ -1468,6 +1488,7 @@ export type Database = {
           status: string
           storage_gb: number
           temperature_c: number
+          transcription_enabled: boolean
           updated_at: string
         }
         Insert: {
@@ -1478,10 +1499,12 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          diarization_enabled?: boolean
           disk_usage?: number
           gpu_model?: string
           gpu_usage?: number
           id?: string
+          ingest_enabled?: boolean
           ip_address?: string | null
           last_heartbeat_at?: string | null
           location?: string | null
@@ -1495,6 +1518,7 @@ export type Database = {
           status?: string
           storage_gb?: number
           temperature_c?: number
+          transcription_enabled?: boolean
           updated_at?: string
         }
         Update: {
@@ -1505,10 +1529,12 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          diarization_enabled?: boolean
           disk_usage?: number
           gpu_model?: string
           gpu_usage?: number
           id?: string
+          ingest_enabled?: boolean
           ip_address?: string | null
           last_heartbeat_at?: string | null
           location?: string | null
@@ -1522,6 +1548,7 @@ export type Database = {
           status?: string
           storage_gb?: number
           temperature_c?: number
+          transcription_enabled?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -1802,6 +1829,48 @@ export type Database = {
           message?: string
           metadata?: Json
           source?: string
+        }
+        Relationships: []
+      }
+      infra_health_thresholds: {
+        Row: {
+          company_id: string
+          comparator: string
+          created_at: string
+          critical_value: number
+          enabled: boolean
+          id: string
+          label: string
+          metric: string
+          unit: string
+          updated_at: string
+          warn_value: number
+        }
+        Insert: {
+          company_id: string
+          comparator?: string
+          created_at?: string
+          critical_value: number
+          enabled?: boolean
+          id?: string
+          label: string
+          metric: string
+          unit?: string
+          updated_at?: string
+          warn_value: number
+        }
+        Update: {
+          company_id?: string
+          comparator?: string
+          created_at?: string
+          critical_value?: number
+          enabled?: boolean
+          id?: string
+          label?: string
+          metric?: string
+          unit?: string
+          updated_at?: string
+          warn_value?: number
         }
         Relationships: []
       }
@@ -3280,6 +3349,7 @@ export type Database = {
       can_view_widget: { Args: { _widget_id: string }; Returns: boolean }
       current_company_id: { Args: never; Returns: string }
       escalate_overdue_alerts: { Args: never; Returns: number }
+      evaluate_infra_health: { Args: never; Returns: number }
       executive_overview: { Args: { p_filters?: Json }; Returns: Json }
       expire_widget_access_requests: { Args: never; Returns: number }
       has_role: {
@@ -3289,22 +3359,42 @@ export type Database = {
         }
         Returns: boolean
       }
+      infra_can: { Args: { _action: string }; Returns: boolean }
       is_company_admin: { Args: never; Returns: boolean }
       preset_by_share_token: { Args: { _token: string }; Returns: Json }
-      reveal_device_credential: { Args: { _id: string }; Returns: Json }
-      save_device_credential: {
-        Args: {
-          _device_id: string
-          _device_type: string
-          _notes?: string
-          _onvif_secret?: string
-          _onvif_username?: string
-          _rtsp_url?: string
-          _secret: string
-          _username: string
-        }
-        Returns: string
+      request_credential_rotation: {
+        Args: { _id: string; _note?: string }
+        Returns: undefined
       }
+      reveal_device_credential: { Args: { _id: string }; Returns: Json }
+      save_device_credential:
+        | {
+            Args: {
+              _device_id: string
+              _device_type: string
+              _notes?: string
+              _onvif_secret?: string
+              _onvif_username?: string
+              _rtsp_url?: string
+              _secret: string
+              _username: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              _device_id: string
+              _device_type: string
+              _notes?: string
+              _onvif_secret?: string
+              _onvif_username?: string
+              _rotation_interval_days?: number
+              _rtsp_url?: string
+              _secret: string
+              _username: string
+            }
+            Returns: string
+          }
       tenant_branding: {
         Args: never
         Returns: {

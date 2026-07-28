@@ -99,6 +99,9 @@ export interface EdgeGateway {
   agent_version: string;
   last_heartbeat_at: string | null;
   notes: string | null;
+  ingest_enabled: boolean;
+  transcription_enabled: boolean;
+  diarization_enabled: boolean;
 }
 
 export interface AiEngine {
@@ -284,11 +287,7 @@ export async function createCamera(draft: CameraDraft) {
 }
 
 export async function updateInfraCamera(id: string, patch: Partial<InfraCamera>) {
-  const { error } = await raw
-    .from("cameras")
-    .update(patch)
-    .eq("company_id", tenant())
-    .eq("id", id);
+  const { error } = await raw.from("cameras").update(patch).eq("company_id", tenant()).eq("id", id);
   if (error) throw new Error(error.message);
 }
 
@@ -347,6 +346,40 @@ export async function updateGateway(id: string, patch: Partial<EdgeGateway>) {
     .eq("company_id", tenant())
     .eq("id", id);
   if (error) throw new Error(error.message);
+}
+
+export async function bulkUpdateGateways(ids: string[], patch: Partial<EdgeGateway>) {
+  if (ids.length === 0) return 0;
+  const { error } = await raw
+    .from("edge_gateways")
+    .update(patch)
+    .eq("company_id", tenant())
+    .in("id", ids);
+  if (error) throw new Error(error.message);
+  return ids.length;
+}
+
+export async function softDeleteGateways(ids: string[]) {
+  if (ids.length === 0) return 0;
+  const { error } = await raw
+    .from("edge_gateways")
+    .update({ deleted_at: new Date().toISOString(), status: "offline" })
+    .eq("company_id", tenant())
+    .in("id", ids);
+  if (error) throw new Error(error.message);
+  return ids.length;
+}
+
+/** Applies one configuration patch to several engines; each row is audited. */
+export async function bulkUpdateEngines(ids: string[], patch: Partial<AiEngine>) {
+  if (ids.length === 0) return 0;
+  const { error } = await raw
+    .from("ai_engines")
+    .update(patch)
+    .eq("company_id", tenant())
+    .in("id", ids);
+  if (error) throw new Error(error.message);
+  return ids.length;
 }
 
 export async function updateEngine(id: string, patch: Partial<AiEngine>) {

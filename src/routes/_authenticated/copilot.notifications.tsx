@@ -374,8 +374,6 @@ function CopilotNotifications() {
 
       <RecipientGroupsPanel />
 
-
-
       <Panel title="Recent report notifications">
         {deliveries.isLoading ? (
           <LoadingState rows={3} />

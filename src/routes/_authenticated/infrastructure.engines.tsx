@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Brain, Gauge, ShieldCheck } from "lucide-react";
+import { Brain, Download, Gauge, ShieldCheck, SlidersHorizontal } from "lucide-react";
 
 import {
   ErrorState,
@@ -12,10 +12,16 @@ import {
 } from "@/components/common/Primitives";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { BulkEngineConfigDialog } from "@/components/infrastructure/BulkEngineConfigDialog";
+import { useInfraAccess } from "@/features/infrastructure/access";
+import { downloadCsv, enginesToCsv } from "@/features/infrastructure/pipeline";
 import { InfraChangeHistory } from "@/components/infrastructure/InfraChangeHistory";
 import { SpeechPipeline } from "@/components/infrastructure/SpeechPipeline";
 import { aiEnginesQuery, updateEngine, type AiEngine } from "@/features/infrastructure/queries";
 import { formatRelative } from "@/lib/format";
+import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/infrastructure/engines")({
   head: () => ({
@@ -41,6 +47,11 @@ export const Route = createFileRoute("/_authenticated/infrastructure/engines")({
 function AiEnginesPage() {
   const { data, isPending, error, refetch } = useQuery(aiEnginesQuery);
   const queryClient = useQueryClient();
+  const access = useInfraAccess();
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const engines = data ?? [];
+  const selectedEngines = engines.filter((engine) => selected.includes(engine.id));
 
   const toggle = useMutation({
     mutationFn: ({ id, enabled }: { id: string; enabled: boolean }) =>
@@ -62,6 +73,41 @@ function AiEnginesPage() {
       <Panel
         title="Engines"
         description="Enablement here controls which providers the edge agents may route work to."
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Checkbox
+              checked={engines.length > 0 && selected.length === engines.length}
+              aria-label="Select all engines"
+              onCheckedChange={(checked) =>
+                setSelected(checked ? engines.map((engine) => engine.id) : [])
+              }
+            />
+            <span className="text-xs text-muted-foreground">
+              {selected.length ? `${selected.length} selected` : "Select all"}
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={selected.length === 0}
+              onClick={() => {
+                downloadCsv(
+                  `aegisiq-ai-engines-${new Date().toISOString().slice(0, 10)}.csv`,
+                  enginesToCsv(selectedEngines),
+                );
+                toast.success(`Exported ${selectedEngines.length} engines`);
+              }}
+            >
+              <Download className="mr-2 size-4" /> Export
+            </Button>
+            <Button
+              size="sm"
+              disabled={selected.length === 0 || !access.can("operate")}
+              onClick={() => setBulkOpen(true)}
+            >
+              <SlidersHorizontal className="mr-2 size-4" /> Bulk configure
+            </Button>
+          </div>
+        }
       >
         {error ? (
           <ErrorState message={error.message} onRetry={() => refetch()} />
@@ -69,16 +115,32 @@ function AiEnginesPage() {
           <LoadingState rows={6} />
         ) : (
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {(data ?? []).map((engine) => (
+            {engines.map((engine) => (
               <EngineCard
                 key={engine.id}
                 engine={engine}
+                selected={selected.includes(engine.id)}
+                canOperate={access.can("operate")}
+                onSelect={(checked) =>
+                  setSelected((current) =>
+                    checked
+                      ? [...new Set([...current, engine.id])]
+                      : current.filter((id) => id !== engine.id),
+                  )
+                }
                 onToggle={(enabled) => toggle.mutate({ id: engine.id, enabled })}
               />
             ))}
           </div>
         )}
       </Panel>
+
+      <BulkEngineConfigDialog
+        open={bulkOpen}
+        onOpenChange={setBulkOpen}
+        engines={selectedEngines}
+        onApplied={() => setSelected([])}
+      />
 
       <div className="mt-5">
         <InfraChangeHistory
@@ -102,16 +164,30 @@ function AiEnginesPage() {
 
 function EngineCard({
   engine,
+  selected,
+  canOperate,
+  onSelect,
   onToggle,
 }: {
   engine: AiEngine;
+  selected: boolean;
+  canOperate: boolean;
+  onSelect: (checked: boolean) => void;
   onToggle: (enabled: boolean) => void;
 }) {
   const healthy = engine.health === "healthy";
   return (
-    <div className="panel space-y-3 p-4">
+    <div
+      className={`panel space-y-3 p-4 ${selected ? "border-primary/50 ring-1 ring-primary/30" : ""}`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
+          <Checkbox
+            checked={selected}
+            className="mt-1"
+            aria-label={`Select ${engine.name}`}
+            onCheckedChange={(checked) => onSelect(checked === true)}
+          />
           <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/12 text-primary">
             <Brain className="size-4" />
           </span>
@@ -124,6 +200,7 @@ function EngineCard({
         </div>
         <Switch
           checked={engine.enabled}
+          disabled={!canOperate}
           aria-label={`Enable ${engine.name}`}
           onCheckedChange={onToggle}
         />
