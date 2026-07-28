@@ -184,9 +184,6 @@ function ConversationViewer() {
       : { surface: "conversationiq", label: "ConversationIQ" },
   );
 
-
-
-
   /** Masks the sensitive ranges saved against an utterance. */
   function displayContent(lineId: string, content: string) {
     return applyRedactions(content, redactionsByLine.get(lineId) ?? [], reveal);

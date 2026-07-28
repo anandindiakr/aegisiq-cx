@@ -239,9 +239,7 @@ export function buildNetworkHealth(
     avgLatency: Math.round(avg(latencies)),
     peakLatency: latencies.length ? Math.max(...latencies) : 0,
     packetLoss: Number(avg(streams.map((s) => Number(s.packet_loss))).toFixed(2)),
-    bandwidthMbps: Number(
-      (liveCameras.reduce((a, c) => a + c.bitrate_kbps, 0) / 1024).toFixed(1),
-    ),
+    bandwidthMbps: Number((liveCameras.reduce((a, c) => a + c.bitrate_kbps, 0) / 1024).toFixed(1)),
     rtspConnections: liveCameras.length,
     audioConnections: streams.filter((s) => s.status === "streaming").length,
     apiConnections: engines.filter((e) => e.enabled && e.api_configured).length,
@@ -280,7 +278,12 @@ export const DIAGNOSTICS: DiagnosticDefinition[] = [
     description: "Microphone capture, gain and noise floor",
     source: "connection",
   },
-  { id: "rtsp", label: "Test RTSP", description: "Session negotiation and keyframe", source: "rtsp" },
+  {
+    id: "rtsp",
+    label: "Test RTSP",
+    description: "Session negotiation and keyframe",
+    source: "rtsp",
+  },
   { id: "engine", label: "Test AI Engine", description: "Inference round trip", source: "ai" },
   { id: "openai", label: "Test OpenAI", description: "Chat completion probe", source: "ai" },
   { id: "whisper", label: "Test Whisper", description: "Transcription probe", source: "speech" },
@@ -329,7 +332,8 @@ export function evaluateDiagnostic(id: string, ctx: DiagnosticContext): Diagnost
   switch (id) {
     case "camera": {
       const offline = ctx.cameras.filter((c) => c.status === "offline").length;
-      if (offline === 0) return result("passed", `${ctx.cameras.length} cameras responded to ONVIF probe`);
+      if (offline === 0)
+        return result("passed", `${ctx.cameras.length} cameras responded to ONVIF probe`);
       return result(
         offline > ctx.cameras.length * 0.1 ? "failed" : "warning",
         `${offline} of ${ctx.cameras.length} cameras did not respond`,
@@ -391,6 +395,8 @@ export function evaluateDiagnostic(id: string, ctx: DiagnosticContext): Diagnost
 
 /* ---------------------------------------------------------------- exports */
 
+const csvCell = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+
 export function camerasToCsv(rows: InfraCamera[], outletName: (id: string | null) => string) {
   const header = [
     "Camera Name",
@@ -430,6 +436,99 @@ export function camerasToCsv(rows: InfraCamera[], outletName: (id: string | null
       .join(","),
   );
   return [header.map(escape).join(","), ...lines].join("\n");
+}
+
+export function gatewaysToCsv(rows: EdgeGateway[]) {
+  const head = [
+    "Gateway",
+    "Serial",
+    "Location",
+    "IP",
+    "Status",
+    "OS",
+    "CPU model",
+    "GPU model",
+    "RAM (GB)",
+    "Storage (GB)",
+    "CPU %",
+    "Memory %",
+    "GPU %",
+    "Disk %",
+    "Temp (C)",
+    "Agent version",
+    "Audio ingest",
+    "Transcription",
+    "Diarization",
+    "Last heartbeat",
+  ];
+  const onOff = (value: boolean) => (value ? "enabled" : "disabled");
+  return [
+    head.join(","),
+    ...rows.map((g) =>
+      [
+        g.name,
+        g.serial_number,
+        g.location ?? "",
+        g.ip_address ?? "",
+        g.status,
+        g.operating_system,
+        g.cpu_model,
+        g.gpu_model,
+        g.ram_gb,
+        g.storage_gb,
+        Number(g.cpu_usage).toFixed(0),
+        Number(g.memory_usage).toFixed(0),
+        Number(g.gpu_usage).toFixed(0),
+        Number(g.disk_usage).toFixed(0),
+        Number(g.temperature_c).toFixed(0),
+        g.agent_version,
+        onOff(g.ingest_enabled),
+        onOff(g.transcription_enabled),
+        onOff(g.diarization_enabled),
+        g.last_heartbeat_at ?? "",
+      ]
+        .map(csvCell)
+        .join(","),
+    ),
+  ].join("\n");
+}
+
+export function enginesToCsv(rows: AiEngine[]) {
+  const head = [
+    "Engine",
+    "Provider",
+    "Capability",
+    "Enabled",
+    "Status",
+    "Health",
+    "Version",
+    "Region",
+    "Latency p95 (ms)",
+    "API key configured",
+    "Endpoint",
+    "Last tested",
+  ];
+  return [
+    head.join(","),
+    ...rows.map((e) =>
+      [
+        e.name,
+        e.provider,
+        e.capability,
+        e.enabled ? "enabled" : "disabled",
+        e.status,
+        e.health,
+        e.version,
+        e.region ?? "",
+        e.latency_ms,
+        e.api_configured ? "yes" : "no",
+        e.endpoint ?? "",
+        e.last_tested_at ?? "",
+      ]
+        .map(csvCell)
+        .join(","),
+    ),
+  ].join("\n");
 }
 
 export function downloadCsv(filename: string, contents: string) {

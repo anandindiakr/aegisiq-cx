@@ -8,10 +8,10 @@
  * them and every reveal is appended to the same trail.
  */
 import { queryOptions } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { getActiveTenant, myRolesQuery } from "@/features/platform/queries";
+import { getActiveTenant } from "@/features/platform/queries";
+import { useInfraAccess } from "@/features/infrastructure/access";
 import { traced } from "@/lib/observability";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -77,6 +77,8 @@ export const ACTION_LABELS: Record<string, string> = {
   decommissioned: "Decommissioned",
   deleted: "Deleted",
   credential_saved: "Credential saved",
+  credential_rotated: "Credential rotated",
+  credential_rotation_requested: "Rotation requested",
   credential_revealed: "Credential revealed",
 };
 
@@ -125,6 +127,11 @@ export interface DeviceCredential {
   notes: string | null;
   rotated_at: string | null;
   last_revealed_at: string | null;
+  rotation_interval_days: number;
+  expires_at: string | null;
+  rotation_status: "current" | "rotation_requested" | string;
+  rotation_requested_at: string | null;
+  rotation_note: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -138,7 +145,7 @@ export interface RevealedCredential {
 }
 
 const CREDENTIAL_COLUMNS =
-  "id,device_type,device_id,label,username,onvif_username,rtsp_url,notes,rotated_at,last_revealed_at,created_at,updated_at";
+  "id,device_type,device_id,label,username,onvif_username,rtsp_url,notes,rotated_at,last_revealed_at,rotation_interval_days,expires_at,rotation_status,rotation_requested_at,rotation_note,created_at,updated_at";
 
 export function deviceCredentialsQuery(deviceType: "camera" | "gateway") {
   return queryOptions({
@@ -170,6 +177,8 @@ export interface CredentialDraft {
   onvifSecret?: string;
   rtspUrl?: string;
   notes?: string;
+  /** Days until the stored secret is considered expired. */
+  rotationIntervalDays?: number;
 }
 
 /** Stores credentials encrypted at rest; the plaintext never lands in a column. */
@@ -183,6 +192,7 @@ export async function saveDeviceCredential(draft: CredentialDraft) {
     _onvif_secret: draft.onvifSecret || null,
     _rtsp_url: draft.rtspUrl || null,
     _notes: draft.notes || null,
+    _rotation_interval_days: draft.rotationIntervalDays ?? 90,
   });
   if (error) throw new Error(humanise(error.message));
 }
@@ -192,6 +202,42 @@ export async function revealDeviceCredential(id: string): Promise<RevealedCreden
   const { data, error } = await raw.rpc("reveal_device_credential", { _id: id });
   if (error) throw new Error(humanise(error.message));
   return data as RevealedCredential;
+}
+
+/**
+ * Asks a workspace admin to rotate a device secret. Anyone in the workspace may
+ * raise the request; the credential is flagged and the request is audited.
+ */
+export async function requestCredentialRotation(id: string, note?: string) {
+  const { error } = await raw.rpc("request_credential_rotation", {
+    _id: id,
+    _note: note?.trim() ? note.trim().slice(0, 200) : null,
+  });
+  if (error) throw new Error(humanise(error.message));
+}
+
+export type RotationState = "none" | "current" | "due_soon" | "expired" | "requested";
+
+export interface RotationStatus {
+  state: RotationState;
+  label: string;
+  tone: "positive" | "warning" | "negative" | "info";
+  /** Days until expiry; negative once overdue. */
+  daysLeft: number | null;
+}
+
+/** Derives the rotation badge for a credential record. */
+export function rotationStatus(record: DeviceCredential | null): RotationStatus {
+  if (!record) return { state: "none", label: "not stored", tone: "info", daysLeft: null };
+  if (record.rotation_status === "rotation_requested")
+    return { state: "requested", label: "rotation requested", tone: "warning", daysLeft: null };
+  if (!record.expires_at)
+    return { state: "current", label: "current", tone: "positive", daysLeft: null };
+  const daysLeft = Math.ceil((new Date(record.expires_at).getTime() - Date.now()) / 86_400_000);
+  if (daysLeft < 0) return { state: "expired", label: "expired", tone: "negative", daysLeft };
+  if (daysLeft <= 14)
+    return { state: "due_soon", label: `expires in ${daysLeft}d`, tone: "warning", daysLeft };
+  return { state: "current", label: `expires in ${daysLeft}d`, tone: "positive", daysLeft };
 }
 
 function humanise(message: string) {
@@ -208,16 +254,21 @@ export interface CredentialAccess {
   isLoading: boolean;
   /** Admins may store, rotate and reveal secrets. */
   canManage: boolean;
+  /** Admins may decrypt a stored secret; every reveal is audited. */
+  canReveal: boolean;
+  /** Anyone in the workspace may ask an admin to rotate a secret. */
+  canRequestRotation: boolean;
   /** Operators may see which devices have credentials on file. */
   canView: boolean;
 }
 
 export function useCredentialAccess(): CredentialAccess {
-  const { data, isPending } = useQuery(myRolesQuery);
-  const roles = data ?? [];
-  const canManage = roles.some((r) => r === "super_admin" || r === "tenant_admin");
-  const canView =
-    canManage ||
-    roles.some((r) => r === "regional_manager" || r === "outlet_manager" || r === "supervisor");
-  return { isLoading: isPending, canManage, canView };
+  const access = useInfraAccess();
+  return {
+    isLoading: access.isLoading,
+    canManage: access.can("manageCredentials"),
+    canReveal: access.can("revealCredentials"),
+    canRequestRotation: access.can("requestRotation"),
+    canView: access.can("viewCredentials") || access.can("manageCredentials"),
+  };
 }

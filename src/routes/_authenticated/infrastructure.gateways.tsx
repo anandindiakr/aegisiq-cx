@@ -1,7 +1,19 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Cpu, HardDrive, KeyRound, Plus, Search, Thermometer } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Cpu,
+  Download,
+  HardDrive,
+  KeyRound,
+  Loader2,
+  Plus,
+  PowerOff,
+  Search,
+  Thermometer,
+  Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
 
 import {
   EmptyState,
@@ -14,6 +26,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -26,7 +49,15 @@ import { AddGatewayDialog } from "@/components/infrastructure/AddGatewayDialog";
 import { DeviceCredentialsDialog } from "@/components/infrastructure/DeviceCredentialsDialog";
 import { InfraChangeHistory } from "@/components/infrastructure/InfraChangeHistory";
 import { useCredentialAccess } from "@/features/infrastructure/audit";
-import { edgeGatewaysQuery, infraCamerasQuery } from "@/features/infrastructure/queries";
+import { useInfraAccess } from "@/features/infrastructure/access";
+import {
+  bulkUpdateGateways,
+  edgeGatewaysQuery,
+  infraCamerasQuery,
+  softDeleteGateways,
+  type EdgeGateway,
+} from "@/features/infrastructure/queries";
+import { downloadCsv, gatewaysToCsv } from "@/features/infrastructure/pipeline";
 import { formatRelative } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/infrastructure/gateways")({
@@ -62,7 +93,42 @@ function EdgeGatewaysPage() {
   const [term, setTerm] = useState("");
   const [open, setOpen] = useState(false);
   const credentialAccess = useCredentialAccess();
+  const access = useInfraAccess();
+  const queryClient = useQueryClient();
   const [credentialFor, setCredentialFor] = useState<{ id: string; name: string } | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [confirmRetire, setConfirmRetire] = useState(false);
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ["infrastructure", "gateways"] });
+
+  const bulkServices = useMutation({
+    mutationFn: ({ patch }: { patch: Partial<EdgeGateway>; label: string }) =>
+      bulkUpdateGateways(selected, patch),
+    onSuccess: (count, variables) => {
+      toast.success(`${variables.label} for ${count} gateway${count === 1 ? "" : "s"}`, {
+        description: "Each change is recorded in the gateway change history.",
+      });
+      setSelected([]);
+      invalidate();
+      queryClient.invalidateQueries({ queryKey: ["infrastructure", "audit"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const retire = useMutation({
+    mutationFn: () => softDeleteGateways(selected),
+    onSuccess: (count) => {
+      toast.success(`${count} gateway${count === 1 ? "" : "s"} decommissioned`, {
+        description: "Retired nodes stay in the change history for audit.",
+      });
+      setSelected([]);
+      setConfirmRetire(false);
+      invalidate();
+      queryClient.invalidateQueries({ queryKey: ["infrastructure", "audit"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const attached = useMemo(() => {
     const map = new Map<string, number>();
@@ -82,6 +148,14 @@ function EdgeGatewaysPage() {
   });
 
   const online = (data ?? []).filter((g) => g.status === "online").length;
+  const selectedRows = (data ?? []).filter((g) => selected.includes(g.id));
+  const allVisibleSelected = rows.length > 0 && rows.every((g) => selected.includes(g.id));
+  const busy = bulkServices.isPending || retire.isPending;
+
+  const toggleRow = (id: string, checked: boolean) =>
+    setSelected((current) =>
+      checked ? [...new Set([...current, id])] : current.filter((value) => value !== id),
+    );
 
   return (
     <div>
@@ -110,6 +184,84 @@ function EdgeGatewaysPage() {
           />
         </div>
 
+        {selected.length > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2.5">
+            <span className="text-xs font-medium">
+              {selected.length} gateway{selected.length === 1 ? "" : "s"} selected
+            </span>
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy || !access.can("operate")}
+                onClick={() =>
+                  bulkServices.mutate({
+                    patch: { ingest_enabled: true, transcription_enabled: true },
+                    label: "Ingest and transcription enabled",
+                  })
+                }
+              >
+                {busy ? <Loader2 className="mr-2 size-3.5 animate-spin" /> : null}
+                Enable services
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy || !access.can("operate")}
+                onClick={() =>
+                  bulkServices.mutate({
+                    patch: {
+                      ingest_enabled: false,
+                      transcription_enabled: false,
+                      diarization_enabled: false,
+                    },
+                    label: "All services disabled",
+                  })
+                }
+              >
+                <PowerOff className="mr-2 size-3.5" /> Disable services
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={busy || !access.can("operate")}
+                onClick={() =>
+                  bulkServices.mutate({
+                    patch: { diarization_enabled: true },
+                    label: "Diarization enabled",
+                  })
+                }
+              >
+                Enable diarization
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  downloadCsv(
+                    `aegisiq-gateways-${new Date().toISOString().slice(0, 10)}.csv`,
+                    gatewaysToCsv(selectedRows),
+                  );
+                  toast.success(`Exported ${selectedRows.length} gateways`);
+                }}
+              >
+                <Download className="mr-2 size-3.5" /> Export selection
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                disabled={busy || !access.can("decommission")}
+                onClick={() => setConfirmRetire(true)}
+              >
+                <Trash2 className="mr-2 size-3.5" /> Decommission
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
+                Clear
+              </Button>
+            </div>
+          </div>
+        )}
+
         {error ? (
           <ErrorState message={error.message} onRetry={() => refetch()} />
         ) : isPending ? (
@@ -124,6 +276,15 @@ function EdgeGatewaysPage() {
             <Table>
               <TableHeader>
                 <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={allVisibleSelected}
+                      aria-label="Select all gateways"
+                      onCheckedChange={(checked) =>
+                        setSelected(checked ? rows.map((g) => g.id) : [])
+                      }
+                    />
+                  </TableHead>
                   <TableHead>Gateway</TableHead>
                   <TableHead>Location</TableHead>
                   <TableHead>IP</TableHead>
@@ -135,6 +296,7 @@ function EdgeGatewaysPage() {
                   <TableHead>Temp</TableHead>
                   <TableHead>Version</TableHead>
                   <TableHead>Heartbeat</TableHead>
+                  <TableHead>Services</TableHead>
                   <TableHead>Cameras</TableHead>
                   <TableHead className="w-32">Credentials</TableHead>
                 </TableRow>
@@ -142,6 +304,13 @@ function EdgeGatewaysPage() {
               <TableBody>
                 {rows.map((gateway) => (
                   <TableRow key={gateway.id} className="border-border">
+                    <TableCell>
+                      <Checkbox
+                        checked={selected.includes(gateway.id)}
+                        aria-label={`Select ${gateway.name}`}
+                        onCheckedChange={(checked) => toggleRow(gateway.id, checked === true)}
+                      />
+                    </TableCell>
                     <TableCell>
                       <p className="font-mono text-xs">{gateway.name}</p>
                       <p className="text-[11px] text-muted-foreground">
@@ -183,6 +352,22 @@ function EdgeGatewaysPage() {
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {formatRelative(gateway.last_heartbeat_at)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        <StatusPill
+                          label="ingest"
+                          tone={gateway.ingest_enabled ? "positive" : "neutral"}
+                        />
+                        <StatusPill
+                          label="stt"
+                          tone={gateway.transcription_enabled ? "positive" : "neutral"}
+                        />
+                        <StatusPill
+                          label="diarize"
+                          tone={gateway.diarization_enabled ? "positive" : "neutral"}
+                        />
+                      </div>
                     </TableCell>
                     <TableCell className="text-xs tabular-nums">
                       {attached.get(gateway.id) ?? 0}
@@ -233,6 +418,31 @@ function EdgeGatewaysPage() {
           description="Enrolment, configuration edits, decommissions and credential access for every edge node."
         />
       </div>
+
+      <AlertDialog open={confirmRetire} onOpenChange={setConfirmRetire}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Decommission {selected.length} gateway{selected.length === 1 ? "" : "s"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              The nodes stop accepting audio and drop out of the fleet views. History and audit
+              records are kept, and the action is attributed to you.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                retire.mutate();
+              }}
+            >
+              Decommission
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AddGatewayDialog open={open} onOpenChange={setOpen} />
       <DeviceCredentialsDialog

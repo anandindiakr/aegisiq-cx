@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, Cctv, Cpu, ServerCog } from "lucide-react";
 
+import { HealthThresholdsPanel } from "@/components/infrastructure/HealthThresholdsPanel";
 import { ErrorState, MetricCard, PageHeader, Panel } from "@/components/common/Primitives";
 import { Progress } from "@/components/ui/progress";
 import { TestCentre } from "@/components/infrastructure/TestCentre";
@@ -131,6 +132,9 @@ function DeviceHealthPage() {
           </div>
         </>
       )}
+      <div className="mt-5">
+        <HealthThresholdsPanel />
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, KeyRound, Loader2, Lock, ShieldAlert } from "lucide-react";
+import { Eye, KeyRound, Loader2, Lock, RotateCw, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,20 @@ import { StatusPill } from "@/components/common/Primitives";
 import { formatRelative } from "@/lib/format";
 import {
   deviceCredentialsQuery,
+  requestCredentialRotation,
   revealDeviceCredential,
+  rotationStatus,
   saveDeviceCredential,
   useCredentialAccess,
   type RevealedCredential,
 } from "@/features/infrastructure/audit";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
   open: boolean;
@@ -62,7 +71,9 @@ export function DeviceCredentialsDialog({
   const record = (credentials.data ?? []).find((c) => c.device_id === deviceId) ?? null;
 
   const [draft, setDraft] = useState(EMPTY);
+  const [rotationDays, setRotationDays] = useState("90");
   const [revealed, setRevealed] = useState<RevealedCredential | null>(null);
+  const rotation = rotationStatus(record);
 
   useEffect(() => {
     if (!open) {
@@ -77,6 +88,7 @@ export function DeviceCredentialsDialog({
       onvifSecret: "",
       rtspUrl: record?.rtsp_url ?? defaultRtspUrl ?? "",
     });
+    setRotationDays(String(record?.rotation_interval_days ?? 90));
   }, [open, record, defaultRtspUrl]);
 
   const set = (key: keyof typeof EMPTY, value: string) =>
@@ -93,10 +105,15 @@ export function DeviceCredentialsDialog({
         onvifUsername: draft.onvifUsername,
         onvifSecret: draft.onvifSecret,
         rtspUrl: draft.rtspUrl,
+        rotationIntervalDays: Number(rotationDays),
       });
     },
     onSuccess: () => {
-      toast.success("Credentials stored encrypted");
+      toast.success(
+        draft.secret || draft.onvifSecret
+          ? "Credentials rotated and stored encrypted"
+          : "Credential settings saved",
+      );
       queryClient.invalidateQueries({ queryKey: ["infrastructure"] });
       setRevealed(null);
       setDraft((prev) => ({ ...prev, secret: "", onvifSecret: "" }));
@@ -113,6 +130,20 @@ export function DeviceCredentialsDialog({
       setRevealed(value);
       queryClient.invalidateQueries({ queryKey: ["infrastructure", "audit"] });
       toast.info("Reveal recorded in the change history");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const requestRotation = useMutation({
+    mutationFn: async () => {
+      if (!record) throw new Error("No credentials stored for this device yet.");
+      await requestCredentialRotation(record.id, `Requested from ${deviceName}`);
+    },
+    onSuccess: () => {
+      toast.success("Rotation requested", {
+        description: "Workspace admins can see the request in the change history.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["infrastructure"] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -135,10 +166,14 @@ export function DeviceCredentialsDialog({
           {record ? (
             <>
               <StatusPill label="stored" tone="positive" />
+              <StatusPill label={rotation.label} tone={rotation.tone} />
               <span className="text-muted-foreground">
                 Rotated {formatRelative(record.rotated_at)}
                 {record.last_revealed_at
                   ? ` · last revealed ${formatRelative(record.last_revealed_at)}`
+                  : ""}
+                {record.rotation_requested_at
+                  ? ` · requested ${formatRelative(record.rotation_requested_at)}`
                   : ""}
               </span>
             </>
@@ -151,8 +186,8 @@ export function DeviceCredentialsDialog({
           <div className="flex items-start gap-3 rounded-lg border border-warning/30 bg-warning/5 px-3 py-3 text-xs">
             <ShieldAlert className="mt-0.5 size-4 shrink-0 text-warning" />
             <p>
-              Your role can see that credentials exist but cannot view or change them. Ask a
-              workspace admin to rotate the secret for this device.
+              Your role can see that credentials exist but cannot view or change them. Raise a
+              rotation request and a workspace admin will replace the secret.
             </p>
           </div>
         ) : (
@@ -196,6 +231,20 @@ export function DeviceCredentialsDialog({
                 />
               </Field>
             </div>
+            <Field label="Rotation interval">
+              <Select value={rotationDays} onValueChange={setRotationDays}>
+                <SelectTrigger className="bg-surface">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {["30", "60", "90", "180", "365"].map((value) => (
+                    <SelectItem key={value} value={value}>
+                      Every {value} days
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
             <Field label="RTSP endpoint">
               <Input
                 value={draft.rtspUrl}
@@ -221,12 +270,34 @@ export function DeviceCredentialsDialog({
           <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
             Close
           </Button>
+          {access.canRequestRotation && !access.canManage && (
+            <Button
+              size="sm"
+              disabled={!record || requestRotation.isPending || rotation.state === "requested"}
+              onClick={() => requestRotation.mutate()}
+            >
+              {requestRotation.isPending ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <RotateCw className="mr-2 size-4" />
+              )}
+              {rotation.state === "requested" ? "Rotation requested" : "Request rotation"}
+            </Button>
+          )}
           {access.canManage && (
             <>
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!record || reveal.isPending}
+                disabled={!record || requestRotation.isPending || rotation.state === "requested"}
+                onClick={() => requestRotation.mutate()}
+              >
+                <RotateCw className="mr-2 size-4" /> Flag for rotation
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!record || reveal.isPending || !access.canReveal}
                 onClick={() => reveal.mutate()}
               >
                 {reveal.isPending ? (

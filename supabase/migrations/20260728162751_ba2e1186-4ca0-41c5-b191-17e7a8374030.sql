@@ -1,0 +1,10 @@
+REVOKE EXECUTE ON FUNCTION public.infra_can(text) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.evaluate_infra_health() FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.request_credential_rotation(uuid, text) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.save_device_credential(text, uuid, text, text, text, text, text, text, integer) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.reveal_device_credential(uuid) FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.infra_can(text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.evaluate_infra_health() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.request_credential_rotation(uuid, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.save_device_credential(text, uuid, text, text, text, text, text, text, integer) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.reveal_device_credential(uuid) TO authenticated;
