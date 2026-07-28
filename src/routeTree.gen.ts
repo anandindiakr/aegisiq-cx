@@ -33,6 +33,7 @@ import { Route as AuthenticatedAlertCentreRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAlertAnalyticsRouteImport } from './routes/_authenticated/alert-analytics'
 import { Route as AuthenticatedConversationiqIndexRouteImport } from './routes/_authenticated/conversationiq.index'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
+import { Route as AuthenticatedInfrastructureStorageRouteImport } from './routes/_authenticated/infrastructure.storage'
 import { Route as AuthenticatedInfrastructureNetworkRouteImport } from './routes/_authenticated/infrastructure.network'
 import { Route as AuthenticatedInfrastructureHealthRouteImport } from './routes/_authenticated/infrastructure.health'
 import { Route as AuthenticatedInfrastructureGatewaysRouteImport } from './routes/_authenticated/infrastructure.gateways'
@@ -182,6 +183,12 @@ const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
   path: '/api/public/telemetry',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedInfrastructureStorageRoute =
+  AuthenticatedInfrastructureStorageRouteImport.update({
+    id: '/infrastructure/storage',
+    path: '/infrastructure/storage',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInfrastructureNetworkRoute =
   AuthenticatedInfrastructureNetworkRouteImport.update({
     id: '/infrastructure/network',
@@ -344,6 +351,7 @@ export interface FileRoutesByFullPath {
   '/infrastructure/gateways': typeof AuthenticatedInfrastructureGatewaysRoute
   '/infrastructure/health': typeof AuthenticatedInfrastructureHealthRoute
   '/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
+  '/infrastructure/storage': typeof AuthenticatedInfrastructureStorageRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
 }
@@ -389,6 +397,7 @@ export interface FileRoutesByTo {
   '/infrastructure/gateways': typeof AuthenticatedInfrastructureGatewaysRoute
   '/infrastructure/health': typeof AuthenticatedInfrastructureHealthRoute
   '/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
+  '/infrastructure/storage': typeof AuthenticatedInfrastructureStorageRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/conversationiq': typeof AuthenticatedConversationiqIndexRoute
 }
@@ -436,6 +445,7 @@ export interface FileRoutesById {
   '/_authenticated/infrastructure/gateways': typeof AuthenticatedInfrastructureGatewaysRoute
   '/_authenticated/infrastructure/health': typeof AuthenticatedInfrastructureHealthRoute
   '/_authenticated/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
+  '/_authenticated/infrastructure/storage': typeof AuthenticatedInfrastructureStorageRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/_authenticated/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
 }
@@ -483,6 +493,7 @@ export interface FileRouteTypes {
     | '/infrastructure/gateways'
     | '/infrastructure/health'
     | '/infrastructure/network'
+    | '/infrastructure/storage'
     | '/api/public/telemetry'
     | '/conversationiq/'
   fileRoutesByTo: FileRoutesByTo
@@ -528,6 +539,7 @@ export interface FileRouteTypes {
     | '/infrastructure/gateways'
     | '/infrastructure/health'
     | '/infrastructure/network'
+    | '/infrastructure/storage'
     | '/api/public/telemetry'
     | '/conversationiq'
   id:
@@ -574,6 +586,7 @@ export interface FileRouteTypes {
     | '/_authenticated/infrastructure/gateways'
     | '/_authenticated/infrastructure/health'
     | '/_authenticated/infrastructure/network'
+    | '/_authenticated/infrastructure/storage'
     | '/api/public/telemetry'
     | '/_authenticated/conversationiq/'
   fileRoutesById: FileRoutesById
@@ -755,6 +768,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/telemetry'
       preLoaderRoute: typeof ApiPublicTelemetryRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/infrastructure/storage': {
+      id: '/_authenticated/infrastructure/storage'
+      path: '/infrastructure/storage'
+      fullPath: '/infrastructure/storage'
+      preLoaderRoute: typeof AuthenticatedInfrastructureStorageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/infrastructure/network': {
       id: '/_authenticated/infrastructure/network'
@@ -938,6 +958,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInfrastructureGatewaysRoute: typeof AuthenticatedInfrastructureGatewaysRoute
   AuthenticatedInfrastructureHealthRoute: typeof AuthenticatedInfrastructureHealthRoute
   AuthenticatedInfrastructureNetworkRoute: typeof AuthenticatedInfrastructureNetworkRoute
+  AuthenticatedInfrastructureStorageRoute: typeof AuthenticatedInfrastructureStorageRoute
   AuthenticatedConversationiqIndexRoute: typeof AuthenticatedConversationiqIndexRoute
 }
 
@@ -993,6 +1014,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedInfrastructureHealthRoute,
   AuthenticatedInfrastructureNetworkRoute:
     AuthenticatedInfrastructureNetworkRoute,
+  AuthenticatedInfrastructureStorageRoute:
+    AuthenticatedInfrastructureStorageRoute,
   AuthenticatedConversationiqIndexRoute: AuthenticatedConversationiqIndexRoute,
 }
 
