@@ -19,7 +19,44 @@ import { iqTagIndexQuery } from "@/features/conversationiq/review";
 import { DEFAULT_FILTERS, applyFilters, type IqFilters } from "@/features/conversationiq/filters";
 import { camerasQuery, outletsQuery } from "@/features/platform/queries";
 
+/** Deep-link contract shared with the Executive Command Centre widgets. */
+interface IqSearch {
+  dateFrom?: string;
+  dateTo?: string;
+  outletId?: string;
+  language?: string;
+  risk?: string;
+  sentiment?: string;
+  keyword?: string;
+  employee?: string;
+  alertStatus?: string;
+  escalatedOnly?: boolean;
+  complaintsOnly?: boolean;
+  search?: string;
+  from?: string;
+}
+
+const str = (value: unknown): string | undefined =>
+  typeof value === "string" && value.length > 0 ? value : undefined;
+const bool = (value: unknown): boolean | undefined =>
+  value === true || value === "true" ? true : undefined;
+
 export const Route = createFileRoute("/_authenticated/conversationiq/")({
+  validateSearch: (search: Record<string, unknown>): IqSearch => ({
+    dateFrom: str(search.dateFrom),
+    dateTo: str(search.dateTo),
+    outletId: str(search.outletId),
+    language: str(search.language),
+    risk: str(search.risk),
+    sentiment: str(search.sentiment),
+    keyword: str(search.keyword),
+    employee: str(search.employee),
+    alertStatus: str(search.alertStatus),
+    escalatedOnly: bool(search.escalatedOnly),
+    complaintsOnly: bool(search.complaintsOnly),
+    search: str(search.search),
+    from: str(search.from),
+  }),
   head: () => ({
     meta: [
       { title: "ConversationIQ™ — Conversation Intelligence | AegisIQ CX" },
@@ -53,8 +90,29 @@ const SEARCH_EXAMPLES = [
   "late delivery",
 ];
 
+function fromSearch(search: IqSearch): IqFilters {
+  return {
+    ...DEFAULT_FILTERS,
+    dateFrom: search.dateFrom ?? DEFAULT_FILTERS.dateFrom,
+    dateTo: search.dateTo ?? DEFAULT_FILTERS.dateTo,
+    outletId: search.outletId ?? DEFAULT_FILTERS.outletId,
+    language: search.language ?? DEFAULT_FILTERS.language,
+    risk: search.risk ?? DEFAULT_FILTERS.risk,
+    sentiment: search.sentiment ?? DEFAULT_FILTERS.sentiment,
+    keyword: search.keyword ?? DEFAULT_FILTERS.keyword,
+    employee: search.employee ?? DEFAULT_FILTERS.employee,
+    alertStatus: search.alertStatus ?? DEFAULT_FILTERS.alertStatus,
+    escalatedOnly: search.escalatedOnly ?? DEFAULT_FILTERS.escalatedOnly,
+    complaintsOnly: search.complaintsOnly ?? DEFAULT_FILTERS.complaintsOnly,
+    search: search.search ?? DEFAULT_FILTERS.search,
+  };
+}
+
 function ConversationListPage() {
-  const [filters, setFilters] = useState<IqFilters>(DEFAULT_FILTERS);
+  const search = Route.useSearch();
+  // Deep links from the Command Centre seed the workbench; the user stays in
+  // control of the filters afterwards.
+  const [filters, setFilters] = useState<IqFilters>(() => fromSearch(search));
 
   const conversations = useQuery(iqConversationsQuery);
   const keywordIndex = useQuery(iqKeywordIndexQuery);

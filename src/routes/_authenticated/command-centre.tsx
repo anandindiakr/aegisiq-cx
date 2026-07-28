@@ -28,6 +28,8 @@ import {
   TopIssues,
 } from "@/components/command-centre/AnalyticsWidgets";
 import { ExportMenu } from "@/components/command-centre/ExportMenu";
+import { WidgetDeepLink } from "@/components/command-centre/WidgetDeepLink";
+import { DashboardAuditTrail } from "@/components/command-centre/DashboardAuditTrail";
 import { ScheduledReports } from "@/components/command-centre/ScheduledReports";
 import { DashboardSettings } from "@/components/command-centre/DashboardSettings";
 import { DrillDownDialog, type DrillDown } from "@/components/command-centre/DrillDownDialog";
@@ -42,7 +44,9 @@ import {
   executiveOverviewQuery,
   type DashboardLayout,
 } from "@/features/command-centre/queries";
-import { resolveOrder } from "@/features/command-centre/widgets";
+import { resolveOrder, WIDGETS } from "@/features/command-centre/widgets";
+import { useCommandCentreRealtime } from "@/features/command-centre/realtime";
+import { getActiveTenant } from "@/features/platform/queries";
 import type { ExecutiveOverview, OutletPerformance } from "@/features/command-centre/types";
 
 export const Route = createFileRoute("/_authenticated/command-centre")({
@@ -78,10 +82,14 @@ function WidgetSkeleton({ height = 320 }: { height?: number }) {
   return <Skeleton className="w-full rounded-xl bg-muted/50" style={{ height }} />;
 }
 
+const WIDGET_LABELS = new Map(WIDGETS.map((w) => [w.id, w.label]));
+
 function CommandCentrePage() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<CommandFilters>(() => defaultFilters());
   const [drill, setDrill] = useState<DrillDown | null>(null);
+
+  const realtime = useCommandCentreRealtime(getActiveTenant());
 
   const layoutQuery = useQuery(dashboardLayoutQuery);
   const layout = layoutQuery.data ?? FALLBACK_LAYOUT;
@@ -208,8 +216,27 @@ function CommandCentrePage() {
               <RefreshCw className={overviewQuery.isFetching ? "size-4 animate-spin" : "size-4"} />
               Refresh
             </Button>
+            <Badge
+              variant="outline"
+              className={
+                realtime.connected
+                  ? "gap-1.5 text-[11px] text-emerald-400"
+                  : "gap-1.5 text-[11px] text-muted-foreground"
+              }
+            >
+              <span
+                className={
+                  realtime.connected
+                    ? "size-1.5 rounded-full bg-emerald-400"
+                    : "size-1.5 rounded-full bg-muted-foreground"
+                }
+              />
+              {realtime.connected ? "Live" : "Offline"}
+              {realtime.events > 0 && ` · ${realtime.events}`}
+            </Badge>
             <ExportMenu overview={overview} filters={filters} />
             <ScheduledReports />
+            <DashboardAuditTrail />
             <DashboardSettings layout={layout} />
           </>
         }
@@ -240,8 +267,21 @@ function CommandCentrePage() {
       {overview && (
         <div className="grid gap-4 xl:grid-cols-2">
           {visible.map((id) => (
-            <section key={id} className={HALF_WIDTH.has(id) ? "min-w-0" : "min-w-0 xl:col-span-2"}>
+            <section
+              key={id}
+              className={
+                HALF_WIDTH.has(id)
+                  ? "group relative min-w-0"
+                  : "group relative min-w-0 xl:col-span-2"
+              }
+            >
               {renderWidget(id, overview)}
+              <WidgetDeepLink
+                widgetId={id}
+                filters={filters}
+                label={`Open ${WIDGET_LABELS.get(id) ?? id} in ConversationIQ`}
+                className="absolute right-3 top-3 z-10 opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100"
+              />
             </section>
           ))}
         </div>
