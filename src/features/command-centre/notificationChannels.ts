@@ -51,7 +51,7 @@ export interface NotificationDelivery {
   channel: string;
   destination: string;
   target_label: string | null;
-  status: "sent" | "failed" | "skipped";
+  status: "sent" | "failed" | "skipped" | "duplicate";
   response_status: number | null;
   error_message: string | null;
   duration_ms: number | null;
@@ -63,7 +63,7 @@ export interface NotificationDelivery {
 export interface SampleDeliveryResult {
   channel: string;
   destination: string;
-  status: "sent" | "failed" | "skipped";
+  status: "sent" | "failed" | "skipped" | "duplicate";
   responseStatus: number | null;
   error: string | null;
   attempts?: number;
@@ -199,11 +199,16 @@ export async function notify(
   title: string,
   summary: string,
   data: Record<string, unknown> = {},
+  options: { dedupeKey?: string } = {},
 ): Promise<void> {
   try {
     const companyId = getActiveTenant();
     if (!companyId) return;
-    await dispatchNotificationEvent({ data: { companyId, type, title, summary, data } });
+    // A run-scoped key means a reconnect or resumed run cannot double-notify.
+    const dedupeKey =
+      options.dedupeKey ??
+      (typeof data.runId === "string" ? `${type}:${data.runId}` : undefined);
+    await dispatchNotificationEvent({ data: { companyId, type, title, summary, data, dedupeKey } });
   } catch (error) {
     captureError(error, { area: "notification-dispatch", type });
   }

@@ -1378,13 +1378,16 @@ export type Database = {
           channel: string
           company_id: string
           created_at: string
+          dedupe_key: string | null
           destination: string
           duration_ms: number | null
           endpoint_id: string | null
           error_message: string | null
           event_id: string
           event_type: string
+          group_id: string | null
           id: string
+          idempotency_key: string | null
           payload: Json
           response_status: number | null
           rule_id: string | null
@@ -1396,13 +1399,16 @@ export type Database = {
           channel: string
           company_id: string
           created_at?: string
+          dedupe_key?: string | null
           destination: string
           duration_ms?: number | null
           endpoint_id?: string | null
           error_message?: string | null
           event_id: string
           event_type: string
+          group_id?: string | null
           id?: string
+          idempotency_key?: string | null
           payload?: Json
           response_status?: number | null
           rule_id?: string | null
@@ -1414,13 +1420,16 @@ export type Database = {
           channel?: string
           company_id?: string
           created_at?: string
+          dedupe_key?: string | null
           destination?: string
           duration_ms?: number | null
           endpoint_id?: string | null
           error_message?: string | null
           event_id?: string
           event_type?: string
+          group_id?: string | null
           id?: string
+          idempotency_key?: string | null
           payload?: Json
           response_status?: number | null
           rule_id?: string | null
@@ -1436,10 +1445,85 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "notification_deliveries_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "notification_groups"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "notification_deliveries_rule_id_fkey"
             columns: ["rule_id"]
             isOneToOne: false
             referencedRelation: "notification_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_groups: {
+        Row: {
+          active: boolean
+          bypass_quiet_for_failures: boolean
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          events: string[]
+          id: string
+          members: Json
+          name: string
+          quiet_hours_end: number | null
+          quiet_hours_start: number | null
+          send_window_end: number
+          send_window_start: number
+          timezone: string
+          updated_at: string
+          window_days: number[]
+        }
+        Insert: {
+          active?: boolean
+          bypass_quiet_for_failures?: boolean
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          events?: string[]
+          id?: string
+          members?: Json
+          name: string
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          send_window_end?: number
+          send_window_start?: number
+          timezone?: string
+          updated_at?: string
+          window_days?: number[]
+        }
+        Update: {
+          active?: boolean
+          bypass_quiet_for_failures?: boolean
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          events?: string[]
+          id?: string
+          members?: Json
+          name?: string
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          send_window_end?: number
+          send_window_start?: number
+          timezone?: string
+          updated_at?: string
+          window_days?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_groups_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
