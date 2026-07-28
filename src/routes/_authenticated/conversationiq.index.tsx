@@ -111,8 +111,17 @@ function fromSearch(search: IqSearch): IqFilters {
 function ConversationListPage() {
   const search = Route.useSearch();
   // Deep links from the Command Centre seed the workbench; the user stays in
-  // control of the filters afterwards.
+  // control of the filters afterwards. The originating widget is re-checked
+  // against the database rules, so a restricted widget cannot be drilled into
+  // by hand-editing the URL.
+  const deepLinkWidget = widgetFromDeepLink(search.from);
+  const deepLinkAccess = useQuery(canViewWidgetQuery(deepLinkWidget));
+  const blocked = deepLinkWidget !== undefined && deepLinkAccess.data === false;
   const [filters, setFilters] = useState<IqFilters>(() => fromSearch(search));
+
+  useEffect(() => {
+    if (blocked) setFilters(DEFAULT_FILTERS);
+  }, [blocked]);
 
   const conversations = useQuery(iqConversationsQuery);
   const keywordIndex = useQuery(iqKeywordIndexQuery);
