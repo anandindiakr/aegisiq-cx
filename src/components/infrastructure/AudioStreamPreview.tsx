@@ -20,7 +20,9 @@ export interface LiveSample {
 const HISTORY = 60;
 
 function jitter(base: number, spread: number, min = 0, max = Number.POSITIVE_INFINITY) {
-  return Math.min(max, Math.max(min, base + (Math.random() - 0.5) * spread));
+  // Telemetry numerics arrive from Postgres as strings, so coerce defensively.
+  const value = Number(base) || 0;
+  return Math.min(max, Math.max(min, value + (Math.random() - 0.5) * spread));
 }
 
 /**
@@ -81,7 +83,7 @@ export function AudioStreamPreview({
           latency_ms: Math.round(jitter(stream.latency_ms, stream.latency_ms * 0.25, 5)),
           packet_loss: Number(jitter(Number(stream.packet_loss), 0.4, 0)),
           signal_quality: Math.round(jitter(Number(stream.signal_quality), 8, 0, 100)),
-          noise_floor_db: Number(jitter(Number(stream.noise_floor_db), 4)),
+          noise_floor_db: jitter(Number(stream.noise_floor_db), 4, -120, 0),
           level: Math.max(
             2,
             Math.min(100, jitter(Number(stream.signal_quality) * 0.75, 55, 2, 100)),
@@ -149,9 +151,10 @@ export function AudioStreamPreview({
     if (history.length === 0) return;
 
     const barWidth = width / HISTORY;
+    const offset = HISTORY - history.length;
     history.forEach((sample, index) => {
       const amplitude = (sample.level / 100) * (height / 2) * (playing ? 1 : 0.35);
-      const x = index * barWidth;
+      const x = (offset + index) * barWidth;
       const mid = height / 2;
       ctx.fillStyle =
         sample.signal_quality > 70
