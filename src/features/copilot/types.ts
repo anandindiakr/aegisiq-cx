@@ -37,7 +37,9 @@ export type CopilotOutcome =
   | "exported"
   | "denied"
   | "failed"
-  | "clarify";
+  | "clarify"
+  | "preview";
+
 
 /** One-tap chip that chains a related command without retyping. */
 export interface CopilotFollowUp {
