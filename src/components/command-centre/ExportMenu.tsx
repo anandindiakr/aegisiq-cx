@@ -115,7 +115,8 @@ export function ExportMenu({
       filters: toRpcPayload(filters),
     }).then(() => queryClient.invalidateQueries({ queryKey: ["export-audit-events"] }));
 
-  const run = (format: ExportFormat) => {
+  /** Step one: show exactly what will render before anything is generated. */
+  const preflight = (format: ExportFormat) => {
     if (!overview) return;
     if (active.formats.length > 0 && !active.formats.includes(format)) {
       audit(format, "failed", `Format not enabled on template "${active.name}"`);
@@ -124,6 +125,22 @@ export function ExportMenu({
       });
       return;
     }
+    setPreview({
+      kind: "export",
+      format,
+      templateName: active.name,
+      templateVersion: active.version,
+      sections: active.sections,
+      rangeLabel: rangeLabel(filters),
+      filterSummary: `${activeFilterCount(filters)} active filter${
+        activeFilterCount(filters) === 1 ? "" : "s"
+      } will be applied to every section.`,
+    });
+  };
+
+  const run = () => {
+    const format = preview?.format as ExportFormat | undefined;
+    if (!overview || !format) return;
     setBusy(true);
     const started = performance.now();
     try {
@@ -132,6 +149,7 @@ export function ExportMenu({
       toast.success("Export started", {
         description: `${format.toUpperCase()} generated from "${active.name}" v${active.version}.`,
       });
+      setPreview(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       audit(format, "failed", message, Math.round(performance.now() - started));
@@ -140,6 +158,7 @@ export function ExportMenu({
       setBusy(false);
     }
   };
+
 
   return (
     <>
