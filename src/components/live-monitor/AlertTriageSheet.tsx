@@ -28,7 +28,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { LoadingState, StatusPill } from "@/components/common/Primitives";
 import { SlaTimer } from "@/components/alerts/SlaTimer";
 import { ConversationReplayPanel } from "@/components/alerts/ConversationReplayPanel";
@@ -74,12 +79,14 @@ function Gated({
 }) {
   if (!reason) return <>{children}</>;
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span className="inline-flex cursor-not-allowed opacity-50">{children}</span>
-      </TooltipTrigger>
-      <TooltipContent>{reason}</TooltipContent>
-    </Tooltip>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex cursor-not-allowed opacity-50">{children}</span>
+        </TooltipTrigger>
+        <TooltipContent>{reason}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 

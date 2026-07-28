@@ -130,6 +130,26 @@ export const recentEscalationsQuery = queryOptions({
   staleTime: 30_000,
 });
 
+/** Lifecycle-only alert rows for analytics (90-day window). */
+export const alertLifecycleQuery = queryOptions({
+  queryKey: ["alerts", "lifecycle"],
+  queryFn: () =>
+    run<AlertLifecycle[]>(
+      raw
+        .from("alerts")
+        .select(
+          "id,outlet_id,severity,status,triggered_at,acknowledged_at,resolved_at,escalation_level,escalated_at,sla_breached,assigned_to",
+        )
+        .eq("company_id", tenant())
+        .is("deleted_at", null)
+        .gte("triggered_at", new Date(Date.now() - 90 * 86_400_000).toISOString())
+        .order("triggered_at", { ascending: false })
+        .limit(2000),
+      "supabase.alert-lifecycle",
+    ),
+  staleTime: 60_000,
+});
+
 export async function saveAlertSlaPolicy(policy: {
   id?: string;
   severity: AlertSeverity;
