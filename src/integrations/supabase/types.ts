@@ -667,6 +667,54 @@ export type Database = {
           },
         ]
       }
+      dashboard_audit_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string | null
+          after_state: Json
+          before_state: Json
+          changed_fields: string[]
+          company_id: string
+          created_at: string
+          dashboard_key: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          summary: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string | null
+          after_state?: Json
+          before_state?: Json
+          changed_fields?: string[]
+          company_id: string
+          created_at?: string
+          dashboard_key?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          summary: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string | null
+          after_state?: Json
+          before_state?: Json
+          changed_fields?: string[]
+          company_id?: string
+          created_at?: string
+          dashboard_key?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          summary?: string
+        }
+        Relationships: []
+      }
       dashboard_layouts: {
         Row: {
           auto_refresh: boolean
@@ -1041,6 +1089,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      report_templates: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          formats: string[]
+          id: string
+          is_default: boolean
+          name: string
+          sections: string[]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          formats?: string[]
+          id?: string
+          is_default?: boolean
+          name: string
+          sections?: string[]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          formats?: string[]
+          id?: string
+          is_default?: boolean
+          name?: string
+          sections?: string[]
+          updated_at?: string
+        }
+        Relationships: []
       }
       review_assignments: {
         Row: {
