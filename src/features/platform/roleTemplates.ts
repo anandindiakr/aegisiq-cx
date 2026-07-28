@@ -34,8 +34,7 @@ export interface RoleTemplate {
   updated_at: string;
 }
 
-const COLUMNS =
-  "id,company_id,name,description,roles,capabilities,is_shared,created_at,updated_at";
+const COLUMNS = "id,company_id,name,description,roles,capabilities,is_shared,created_at,updated_at";
 
 export const roleTemplatesQuery = queryOptions({
   queryKey: ["platform", "role-templates"],
