@@ -4,6 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, LogOut, Search, ShieldCheck } from "lucide-react";
 
 import { AppSidebar } from "./AppSidebar";
+import { CopilotProvider } from "@/components/copilot/CopilotProvider";
+import { CopilotDock } from "@/components/copilot/CopilotDock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -55,6 +57,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
+    <CopilotProvider>
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
@@ -131,6 +134,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
         </div>
       </div>
+      <CopilotDock />
     </SidebarProvider>
+    </CopilotProvider>
   );
 }

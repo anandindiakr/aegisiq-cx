@@ -22,6 +22,7 @@ import {
   KeyRound,
   Bookmark,
   BellRing,
+  Bot,
 } from "lucide-react";
 
 import {
@@ -68,6 +69,7 @@ const ESTATE = [
 const GOVERNANCE = [
   { title: "Settings", url: "/settings", icon: Settings },
   { title: "Audit Logs", url: "/audit-logs", icon: ScrollText },
+  { title: "Copilot Audit", url: "/admin/copilot-audit", icon: Bot },
   { title: "Profile", url: "/profile", icon: UserCircle2 },
 ];
 

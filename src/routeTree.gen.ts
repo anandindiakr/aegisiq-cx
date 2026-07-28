@@ -40,6 +40,7 @@ import { Route as AuthenticatedConversationiqKeywordsRouteImport } from './route
 import { Route as AuthenticatedConversationiqAuditRouteImport } from './routes/_authenticated/conversationiq.audit'
 import { Route as AuthenticatedConversationiqConversationIdRouteImport } from './routes/_authenticated/conversationiq.$conversationId'
 import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated/admin.roles'
+import { Route as AuthenticatedAdminCopilotAuditRouteImport } from './routes/_authenticated/admin.copilot-audit'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -210,6 +211,12 @@ const AuthenticatedAdminRolesRoute = AuthenticatedAdminRolesRouteImport.update({
   path: '/admin/roles',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminCopilotAuditRoute =
+  AuthenticatedAdminCopilotAuditRouteImport.update({
+    id: '/admin/copilot-audit',
+    path: '/admin/copilot-audit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/shared-preset': typeof AuthenticatedSharedPresetRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/admin/copilot-audit': typeof AuthenticatedAdminCopilotAuditRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
@@ -262,6 +270,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/shared-preset': typeof AuthenticatedSharedPresetRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/admin/copilot-audit': typeof AuthenticatedAdminCopilotAuditRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
@@ -296,6 +305,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/shared-preset': typeof AuthenticatedSharedPresetRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/_authenticated/admin/copilot-audit': typeof AuthenticatedAdminCopilotAuditRoute
   '/_authenticated/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/_authenticated/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
@@ -330,6 +340,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/shared-preset'
     | '/users'
+    | '/admin/copilot-audit'
     | '/admin/roles'
     | '/conversationiq/$conversationId'
     | '/conversationiq/audit'
@@ -362,6 +373,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/shared-preset'
     | '/users'
+    | '/admin/copilot-audit'
     | '/admin/roles'
     | '/conversationiq/$conversationId'
     | '/conversationiq/audit'
@@ -395,6 +407,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/shared-preset'
     | '/_authenticated/users'
+    | '/_authenticated/admin/copilot-audit'
     | '/_authenticated/admin/roles'
     | '/_authenticated/conversationiq/$conversationId'
     | '/_authenticated/conversationiq/audit'
@@ -636,6 +649,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRolesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/copilot-audit': {
+      id: '/_authenticated/admin/copilot-audit'
+      path: '/admin/copilot-audit'
+      fullPath: '/admin/copilot-audit'
+      preLoaderRoute: typeof AuthenticatedAdminCopilotAuditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -655,6 +675,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSharedPresetRoute: typeof AuthenticatedSharedPresetRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+  AuthenticatedAdminCopilotAuditRoute: typeof AuthenticatedAdminCopilotAuditRoute
   AuthenticatedAdminRolesRoute: typeof AuthenticatedAdminRolesRoute
   AuthenticatedConversationiqConversationIdRoute: typeof AuthenticatedConversationiqConversationIdRoute
   AuthenticatedConversationiqAuditRoute: typeof AuthenticatedConversationiqAuditRoute
@@ -684,6 +705,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSharedPresetRoute: AuthenticatedSharedPresetRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+  AuthenticatedAdminCopilotAuditRoute: AuthenticatedAdminCopilotAuditRoute,
   AuthenticatedAdminRolesRoute: AuthenticatedAdminRolesRoute,
   AuthenticatedConversationiqConversationIdRoute:
     AuthenticatedConversationiqConversationIdRoute,
