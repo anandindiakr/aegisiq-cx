@@ -29,9 +29,12 @@ import type {
   CopilotFollowUp,
   CopilotIntent,
   CopilotMetric,
+  CopilotReportPartial,
+  CopilotReportSection,
   CopilotResponse,
   CopilotSurfaceContext,
 } from "./types";
+
 
 export interface ResolveOptions {
   text: string;
