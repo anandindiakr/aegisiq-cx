@@ -10,7 +10,10 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getActiveTenant } from "@/features/platform/queries";
 import { captureError } from "@/lib/observability";
-import { dispatchNotificationEvent } from "@/lib/notifications.functions";
+import {
+  dispatchNotificationEvent,
+  sendSampleNotification,
+} from "@/lib/notifications.functions";
 import type {
   NotificationChannel,
   NotificationEvent,
@@ -55,7 +58,18 @@ export interface NotificationDelivery {
   response_status: number | null;
   error_message: string | null;
   duration_ms: number | null;
+  attempt: number;
   created_at: string;
+}
+
+/** One recipient's outcome from a test send. */
+export interface SampleDeliveryResult {
+  channel: string;
+  destination: string;
+  status: "sent" | "failed" | "skipped";
+  responseStatus: number | null;
+  error: string | null;
+  attempts?: number;
 }
 
 const RULE_COLUMNS =
@@ -63,7 +77,7 @@ const RULE_COLUMNS =
 const ENDPOINT_COLUMNS =
   "id,name,url,secret,events,description,active,last_status,last_error,last_delivery_at,created_at";
 const DELIVERY_COLUMNS =
-  "id,event_type,channel,destination,target_label,status,response_status,error_message,duration_ms,created_at";
+  "id,event_type,channel,destination,target_label,status,response_status,error_message,duration_ms,attempt,created_at";
 
 export const notificationRulesQuery = queryOptions({
   queryKey: ["notification-rules"],
@@ -196,4 +210,17 @@ export async function notify(
   } catch (error) {
     captureError(error, { area: "notification-dispatch", type });
   }
+}
+
+/**
+ * Sends a clearly-labelled sample event through the real fan-out so the
+ * settings page can prove each configured recipient is reachable.
+ */
+export async function sendTestNotification(
+  type: NotificationEvent,
+): Promise<SampleDeliveryResult[]> {
+  const { results } = await sendSampleNotification({
+    data: { companyId: getActiveTenant(), type },
+  });
+  return results as SampleDeliveryResult[];
 }
