@@ -49,6 +49,18 @@ export interface ResolveOptions {
   confirmed?: boolean;
   /** Previous partial report — completed sections are reused, not recomputed. */
   resume?: CopilotReportPartial;
+  /** Aborts a streaming run; the partial produced so far stays resumable. */
+  signal?: AbortSignal;
+}
+
+/** Thrown when the executive stops a streaming run from the dock. */
+export class CopilotCancelled extends Error {
+  readonly partial?: CopilotReportPartial;
+  constructor(partial?: CopilotReportPartial) {
+    super("Report cancelled");
+    this.name = "CopilotCancelled";
+    this.partial = partial;
+  }
 }
 
 const INTENT_RULES: { intent: CopilotIntent; patterns: RegExp[] }[] = [
@@ -316,6 +328,14 @@ async function runExecutiveReport(opts: ResolveOptions): Promise<CopilotResponse
   };
 
   for (const definition of REPORT_SECTIONS) {
+    if (opts.signal?.aborted) {
+      throw new CopilotCancelled({
+        sections: sections.map((s) => ({ ...s })),
+        metrics: [...response.metrics],
+        body: [...response.body],
+        chart: response.chart,
+      });
+    }
     const state = sections.find((s) => s.key === definition.key)!;
     // Resume: a section already produced in an earlier run is reused as-is.
     if (state.status === "ok" && definition.key !== "snapshot") {
