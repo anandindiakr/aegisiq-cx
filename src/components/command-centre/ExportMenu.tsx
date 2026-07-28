@@ -204,7 +204,8 @@ function TemplateManager({
       toast.success("Template saved");
       setName("");
     },
-    onError: (error: Error) => toast.error("Could not save template", { description: error.message }),
+    onError: (error: Error) =>
+      toast.error("Could not save template", { description: error.message }),
   });
 
   const remove = useMutation({

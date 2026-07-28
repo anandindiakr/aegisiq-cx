@@ -139,9 +139,7 @@ export function ScheduledReports() {
               </Badge>
               <Switch
                 checked={schedule.is_active}
-                onCheckedChange={(checked) =>
-                  toggle.mutate({ schedule, is_active: checked })
-                }
+                onCheckedChange={(checked) => toggle.mutate({ schedule, is_active: checked })}
                 aria-label="Toggle schedule"
               />
               <Button

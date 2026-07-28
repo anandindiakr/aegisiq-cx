@@ -112,8 +112,18 @@ export function auditCsv(rows: DashboardAuditEvent[]): string {
 
 /** Describes the difference between two saved dashboard layouts. */
 export function describeLayoutChange(
-  before: { hidden_widgets: string[]; widget_order: string[]; auto_refresh: boolean; refresh_interval_seconds: number },
-  after: { hidden_widgets: string[]; widget_order: string[]; auto_refresh: boolean; refresh_interval_seconds: number },
+  before: {
+    hidden_widgets: string[];
+    widget_order: string[];
+    auto_refresh: boolean;
+    refresh_interval_seconds: number;
+  },
+  after: {
+    hidden_widgets: string[];
+    widget_order: string[];
+    auto_refresh: boolean;
+    refresh_interval_seconds: number;
+  },
 ): { fields: string[]; summary: string } {
   const fields: string[] = [];
   const parts: string[] = [];
