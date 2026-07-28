@@ -11,7 +11,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { FileText, Plus, Star, Trash2 } from "lucide-react";
+import { Eye, FileText, History, Plus, Star, Trash2 } from "lucide-react";
 
 import {
   EmptyState,
@@ -48,6 +48,8 @@ import {
   type TemplateDelivery,
   type TemplateFormatting,
 } from "@/features/command-centre/reportTemplates";
+import { TemplatePreviewDialog } from "@/features/command-centre/TemplatePreviewDialog";
+import { TemplateHistoryDialog } from "@/features/command-centre/TemplateHistoryDialog";
 import type { ExportFormat } from "@/features/command-centre/export";
 import { formatDateTime } from "@/lib/format";
 
@@ -110,6 +112,7 @@ function TemplateEditor({
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<ReportTemplateInput>(initial);
   const [recipients, setRecipients] = useState(initial.delivery.recipients.join(", "));
+  const [previewing, setPreviewing] = useState(false);
 
   const patch = (part: Partial<ReportTemplateInput>) => setDraft((prev) => ({ ...prev, ...part }));
   const patchDelivery = (part: Partial<TemplateDelivery>) =>
@@ -324,6 +327,9 @@ function TemplateEditor({
           Use as my default template
         </label>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setPreviewing(true)}>
+            <Eye className="mr-1 size-4" /> Preview
+          </Button>
           <Button variant="ghost" onClick={onDone}>
             Cancel
           </Button>
@@ -335,6 +341,21 @@ function TemplateEditor({
           </Button>
         </div>
       </div>
+
+      <TemplatePreviewDialog
+        open={previewing}
+        onOpenChange={setPreviewing}
+        template={{
+          ...draft,
+          delivery: {
+            ...draft.delivery,
+            recipients: recipients
+              .split(",")
+              .map((r) => r.trim())
+              .filter(Boolean),
+          },
+        }}
+      />
     </div>
   );
 }
@@ -344,6 +365,8 @@ function ReportTemplatesManager() {
   const queryClient = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [historyFor, setHistoryFor] = useState<ReportTemplate | null>(null);
+  const [previewFor, setPreviewFor] = useState<ReportTemplate | null>(null);
 
   const templates = useMemo(() => data ?? [], [data]);
 
@@ -420,6 +443,12 @@ function ReportTemplatesManager() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     {template.delivery?.autoExport && <Badge variant="outline">Auto-export</Badge>}
+                    <Button size="sm" variant="ghost" onClick={() => setPreviewFor(template)}>
+                      <Eye className="mr-1 size-3.5" /> Preview
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setHistoryFor(template)}>
+                      <History className="mr-1 size-3.5" /> v{template.version} history
+                    </Button>
                     <Button size="sm" variant="ghost" onClick={() => setEditingId(template.id)}>
                       Edit
                     </Button>
@@ -433,6 +462,21 @@ function ReportTemplatesManager() {
           )}
         </div>
       </Panel>
+
+      {historyFor && (
+        <TemplateHistoryDialog
+          open
+          onOpenChange={(open) => !open && setHistoryFor(null)}
+          template={historyFor}
+        />
+      )}
+      {previewFor && (
+        <TemplatePreviewDialog
+          open
+          onOpenChange={(open) => !open && setPreviewFor(null)}
+          template={toInput(previewFor)}
+        />
+      )}
     </div>
   );
 }
