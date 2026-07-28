@@ -1,6 +1,18 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, Check, Copy, Loader2, Plus, Share2, Trash2, Users } from "lucide-react";
+import {
+  Bookmark,
+  Check,
+  Copy,
+  Loader2,
+  Plus,
+  Settings2,
+  Share2,
+  Star,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -21,6 +33,7 @@ import {
   filterPresetsQuery,
   presetShareUrl,
   presetToFilters,
+  scopeLabel,
   updateFilterPreset,
   type FilterPreset,
 } from "@/features/command-centre/presets";
@@ -164,6 +177,12 @@ export function FilterPresets({
                 >
                   <span className="flex w-full items-center gap-1.5">
                     <span className="truncate text-xs font-medium">{preset.name}</span>
+                    {preset.is_default && (
+                      <Badge variant="outline" className="gap-1 text-[9px] text-primary">
+                        <Star className="size-2.5" />
+                        Default
+                      </Badge>
+                    )}
                     {preset.is_shared && (
                       <Badge variant="outline" className="gap-1 text-[9px]">
                         <Users className="size-2.5" />
@@ -172,7 +191,7 @@ export function FilterPresets({
                     )}
                   </span>
                   <span className="truncate text-[10px] text-muted-foreground">
-                    {rangeLabel(presetToFilters(preset))} ·{" "}
+                    {scopeLabel(preset)} · {rangeLabel(presetToFilters(preset))} ·{" "}
                     {activeFilterCount(presetToFilters(preset))} filters
                   </span>
                 </button>
@@ -211,6 +230,17 @@ export function FilterPresets({
             ))}
           </div>
         </ScrollArea>
+
+        <div className="border-t border-border p-2">
+          <Link
+            to="/filter-presets"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            <Settings2 className="size-3.5" />
+            Manage presets, defaults and role groups
+          </Link>
+        </div>
       </PopoverContent>
     </Popover>
   );

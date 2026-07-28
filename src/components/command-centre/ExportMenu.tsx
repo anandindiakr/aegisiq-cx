@@ -38,7 +38,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { exportExecutiveReport, type ExportFormat } from "@/features/command-centre/export";
-import { toRpcPayload, type CommandFilters } from "@/features/command-centre/filters";
+import {
+  activeFilterCount,
+  rangeLabel,
+  toRpcPayload,
+  type CommandFilters,
+} from "@/features/command-centre/filters";
+import {
+  ExportPreviewDialog,
+  type ExportPreview,
+} from "@/components/command-centre/ExportPreviewDialog";
+
 import { logExportRun } from "@/features/command-centre/exportAudit";
 import type { ExecutiveOverview } from "@/features/command-centre/types";
 import {
@@ -90,6 +100,7 @@ export function ExportMenu({
   const [busy, setBusy] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [templateId, setTemplateId] = useState<string>(FULL_TEMPLATE.id);
+  const [preview, setPreview] = useState<ExportPreview | null>(null);
 
   const templatesQuery = useQuery(reportTemplatesQuery);
   const templates = useMemo(
@@ -115,7 +126,8 @@ export function ExportMenu({
       filters: toRpcPayload(filters),
     }).then(() => queryClient.invalidateQueries({ queryKey: ["export-audit-events"] }));
 
-  const run = (format: ExportFormat) => {
+  /** Step one: show exactly what will render before anything is generated. */
+  const preflight = (format: ExportFormat) => {
     if (!overview) return;
     if (active.formats.length > 0 && !active.formats.includes(format)) {
       audit(format, "failed", `Format not enabled on template "${active.name}"`);
@@ -124,6 +136,22 @@ export function ExportMenu({
       });
       return;
     }
+    setPreview({
+      kind: "export",
+      format,
+      templateName: active.name,
+      templateVersion: active.version,
+      sections: active.sections,
+      rangeLabel: rangeLabel(filters),
+      filterSummary: `${activeFilterCount(filters)} active filter${
+        activeFilterCount(filters) === 1 ? "" : "s"
+      } will be applied to every section.`,
+    });
+  };
+
+  const run = () => {
+    const format = preview?.format as ExportFormat | undefined;
+    if (!overview || !format) return;
     setBusy(true);
     const started = performance.now();
     try {
@@ -132,6 +160,7 @@ export function ExportMenu({
       toast.success("Export started", {
         description: `${format.toUpperCase()} generated from "${active.name}" v${active.version}.`,
       });
+      setPreview(null);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       audit(format, "failed", message, Math.round(performance.now() - started));
@@ -182,7 +211,7 @@ export function ExportMenu({
           {OPTIONS.map((option) => (
             <DropdownMenuItem
               key={option.format}
-              onSelect={() => run(option.format)}
+              onSelect={() => preflight(option.format)}
               className="gap-2.5"
               disabled={active.formats.length > 0 && !active.formats.includes(option.format)}
             >
@@ -195,6 +224,13 @@ export function ExportMenu({
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <ExportPreviewDialog
+        preview={preview}
+        onOpenChange={(open) => !open && setPreview(null)}
+        onConfirm={run}
+        busy={busy}
+      />
 
       <TemplateManager
         open={manageOpen}
@@ -492,4 +528,3 @@ function TemplateVersionHistory({
     </Dialog>
   );
 }
-

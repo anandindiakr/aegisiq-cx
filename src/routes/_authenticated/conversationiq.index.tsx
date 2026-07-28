@@ -19,6 +19,7 @@ import { iqTagIndexQuery } from "@/features/conversationiq/review";
 import { DEFAULT_FILTERS, applyFilters, type IqFilters } from "@/features/conversationiq/filters";
 import { camerasQuery, outletsQuery } from "@/features/platform/queries";
 import { canViewWidgetQuery, widgetFromDeepLink } from "@/features/command-centre/widgetAccess";
+import { RequestWidgetAccess } from "@/components/command-centre/RequestWidgetAccess";
 
 /** Deep-link contract shared with the Executive Command Centre widgets. */
 interface IqSearch {
@@ -185,11 +186,14 @@ function ConversationListPage() {
       />
       <ConversationIqTabs />
 
-      {blocked && (
-        <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
-          You do not have access to the “{deepLinkWidget}” dashboard widget, so its drill-down
-          filters were not applied. Showing the standard conversation view instead.
-        </p>
+      {blocked && deepLinkWidget && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-3">
+          <p className="text-xs text-destructive">
+            You do not have access to the “{deepLinkWidget}” dashboard widget, so its drill-down
+            filters were not applied. Showing the standard conversation view instead.
+          </p>
+          <RequestWidgetAccess widgetId={deepLinkWidget} context="ConversationIQ deep link" />
+        </div>
       )}
 
       <div className="panel p-4">

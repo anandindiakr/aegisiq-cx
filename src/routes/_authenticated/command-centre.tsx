@@ -49,7 +49,10 @@ import {
 import { resolveOrder, WIDGETS } from "@/features/command-centre/widgets";
 import { useCommandCentreRealtime } from "@/features/command-centre/realtime";
 import { useWidgetAccess } from "@/features/command-centre/widgetAccess";
-import { getActiveTenant } from "@/features/platform/queries";
+import { useExportNotifications } from "@/features/command-centre/exportNotifications";
+import { RequestWidgetAccess } from "@/components/command-centre/RequestWidgetAccess";
+import { WidgetAccessRequests } from "@/components/command-centre/WidgetAccessRequests";
+import { getActiveTenant, myRolesQuery } from "@/features/platform/queries";
 import type { ExecutiveOverview, OutletPerformance } from "@/features/command-centre/types";
 
 export const Route = createFileRoute("/_authenticated/command-centre")({
@@ -93,6 +96,13 @@ function CommandCentrePage() {
   const [drill, setDrill] = useState<DrillDown | null>(null);
 
   const realtime = useCommandCentreRealtime(getActiveTenant());
+  // Every export run and scheduled delivery raises a success or failure toast.
+  useExportNotifications();
+
+  const roles = useQuery(myRolesQuery);
+  const isAdmin = (roles.data ?? []).some(
+    (role) => role === "super_admin" || role === "tenant_admin",
+  );
 
   const layoutQuery = useQuery(dashboardLayoutQuery);
   const layout = layoutQuery.data ?? FALLBACK_LAYOUT;
@@ -184,7 +194,8 @@ function CommandCentrePage() {
   // even allowed to see, so restricted widgets never render or deep-link.
   const permitted = order.filter((id) => access.can(id));
   const visible = permitted.filter((id) => !hidden.has(id));
-  const restricted = access.isLoading ? 0 : order.length - permitted.length;
+  const restrictedWidgets = access.isLoading ? [] : order.filter((id) => !access.can(id));
+  const restricted = restrictedWidgets.length;
 
   return (
     <>
@@ -215,10 +226,18 @@ function CommandCentrePage() {
                 ` · updated ${new Date(overview.generatedAt).toLocaleTimeString("en-GB")}`}
             </Badge>
             {restricted > 0 && (
-              <Badge variant="outline" className="text-[11px] text-muted-foreground">
-                {restricted} widget{restricted === 1 ? "" : "s"} restricted
-              </Badge>
+              <>
+                <Badge variant="outline" className="text-[11px] text-muted-foreground">
+                  {restricted} widget{restricted === 1 ? "" : "s"} restricted
+                </Badge>
+                <RequestWidgetAccess
+                  widgetId={restrictedWidgets[0]}
+                  context="Executive Command Centre"
+                  label={`Request access${restricted > 1 ? ` (${restricted})` : ""}`}
+                />
+              </>
             )}
+            {isAdmin && <WidgetAccessRequests />}
             <Button
               variant="outline"
               size="sm"

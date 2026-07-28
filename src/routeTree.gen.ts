@@ -18,6 +18,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOutletsRouteImport } from './routes/_authenticated/outlets'
+import { Route as AuthenticatedFilterPresetsRouteImport } from './routes/_authenticated/filter-presets'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedCommandCentreRouteImport } from './routes/_authenticated/command-centre'
@@ -82,6 +83,12 @@ const AuthenticatedOutletsRoute = AuthenticatedOutletsRouteImport.update({
   path: '/outlets',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFilterPresetsRoute =
+  AuthenticatedFilterPresetsRouteImport.update({
+    id: '/filter-presets',
+    path: '/filter-presets',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -201,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/command-centre': typeof AuthenticatedCommandCentreRoute
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/filter-presets': typeof AuthenticatedFilterPresetsRoute
   '/outlets': typeof AuthenticatedOutletsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -230,6 +238,7 @@ export interface FileRoutesByTo {
   '/command-centre': typeof AuthenticatedCommandCentreRoute
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/filter-presets': typeof AuthenticatedFilterPresetsRoute
   '/outlets': typeof AuthenticatedOutletsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -261,6 +270,7 @@ export interface FileRoutesById {
   '/_authenticated/command-centre': typeof AuthenticatedCommandCentreRoute
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/filter-presets': typeof AuthenticatedFilterPresetsRoute
   '/_authenticated/outlets': typeof AuthenticatedOutletsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -292,6 +302,7 @@ export interface FileRouteTypes {
     | '/command-centre'
     | '/conversations'
     | '/dashboard'
+    | '/filter-presets'
     | '/outlets'
     | '/profile'
     | '/reports'
@@ -321,6 +332,7 @@ export interface FileRouteTypes {
     | '/command-centre'
     | '/conversations'
     | '/dashboard'
+    | '/filter-presets'
     | '/outlets'
     | '/profile'
     | '/reports'
@@ -351,6 +363,7 @@ export interface FileRouteTypes {
     | '/_authenticated/command-centre'
     | '/_authenticated/conversations'
     | '/_authenticated/dashboard'
+    | '/_authenticated/filter-presets'
     | '/_authenticated/outlets'
     | '/_authenticated/profile'
     | '/_authenticated/reports'
@@ -441,6 +454,13 @@ declare module '@tanstack/react-router' {
       path: '/outlets'
       fullPath: '/outlets'
       preLoaderRoute: typeof AuthenticatedOutletsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/filter-presets': {
+      id: '/_authenticated/filter-presets'
+      path: '/filter-presets'
+      fullPath: '/filter-presets'
+      preLoaderRoute: typeof AuthenticatedFilterPresetsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -587,6 +607,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCommandCentreRoute: typeof AuthenticatedCommandCentreRoute
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFilterPresetsRoute: typeof AuthenticatedFilterPresetsRoute
   AuthenticatedOutletsRoute: typeof AuthenticatedOutletsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -613,6 +634,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCommandCentreRoute: AuthenticatedCommandCentreRoute,
   AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFilterPresetsRoute: AuthenticatedFilterPresetsRoute,
   AuthenticatedOutletsRoute: AuthenticatedOutletsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,

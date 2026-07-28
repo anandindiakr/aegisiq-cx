@@ -33,6 +33,11 @@ import {
   type ReportSchedule,
 } from "@/features/command-centre/queries";
 import { logExportRun } from "@/features/command-centre/exportAudit";
+import { ALL_SECTIONS, reportTemplatesQuery } from "@/features/command-centre/reportTemplates";
+import {
+  ExportPreviewDialog,
+  type ExportPreview,
+} from "@/components/command-centre/ExportPreviewDialog";
 
 const FREQUENCIES: ReportFrequency[] = ["daily", "weekly", "monthly"];
 const FORMATS: ReportFormat[] = ["pdf", "excel", "csv", "powerpoint"];
@@ -46,6 +51,26 @@ export function ScheduledReports() {
   const [format, setFormat] = useState<ReportFormat>("pdf");
   const [recipients, setRecipients] = useState("");
   const [sendHour, setSendHour] = useState(8);
+  const [preview, setPreview] = useState<ExportPreview | null>(null);
+  const [pendingSchedule, setPendingSchedule] = useState<ReportSchedule | null>(null);
+
+  // Deliveries render the workspace default board-report template, so the
+  // preview can show the exact sections and version that will be sent.
+  const templates = useQuery(reportTemplatesQuery);
+  const deliveryTemplate = (templates.data ?? []).find((t) => t.is_default);
+
+  const previewDelivery = (schedule: ReportSchedule) => {
+    setPendingSchedule(schedule);
+    setPreview({
+      kind: "delivery",
+      format: schedule.format,
+      templateName: deliveryTemplate?.name ?? "Full board pack",
+      templateVersion: deliveryTemplate?.version ?? null,
+      sections: deliveryTemplate?.sections ?? ALL_SECTIONS,
+      recipients: schedule.recipients,
+      filterSummary: `${schedule.frequency} schedule, sent at ${String(schedule.send_hour).padStart(2, "0")}:00.`,
+    });
+  };
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: reportSchedulesQuery.queryKey });
@@ -102,7 +127,10 @@ export function ScheduledReports() {
         await logExportRun({
           kind: "delivery",
           format: schedule.format,
-          templateName: schedule.name,
+          templateName: deliveryTemplate?.name ?? schedule.name,
+          templateId: deliveryTemplate?.id ?? null,
+          templateVersion: deliveryTemplate?.version ?? null,
+          sections: deliveryTemplate?.sections ?? ALL_SECTIONS,
           scheduleId: schedule.id,
           recipients: schedule.recipients,
           status: "success",
@@ -112,7 +140,10 @@ export function ScheduledReports() {
         await logExportRun({
           kind: "delivery",
           format: schedule.format,
-          templateName: schedule.name,
+          templateName: deliveryTemplate?.name ?? schedule.name,
+          templateId: deliveryTemplate?.id ?? null,
+          templateVersion: deliveryTemplate?.version ?? null,
+          sections: deliveryTemplate?.sections ?? ALL_SECTIONS,
           scheduleId: schedule.id,
           recipients: schedule.recipients,
           status: "failed",
@@ -125,9 +156,17 @@ export function ScheduledReports() {
     onSuccess: async () => {
       await invalidate();
       await queryClient.invalidateQueries({ queryKey: ["export-audit-events"] });
-      toast.success("Delivery recorded");
+      setPreview(null);
+      setPendingSchedule(null);
+      toast.success("Delivery completed", {
+        description: "The report was generated and recorded in the export audit trail.",
+      });
     },
-    onError: (error: Error) => toast.error("Delivery failed", { description: error.message }),
+    onError: (error: Error) => {
+      setPreview(null);
+      setPendingSchedule(null);
+      toast.error("Delivery failed", { description: error.message });
+    },
   });
 
   return (
@@ -192,7 +231,7 @@ export function ScheduledReports() {
                 size="icon"
                 className="size-8 text-muted-foreground hover:text-primary"
                 disabled={deliver.isPending}
-                onClick={() => deliver.mutate(schedule)}
+                onClick={() => previewDelivery(schedule)}
                 aria-label={`Send ${schedule.name} now`}
               >
                 <Send className="size-4" />
@@ -295,6 +334,18 @@ export function ScheduledReports() {
           </Button>
         </div>
       </DialogContent>
+
+      <ExportPreviewDialog
+        preview={preview}
+        onOpenChange={(next) => {
+          if (!next) {
+            setPreview(null);
+            setPendingSchedule(null);
+          }
+        }}
+        onConfirm={() => pendingSchedule && deliver.mutate(pendingSchedule)}
+        busy={deliver.isPending}
+      />
     </Dialog>
   );
 }
