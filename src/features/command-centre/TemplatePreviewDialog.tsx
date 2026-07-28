@@ -189,7 +189,7 @@ function renderSection(
                 return (
                   <div
                     key={point.day}
-                    className="flex-1 rounded-sm bg-primary/60"
+                    className="min-w-[3px] flex-1 rounded-t-[2px] bg-primary/60"
                     style={{ height: `${Math.max(6, (value / max) * 100)}%` }}
                     title={`${point.day}: ${value}`}
                   />
