@@ -180,7 +180,11 @@ function CommandCentrePage() {
     "activity",
   ]);
 
-  const visible = order.filter((id) => !hidden.has(id));
+  // Layout preferences hide widgets; the database rules decide what the user is
+  // even allowed to see, so restricted widgets never render or deep-link.
+  const permitted = order.filter((id) => access.can(id));
+  const visible = permitted.filter((id) => !hidden.has(id));
+  const restricted = access.isLoading ? 0 : order.length - permitted.length;
 
   return (
     <>
