@@ -338,7 +338,21 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
             },
           },
         ]);
+        if (runId) {
+          void finishReportRun(runId, {
+            status: "failed",
+            errorMessage: message,
+            durationMs: Date.now() - started,
+          }).then(() => queryClient.invalidateQueries({ queryKey: ["copilot", "report-runs"] }));
+          void notify(
+            "report.failed",
+            `Executive report failed — ${rangeLabel(filters)}`,
+            message,
+            { runId, command: trimmed },
+          );
+        }
         void logCopilotEvent({
+
           command: trimmed,
           intent: "unknown",
           inputMode: mode,
