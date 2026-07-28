@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { applyBrandColor, publicBrandingQuery } from "@/features/platform/branding";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/signin")({
   head: () => ({
     meta: [
       { title: "Sign in — AegisIQ CX™ Intelligence Console" },
@@ -73,6 +73,23 @@ function SignInPage() {
   useEffect(() => {
     applyBrandColor(branding?.brand_primary_color);
   }, [branding?.brand_primary_color]);
+
+  // OAuth (Google / SSO) returns to this page as a full-page redirect. Once the
+  // session lands, move the user straight into the console instead of showing
+  // the sign-in form again.
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session) navigate({ to: "/command-centre", replace: true });
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) navigate({ to: "/command-centre", replace: true });
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SigninRouteImport } from './routes/signin'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -55,6 +56,11 @@ import { Route as AuthenticatedConversationiqConversationIdRouteImport } from '.
 import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated/admin.roles'
 import { Route as AuthenticatedAdminCopilotAuditRouteImport } from './routes/_authenticated/admin.copilot-audit'
 
+const SigninRoute = SigninRouteImport.update({
+  id: '/signin',
+  path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -313,6 +319,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/signin': typeof SigninRoute
   '/alert-analytics': typeof AuthenticatedAlertAnalyticsRoute
   '/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/alerts': typeof AuthenticatedAlertsRoute
@@ -359,6 +366,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/signin': typeof SigninRoute
   '/alert-analytics': typeof AuthenticatedAlertAnalyticsRoute
   '/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/alerts': typeof AuthenticatedAlertsRoute
@@ -407,6 +415,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/signin': typeof SigninRoute
   '/_authenticated/alert-analytics': typeof AuthenticatedAlertAnalyticsRoute
   '/_authenticated/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
@@ -455,6 +464,7 @@ export interface FileRouteTypes {
     | '/'
     | '/forgot-password'
     | '/reset-password'
+    | '/signin'
     | '/alert-analytics'
     | '/alert-centre'
     | '/alerts'
@@ -501,6 +511,7 @@ export interface FileRouteTypes {
     | '/'
     | '/forgot-password'
     | '/reset-password'
+    | '/signin'
     | '/alert-analytics'
     | '/alert-centre'
     | '/alerts'
@@ -548,6 +559,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/forgot-password'
     | '/reset-password'
+    | '/signin'
     | '/_authenticated/alert-analytics'
     | '/_authenticated/alert-centre'
     | '/_authenticated/alerts'
@@ -596,11 +608,19 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SigninRoute: typeof SigninRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signin': {
+      id: '/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof SigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -1027,6 +1047,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SigninRoute: SigninRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
 }
 export const routeTree = rootRouteImport
