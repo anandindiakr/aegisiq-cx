@@ -151,7 +151,7 @@ function MyExecutiveReports() {
 
       <Panel
         title="Report history"
-        action={
+        actions={
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger className="h-9 w-44">
               <SelectValue placeholder="All statuses" />
@@ -168,7 +168,7 @@ function MyExecutiveReports() {
         }
       >
         {isLoading ? (
-          <LoadingState label="Loading your report history…" />
+          <LoadingState rows={4} />
         ) : isError ? (
           <ErrorState
             message={error instanceof Error ? error.message : "Could not load report history."}
