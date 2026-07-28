@@ -43,7 +43,7 @@ export function CameraWall({
             )}
           >
             <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-2.5">
+              <div className="flex min-w-0 flex-1 items-center gap-2.5">
                 <span
                   className={cn(
                     "grid size-9 shrink-0 place-items-center rounded-lg",
@@ -52,16 +52,18 @@ export function CameraWall({
                 >
                   {offline ? <WifiOff className="size-4" /> : <Cctv className="size-4" />}
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{camera.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
                     {outletName(camera.outlet_id)} · {camera.location ?? "Unmapped"}
                   </p>
                 </div>
               </div>
-              <StatusPill label={camera.status} tone={TONE[camera.status] ?? "neutral"} />
+              <span className="shrink-0">
+                <StatusPill label={camera.status} tone={TONE[camera.status] ?? "neutral"} />
+              </span>
             </div>
-            <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 text-[11px] text-muted-foreground">
               <span>Audio {camera.audio_enabled ? "enabled" : "muted"}</span>
               <span className="tabular-nums">Seen {formatRelative(camera.last_seen_at)}</span>
             </div>
