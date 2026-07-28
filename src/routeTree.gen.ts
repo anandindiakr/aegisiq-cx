@@ -19,6 +19,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOutletsRouteImport } from './routes/_authenticated/outlets'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedFilterPresetsRouteImport } from './routes/_authenticated/filter-presets'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
@@ -90,6 +91,12 @@ const AuthenticatedOutletsRoute = AuthenticatedOutletsRouteImport.update({
   path: '/outlets',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFilterPresetsRoute =
   AuthenticatedFilterPresetsRouteImport.update({
     id: '/filter-presets',
@@ -216,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/filter-presets': typeof AuthenticatedFilterPresetsRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/outlets': typeof AuthenticatedOutletsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -247,6 +255,7 @@ export interface FileRoutesByTo {
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/filter-presets': typeof AuthenticatedFilterPresetsRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/outlets': typeof AuthenticatedOutletsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
@@ -280,6 +289,7 @@ export interface FileRoutesById {
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/filter-presets': typeof AuthenticatedFilterPresetsRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/outlets': typeof AuthenticatedOutletsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/conversations'
     | '/dashboard'
     | '/filter-presets'
+    | '/notifications'
     | '/outlets'
     | '/profile'
     | '/reports'
@@ -344,6 +355,7 @@ export interface FileRouteTypes {
     | '/conversations'
     | '/dashboard'
     | '/filter-presets'
+    | '/notifications'
     | '/outlets'
     | '/profile'
     | '/reports'
@@ -376,6 +388,7 @@ export interface FileRouteTypes {
     | '/_authenticated/conversations'
     | '/_authenticated/dashboard'
     | '/_authenticated/filter-presets'
+    | '/_authenticated/notifications'
     | '/_authenticated/outlets'
     | '/_authenticated/profile'
     | '/_authenticated/reports'
@@ -474,6 +487,13 @@ declare module '@tanstack/react-router' {
       path: '/outlets'
       fullPath: '/outlets'
       preLoaderRoute: typeof AuthenticatedOutletsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/filter-presets': {
@@ -628,6 +648,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFilterPresetsRoute: typeof AuthenticatedFilterPresetsRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOutletsRoute: typeof AuthenticatedOutletsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -656,6 +677,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFilterPresetsRoute: AuthenticatedFilterPresetsRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOutletsRoute: AuthenticatedOutletsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
