@@ -2,7 +2,15 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
-import { CheckCircle2, ExternalLink, Trash2, UserCheck, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  ExternalLink,
+  ShieldAlert,
+  Timer,
+  Trash2,
+  UserCheck,
+  XCircle,
+} from "lucide-react";
 
 import {
   Sheet,
@@ -20,7 +28,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { LoadingState, StatusPill } from "@/components/common/Primitives";
+import { SlaTimer } from "@/components/alerts/SlaTimer";
+import { ConversationReplayPanel } from "@/components/alerts/ConversationReplayPanel";
 import { formatDateTime, formatRelative, titleCase } from "@/lib/format";
 import { staffQuery } from "@/features/platform/queries";
 import type { AlertRow, AlertStatus, StaffProfile } from "@/features/platform/queries";
@@ -31,10 +42,16 @@ import {
   bulkUpdateAlertStatus,
   deleteAlertNote,
 } from "@/features/live-monitor/queries";
+import { alertEscalationsQuery, alertSlaPoliciesQuery, describeMinutes } from "@/features/alerts/sla";
+import { useAlertAccess, type AlertAction } from "@/features/alerts/access";
 
 export type TriageAlert = AlertRow & {
   assigned_to?: string | null;
   assigned_at?: string | null;
+  resolved_at?: string | null;
+  sla_breached?: boolean;
+  escalation_level?: number;
+  escalated_at?: string | null;
 };
 
 const SEVERITY_TONE: Record<string, "negative" | "warning" | "info" | "neutral"> = {
@@ -46,6 +63,25 @@ const SEVERITY_TONE: Record<string, "negative" | "warning" | "info" | "neutral">
 };
 
 const UNASSIGNED = "__unassigned__";
+
+/** Wraps an action control so a blocked user sees why it is unavailable. */
+function Gated({
+  reason,
+  children,
+}: {
+  reason: string | null;
+  children: React.ReactNode;
+}) {
+  if (!reason) return <>{children}</>;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex cursor-not-allowed opacity-50">{children}</span>
+      </TooltipTrigger>
+      <TooltipContent>{reason}</TooltipContent>
+    </Tooltip>
+  );
+}
 
 export function AlertTriageSheet({
   alert,
@@ -62,6 +98,9 @@ export function AlertTriageSheet({
   const [body, setBody] = useState("");
   const notes = useQuery(alertNotesQuery(alert?.id ?? null));
   const staff = useQuery(staffQuery);
+  const policies = useQuery(alertSlaPoliciesQuery);
+  const escalations = useQuery(alertEscalationsQuery(alert?.id ?? null));
+  const access = useAlertAccess();
 
   const refreshAlerts = () => {
     void queryClient.invalidateQueries({ queryKey: ["alerts"] });
@@ -104,6 +143,8 @@ export function AlertTriageSheet({
   });
 
   const assignable = (staff.data ?? []).filter((s: StaffProfile) => Boolean(s.user_id));
+  const policy = alert ? policies.data?.get(alert.severity) : undefined;
+  const deny = (action: AlertAction) => (alert ? access.denyReason(action, alert.outlet_id) : null);
 
   return (
     <Sheet open={Boolean(alert)} onOpenChange={onOpenChange}>
@@ -117,6 +158,10 @@ export function AlertTriageSheet({
                   tone={SEVERITY_TONE[alert.severity] ?? "neutral"}
                 />
                 <StatusPill label={alert.status} />
+                <SlaTimer alert={alert} policy={policy} />
+                {(alert.escalation_level ?? 0) > 0 && (
+                  <StatusPill label={`escalated L${alert.escalation_level}`} tone="negative" />
+                )}
                 <span className="text-[11px] text-muted-foreground">
                   {titleCase(alert.category)}
                 </span>
@@ -133,29 +178,47 @@ export function AlertTriageSheet({
               </p>
 
               <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={statusChange.isPending || alert.status === "acknowledged"}
-                  onClick={() => statusChange.mutate("acknowledged")}
-                >
-                  <UserCheck className="mr-2 size-4" /> Acknowledge
-                </Button>
-                <Button
-                  size="sm"
-                  disabled={statusChange.isPending || alert.status === "resolved"}
-                  onClick={() => statusChange.mutate("resolved")}
-                >
-                  <CheckCircle2 className="mr-2 size-4" /> Resolve
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={statusChange.isPending || alert.status === "dismissed"}
-                  onClick={() => statusChange.mutate("dismissed")}
-                >
-                  <XCircle className="mr-2 size-4" /> Dismiss
-                </Button>
+                <Gated reason={deny("acknowledge")}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={
+                      Boolean(deny("acknowledge")) ||
+                      statusChange.isPending ||
+                      alert.status === "acknowledged"
+                    }
+                    onClick={() => statusChange.mutate("acknowledged")}
+                  >
+                    <UserCheck className="mr-2 size-4" /> Acknowledge
+                  </Button>
+                </Gated>
+                <Gated reason={deny("resolve")}>
+                  <Button
+                    size="sm"
+                    disabled={
+                      Boolean(deny("resolve")) ||
+                      statusChange.isPending ||
+                      alert.status === "resolved"
+                    }
+                    onClick={() => statusChange.mutate("resolved")}
+                  >
+                    <CheckCircle2 className="mr-2 size-4" /> Resolve
+                  </Button>
+                </Gated>
+                <Gated reason={deny("dismiss")}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={
+                      Boolean(deny("dismiss")) ||
+                      statusChange.isPending ||
+                      alert.status === "dismissed"
+                    }
+                    onClick={() => statusChange.mutate("dismissed")}
+                  >
+                    <XCircle className="mr-2 size-4" /> Dismiss
+                  </Button>
+                </Gated>
                 {alert.conversation_id && (
                   <Button size="sm" variant="outline" asChild>
                     <Link
@@ -168,26 +231,77 @@ export function AlertTriageSheet({
                 )}
               </div>
 
+              {/* SLA + escalation trail */}
+              <div className="rounded-lg border border-border bg-surface/50 px-3 py-3">
+                <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                  <Timer className="size-3.5" /> SLA
+                </p>
+                {policy ? (
+                  <p className="mt-1.5 text-xs text-muted-foreground">
+                    Acknowledge within {describeMinutes(policy.ack_minutes)} · resolve within{" "}
+                    {describeMinutes(policy.resolve_minutes)} · auto-escalate after{" "}
+                    {describeMinutes(policy.escalate_after_minutes)}
+                    {policy.backup_role ? ` to ${titleCase(policy.backup_role)}` : ""}
+                  </p>
+                ) : (
+                  <p className="mt-1.5 text-xs text-muted-foreground">
+                    No SLA policy is configured for {alert.severity} alerts.
+                  </p>
+                )}
+                {(escalations.data ?? []).length > 0 && (
+                  <ul className="mt-3 space-y-1.5">
+                    {(escalations.data ?? []).map((event) => (
+                      <li key={event.id} className="flex items-start gap-2 text-xs">
+                        <ShieldAlert className="mt-0.5 size-3.5 shrink-0 text-destructive" />
+                        <span className="text-muted-foreground">
+                          <span className="text-foreground">Level {event.level}</span> ·{" "}
+                          {event.reason} · handed to{" "}
+                          {event.to_user_name ??
+                            (event.to_role ? titleCase(event.to_role) : "backup owner")}{" "}
+                          · {describeMinutes(event.minutes_overdue)} overdue ·{" "}
+                          {formatRelative(event.created_at)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {alert.conversation_id && (
+                <div>
+                  <p className="mb-2 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                    Conversation replay
+                  </p>
+                  <ConversationReplayPanel
+                    conversationId={alert.conversation_id}
+                    alertTriggeredAt={alert.triggered_at}
+                  />
+                </div>
+              )}
+
               <div>
                 <p className="mb-2 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
                   Owner
                 </p>
-                <Select
-                  value={alert.assigned_to ?? UNASSIGNED}
-                  onValueChange={(v) => assign.mutate(v === UNASSIGNED ? null : v)}
-                >
-                  <SelectTrigger className="bg-surface">
-                    <SelectValue placeholder="Unassigned" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
-                    {assignable.map((person) => (
-                      <SelectItem key={person.id} value={person.user_id as string}>
-                        {person.full_name} · {titleCase(person.directory_role)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Gated reason={deny("assign")}>
+                  <Select
+                    value={alert.assigned_to ?? UNASSIGNED}
+                    disabled={Boolean(deny("assign"))}
+                    onValueChange={(v) => assign.mutate(v === UNASSIGNED ? null : v)}
+                  >
+                    <SelectTrigger className="bg-surface">
+                      <SelectValue placeholder="Unassigned" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+                      {assignable.map((person) => (
+                        <SelectItem key={person.id} value={person.user_id as string}>
+                          {person.full_name} · {titleCase(person.directory_role)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Gated>
                 {alert.assigned_at && (
                   <p className="mt-1.5 text-[11px] text-muted-foreground">
                     Assigned {formatRelative(alert.assigned_at)}
