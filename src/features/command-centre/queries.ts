@@ -157,6 +157,11 @@ export interface ReportSchedule {
   send_hour: number;
   is_active: boolean;
   last_sent_at: string | null;
+  auto_retry: boolean;
+  max_retries: number;
+  consecutive_failures: number;
+  last_status: string | null;
+  last_error: string | null;
   created_at: string;
 }
 
@@ -177,6 +182,8 @@ export async function createReportSchedule(input: {
   format: ReportFormat;
   recipients: string[];
   send_hour: number;
+  auto_retry?: boolean;
+  max_retries?: number;
 }) {
   const companyId = getActiveTenant();
   const { data: auth } = await supabase.auth.getUser();

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Loader2, Plus, Send, Trash2 } from "lucide-react";
+import { AlertTriangle, CalendarClock, Loader2, Plus, RefreshCw, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ import {
   type ReportSchedule,
 } from "@/features/command-centre/queries";
 import { logExportRun } from "@/features/command-centre/exportAudit";
+import { logExportAction } from "@/features/command-centre/exportActions";
 import { ALL_SECTIONS, reportTemplatesQuery } from "@/features/command-centre/reportTemplates";
 import {
   ExportPreviewDialog,
@@ -51,6 +52,8 @@ export function ScheduledReports() {
   const [format, setFormat] = useState<ReportFormat>("pdf");
   const [recipients, setRecipients] = useState("");
   const [sendHour, setSendHour] = useState(8);
+  const [autoRetry, setAutoRetry] = useState(true);
+  const [maxRetries, setMaxRetries] = useState(2);
   const [preview, setPreview] = useState<ExportPreview | null>(null);
   const [pendingSchedule, setPendingSchedule] = useState<ReportSchedule | null>(null);
 
@@ -82,6 +85,8 @@ export function ScheduledReports() {
         frequency,
         format,
         send_hour: sendHour,
+        auto_retry: autoRetry,
+        max_retries: maxRetries,
         recipients: recipients
           .split(/[,;\s]+/)
           .map((r) => r.trim())
@@ -136,6 +141,15 @@ export function ScheduledReports() {
           status: "success",
           durationMs: Math.round(performance.now() - started),
         });
+        await logExportAction({
+          action: "delivered",
+          format: schedule.format,
+          templateName: deliveryTemplate?.name ?? schedule.name,
+          templateVersion: deliveryTemplate?.version ?? null,
+          sections: deliveryTemplate?.sections ?? ALL_SECTIONS,
+          recipients: schedule.recipients,
+          scheduleId: schedule.id,
+        });
       } catch (error) {
         await logExportRun({
           kind: "delivery",
@@ -149,6 +163,23 @@ export function ScheduledReports() {
           status: "failed",
           errorMessage: error instanceof Error ? error.message : "Unknown error",
           durationMs: Math.round(performance.now() - started),
+        });
+        await updateReportSchedule(
+          schedule.id,
+          {
+            last_status: "failed",
+            last_error: error instanceof Error ? error.message : "Unknown error",
+            consecutive_failures: (schedule.consecutive_failures ?? 0) + 1,
+          } as Partial<ReportSchedule>,
+          schedule,
+        );
+        await logExportAction({
+          action: "delivered",
+          outcome: "failed",
+          format: schedule.format,
+          scheduleId: schedule.id,
+          recipients: schedule.recipients,
+          detail: error instanceof Error ? error.message : "Unknown error",
         });
         throw error;
       }
