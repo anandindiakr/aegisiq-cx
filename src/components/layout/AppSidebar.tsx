@@ -75,6 +75,16 @@ const ESTATE = [
   { title: "Roles & Access", url: "/admin/roles", icon: KeyRound },
 ];
 
+const INFRASTRUCTURE = [
+  { title: "Camera Management", url: "/infrastructure/cameras", icon: Cctv },
+  { title: "Edge Gateways", url: "/infrastructure/gateways", icon: ServerCog },
+  { title: "AI Engines", url: "/infrastructure/engines", icon: BrainCircuit },
+  { title: "Audio Streams", url: "/infrastructure/audio", icon: AudioLines },
+  { title: "Device Health", url: "/infrastructure/health", icon: Activity },
+  { title: "Network", url: "/infrastructure/network", icon: Network },
+  { title: "Storage", url: "/infrastructure/storage", icon: Database },
+];
+
 const GOVERNANCE = [
   { title: "Settings", url: "/settings", icon: Settings },
   { title: "Audit Logs", url: "/audit-logs", icon: ScrollText },
