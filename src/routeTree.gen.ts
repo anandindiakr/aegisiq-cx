@@ -20,6 +20,7 @@ import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOutletsRouteImport } from './routes/_authenticated/outlets'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedLiveMonitorRouteImport } from './routes/_authenticated/live-monitor'
 import { Route as AuthenticatedFilterPresetsRouteImport } from './routes/_authenticated/filter-presets'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
@@ -99,6 +100,12 @@ const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLiveMonitorRoute =
+  AuthenticatedLiveMonitorRouteImport.update({
+    id: '/live-monitor',
+    path: '/live-monitor',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFilterPresetsRoute =
@@ -251,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/filter-presets': typeof AuthenticatedFilterPresetsRoute
+  '/live-monitor': typeof AuthenticatedLiveMonitorRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/outlets': typeof AuthenticatedOutletsRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -287,6 +295,7 @@ export interface FileRoutesByTo {
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/filter-presets': typeof AuthenticatedFilterPresetsRoute
+  '/live-monitor': typeof AuthenticatedLiveMonitorRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/outlets': typeof AuthenticatedOutletsRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -325,6 +334,7 @@ export interface FileRoutesById {
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/filter-presets': typeof AuthenticatedFilterPresetsRoute
+  '/_authenticated/live-monitor': typeof AuthenticatedLiveMonitorRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/outlets': typeof AuthenticatedOutletsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -363,6 +373,7 @@ export interface FileRouteTypes {
     | '/conversations'
     | '/dashboard'
     | '/filter-presets'
+    | '/live-monitor'
     | '/notifications'
     | '/outlets'
     | '/profile'
@@ -399,6 +410,7 @@ export interface FileRouteTypes {
     | '/conversations'
     | '/dashboard'
     | '/filter-presets'
+    | '/live-monitor'
     | '/notifications'
     | '/outlets'
     | '/profile'
@@ -436,6 +448,7 @@ export interface FileRouteTypes {
     | '/_authenticated/conversations'
     | '/_authenticated/dashboard'
     | '/_authenticated/filter-presets'
+    | '/_authenticated/live-monitor'
     | '/_authenticated/notifications'
     | '/_authenticated/outlets'
     | '/_authenticated/profile'
@@ -546,6 +559,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/live-monitor': {
+      id: '/_authenticated/live-monitor'
+      path: '/live-monitor'
+      fullPath: '/live-monitor'
+      preLoaderRoute: typeof AuthenticatedLiveMonitorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/filter-presets': {
@@ -728,6 +748,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFilterPresetsRoute: typeof AuthenticatedFilterPresetsRoute
+  AuthenticatedLiveMonitorRoute: typeof AuthenticatedLiveMonitorRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOutletsRoute: typeof AuthenticatedOutletsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
@@ -761,6 +782,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFilterPresetsRoute: AuthenticatedFilterPresetsRoute,
+  AuthenticatedLiveMonitorRoute: AuthenticatedLiveMonitorRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOutletsRoute: AuthenticatedOutletsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
