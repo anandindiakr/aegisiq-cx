@@ -28,6 +28,8 @@ import {
   TopIssues,
 } from "@/components/command-centre/AnalyticsWidgets";
 import { ExportMenu } from "@/components/command-centre/ExportMenu";
+import { ExportHistory } from "@/components/command-centre/ExportHistory";
+import { LiveStatusPanel } from "@/components/command-centre/LiveStatusPanel";
 import { WidgetDeepLink } from "@/components/command-centre/WidgetDeepLink";
 import { DashboardAuditTrail } from "@/components/command-centre/DashboardAuditTrail";
 import { ScheduledReports } from "@/components/command-centre/ScheduledReports";
@@ -46,6 +48,7 @@ import {
 } from "@/features/command-centre/queries";
 import { resolveOrder, WIDGETS } from "@/features/command-centre/widgets";
 import { useCommandCentreRealtime } from "@/features/command-centre/realtime";
+import { useWidgetAccess } from "@/features/command-centre/widgetAccess";
 import { getActiveTenant } from "@/features/platform/queries";
 import type { ExecutiveOverview, OutletPerformance } from "@/features/command-centre/types";
 
