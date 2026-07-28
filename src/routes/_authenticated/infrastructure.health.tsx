@@ -62,25 +62,25 @@ function DeviceHealthPage() {
             <MetricCard
               icon={Activity}
               label="Estate health"
-              value={`${estate.score}`}
-              hint="Weighted score across all devices"
+              value={`${estate.avgHealthScore}`}
+              hint="Average device health score"
             />
             <MetricCard
               icon={Cctv}
               label="Cameras online"
-              value={`${estate.camerasOnline}/${estate.camerasTotal}`}
-              hint={`${estate.camerasOffline} offline`}
+              value={`${estate.online}/${estate.cameras}`}
+              hint={`${estate.offline} offline · ${estate.degraded} degraded`}
             />
             <MetricCard
               icon={ServerCog}
               label="Gateways online"
-              value={`${estate.gatewaysOnline}/${estate.gatewaysTotal}`}
-              hint="Edge inference nodes"
+              value={`${estate.gatewaysOnline}/${estate.gateways}`}
+              hint={`Avg GPU ${estate.avgGpu}% · ${estate.avgTemp}°C`}
             />
             <MetricCard
               icon={Cpu}
               label="Engines healthy"
-              value={`${estate.enginesHealthy}/${estate.enginesTotal}`}
+              value={`${enginesHealthy}/${(engines.data ?? []).length}`}
               hint="Speech and reasoning providers"
             />
           </div>
@@ -103,17 +103,20 @@ function DeviceHealthPage() {
               description="Cameras grouped by their current health state."
             >
               <ul className="space-y-3">
-                {estate.distribution.map((bucket) => (
-                  <li key={bucket.state}>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-medium">{healthLabel(bucket.state)}</span>
-                      <span className="tabular-nums text-muted-foreground">
-                        {bucket.count} · {bucket.percent.toFixed(0)}%
-                      </span>
-                    </div>
-                    <Progress value={bucket.percent} className="mt-1.5 h-1.5" />
-                  </li>
-                ))}
+                {estate.byHealthState.map((bucket) => {
+                  const percent = estate.cameras ? (bucket.count / estate.cameras) * 100 : 0;
+                  return (
+                    <li key={bucket.state}>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium">{bucket.label}</span>
+                        <span className="tabular-nums text-muted-foreground">
+                          {bucket.count} · {percent.toFixed(0)}%
+                        </span>
+                      </div>
+                      <Progress value={percent} className="mt-1.5 h-1.5" />
+                    </li>
+                  );
+                })}
               </ul>
             </Panel>
           </div>
