@@ -24,6 +24,7 @@ import {
   Settings2,
   Siren,
   Sparkles,
+  Square,
   Store,
   Tags,
   Timer,
