@@ -190,6 +190,16 @@ export function ScheduledReports() {
               <Button
                 variant="ghost"
                 size="icon"
+                className="size-8 text-muted-foreground hover:text-primary"
+                disabled={deliver.isPending}
+                onClick={() => deliver.mutate(schedule)}
+                aria-label={`Send ${schedule.name} now`}
+              >
+                <Send className="size-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 className="size-8 text-muted-foreground hover:text-destructive"
                 onClick={() => remove.mutate(schedule)}
                 aria-label="Delete schedule"
