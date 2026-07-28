@@ -62,12 +62,54 @@ export interface CopilotClarification {
   options: CopilotClarificationOption[];
 }
 
+/** One parameter shown in a dry-run preview before anything is executed. */
+export interface CopilotPreviewParam {
+  label: string;
+  value: string;
+}
+
+/**
+ * Dry run: what *would* happen if the command executed. Nothing is exported,
+ * delivered or written until the executive confirms.
+ */
+export interface CopilotPreview {
+  kind: "export" | "delivery";
+  summary: string;
+  parameters: CopilotPreviewParam[];
+  confirmLabel: string;
+  /** Command re-issued (pre-confirmed) when the executive approves. */
+  confirmCommand: string;
+}
+
+export type CopilotReportSectionStatus = "pending" | "running" | "ok" | "failed" | "skipped";
+
+/** One stage of a streamed executive report. */
+export interface CopilotReportSection {
+  key: string;
+  label: string;
+  status: CopilotReportSectionStatus;
+  attempts: number;
+  error?: string;
+}
+
+/** Everything produced so far — lets a failed run resume where it stopped. */
+export interface CopilotReportPartial {
+  sections: CopilotReportSection[];
+  metrics: CopilotMetric[];
+  body: string[];
+  chart?: { title: string; points: CopilotChartPoint[] };
+}
+
 /** Progress emitted while a long-running answer streams in. */
 export interface CopilotProgress {
   label: string;
   percent: number;
   done?: boolean;
+  /** True once at least one section failed after its retries. */
+  failed?: boolean;
+  sections?: CopilotReportSection[];
 }
+
 
 export interface CopilotLink {
   label: string;
