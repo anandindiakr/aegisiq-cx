@@ -103,8 +103,8 @@ export function ScheduledReports() {
   });
 
   const toggle = useMutation({
-    mutationFn: ({ schedule, is_active }: { schedule: ReportSchedule; is_active: boolean }) =>
-      updateReportSchedule(schedule.id, { is_active }, schedule),
+    mutationFn: ({ schedule, ...patch }: { schedule: ReportSchedule } & Partial<ReportSchedule>) =>
+      updateReportSchedule(schedule.id, patch, schedule),
     onSuccess: invalidate,
   });
 
@@ -236,16 +236,30 @@ export function ScheduledReports() {
           {schedules.map((schedule) => (
             <div
               key={schedule.id}
-              className="flex items-center gap-3 rounded-lg border border-border/70 bg-surface/40 p-3"
+              className="flex flex-wrap items-center gap-3 rounded-lg border border-border/70 bg-surface/40 p-3"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{schedule.name}</p>
+                <p className="flex items-center gap-2 truncate text-sm font-medium">
+                  {schedule.name}
+                  {schedule.last_status === "failed" && (
+                    <Badge variant="destructive" className="gap-1 text-[10px]">
+                      <AlertTriangle className="size-2.5" />
+                      {schedule.consecutive_failures ?? 1} failed
+                    </Badge>
+                  )}
+                </p>
                 <p className="truncate text-[11px] text-muted-foreground">
                   {schedule.frequency} · {schedule.format.toUpperCase()} ·{" "}
                   {String(schedule.send_hour).padStart(2, "0")}:00 · {schedule.recipients.length}{" "}
                   recipient
-                  {schedule.recipients.length === 1 ? "" : "s"}
+                  {schedule.recipients.length === 1 ? "" : "s"} ·{" "}
+                  {schedule.auto_retry
+                    ? `auto-retry up to ${schedule.max_retries ?? 2}×`
+                    : "auto-retry off"}
                 </p>
+                {schedule.last_error && (
+                  <p className="truncate text-[11px] text-destructive">{schedule.last_error}</p>
+                )}
               </div>
               <Badge variant="outline" className="text-[10px]">
                 {schedule.last_sent_at
@@ -257,6 +271,22 @@ export function ScheduledReports() {
                 onCheckedChange={(checked) => toggle.mutate({ schedule, is_active: checked })}
                 aria-label="Toggle schedule"
               />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 text-muted-foreground hover:text-primary"
+                onClick={() =>
+                  toggle.mutate({ schedule, auto_retry: !(schedule.auto_retry ?? false) })
+                }
+                aria-label="Toggle automatic retry"
+                title={schedule.auto_retry ? "Disable automatic retry" : "Enable automatic retry"}
+              >
+                <RefreshCw
+                  className={
+                    schedule.auto_retry ? "size-4 text-primary" : "size-4 text-muted-foreground"
+                  }
+                />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -285,6 +315,27 @@ export function ScheduledReports() {
             New schedule
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex items-center justify-between gap-3 rounded-md border border-border/70 px-3 py-2 sm:col-span-2">
+              <div>
+                <Label className="text-xs">Retry failed deliveries automatically</Label>
+                <p className="text-[11px] text-muted-foreground">
+                  A failed run is re-attempted up to {maxRetries} times before it waits for a manual
+                  retry.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={maxRetries}
+                  onChange={(e) => setMaxRetries(Number(e.target.value) || 1)}
+                  className="h-8 w-16 text-sm"
+                  disabled={!autoRetry}
+                />
+                <Switch checked={autoRetry} onCheckedChange={setAutoRetry} />
+              </div>
+            </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Name</Label>
               <Input
