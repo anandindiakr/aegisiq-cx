@@ -35,7 +35,6 @@ import type {
   CopilotSurfaceContext,
 } from "./types";
 
-
 export interface ResolveOptions {
   text: string;
   queryClient: QueryClient;
@@ -51,7 +50,6 @@ export interface ResolveOptions {
   /** Previous partial report — completed sections are reused, not recomputed. */
   resume?: CopilotReportPartial;
 }
-
 
 const INTENT_RULES: { intent: CopilotIntent; patterns: RegExp[] }[] = [
   { intent: "export_report", patterns: [/\bexport\b/, /\bdownload\b/, /\bboard pack\b/] },
@@ -210,7 +208,6 @@ function previewParameters(
     { label: "Conversations", value: formatNumber(overview.kpis.total) },
     { label: "Delivery", value: "Download to this device" },
   ];
-
 }
 
 // ---------------------------------------------------------------------------
@@ -225,7 +222,10 @@ const REPORT_SECTIONS = [
   { key: "recommendations", label: "Drafting recommendations", percent: 100 },
 ] as const;
 
-async function withRetry<T>(run: () => Promise<T>, attempts = 2): Promise<{ value: T; tries: number }> {
+async function withRetry<T>(
+  run: () => Promise<T>,
+  attempts = 2,
+): Promise<{ value: T; tries: number }> {
   let lastError: unknown;
   for (let tryIndex = 1; tryIndex <= attempts; tryIndex += 1) {
     try {
@@ -385,8 +385,6 @@ async function runExecutiveReport(opts: ResolveOptions): Promise<CopilotResponse
 // Resolver
 // ---------------------------------------------------------------------------
 
-
-
 async function resolveIntent(opts: ResolveOptions): Promise<CopilotResponse> {
   const intent = detectIntent(opts.text, opts.context);
   const ctx = opts.context;
@@ -460,7 +458,6 @@ async function resolveIntent(opts: ResolveOptions): Promise<CopilotResponse> {
       response.links = [{ label: "Export history", to: "/reports" }];
       return response;
     }
-
 
     case "open_alerts": {
       const overview = await overviewFor(opts);
@@ -1154,4 +1151,3 @@ export async function resolveCopilotCommand(input: ResolveOptions): Promise<Copi
   if (!response.clarification && !response.preview) response.followUps = followUpsFor(response);
   return response;
 }
-

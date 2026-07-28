@@ -50,14 +50,12 @@ import type {
   CopilotSurfaceContext,
 } from "@/features/copilot/types";
 
-
 /** Extra execution hints — used to resume a partially failed report run. */
 export interface RunOptions {
   resume?: CopilotReportPartial;
 }
 
 interface CopilotState {
-
   open: boolean;
   minimised: boolean;
   messages: CopilotMessage[];
@@ -257,7 +255,6 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           }
         }
 
-
         // Personalisation side effects requested by the resolver.
         if (response.intent === "set_favorite_outlet" && response.entities.outletId) {
           await savePreferences({ favorite_outlet_id: response.entities.outletId });
@@ -359,7 +356,6 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           );
         }
         void logCopilotEvent({
-
           command: trimmed,
           intent: "unknown",
           inputMode: mode,

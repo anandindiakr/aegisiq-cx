@@ -40,7 +40,6 @@ export type CopilotOutcome =
   | "clarify"
   | "preview";
 
-
 /** One-tap chip that chains a related command without retyping. */
 export interface CopilotFollowUp {
   label: string;
@@ -109,7 +108,6 @@ export interface CopilotProgress {
   failed?: boolean;
   sections?: CopilotReportSection[];
 }
-
 
 export interface CopilotLink {
   label: string;
