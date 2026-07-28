@@ -18,10 +18,7 @@ import {
 import { iqTagIndexQuery } from "@/features/conversationiq/review";
 import { DEFAULT_FILTERS, applyFilters, type IqFilters } from "@/features/conversationiq/filters";
 import { camerasQuery, outletsQuery } from "@/features/platform/queries";
-import {
-  canViewWidgetQuery,
-  widgetFromDeepLink,
-} from "@/features/command-centre/widgetAccess";
+import { canViewWidgetQuery, widgetFromDeepLink } from "@/features/command-centre/widgetAccess";
 
 /** Deep-link contract shared with the Executive Command Centre widgets. */
 interface IqSearch {
@@ -194,8 +191,6 @@ function ConversationListPage() {
           filters were not applied. Showing the standard conversation view instead.
         </p>
       )}
-
-
 
       <div className="panel p-4">
         <div className="relative">

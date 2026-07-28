@@ -10,7 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { activeFilterCount, rangeLabel, type CommandFilters } from "@/features/command-centre/filters";
+import {
+  activeFilterCount,
+  rangeLabel,
+  type CommandFilters,
+} from "@/features/command-centre/filters";
 import {
   createFilterPreset,
   deleteFilterPreset,
@@ -43,8 +47,7 @@ export function FilterPresets({
   const refresh = () => queryClient.invalidateQueries({ queryKey: filterPresetsQuery.queryKey });
 
   const save = useMutation({
-    mutationFn: () =>
-      createFilterPreset({ name: name.trim(), filters, is_shared: shared }),
+    mutationFn: () => createFilterPreset({ name: name.trim(), filters, is_shared: shared }),
     onSuccess: async () => {
       await refresh();
       setName("");
@@ -140,7 +143,9 @@ export function FilterPresets({
         <ScrollArea className="max-h-72">
           <div className="p-2">
             {presets.isLoading && (
-              <p className="px-2 py-4 text-center text-xs text-muted-foreground">Loading presets…</p>
+              <p className="px-2 py-4 text-center text-xs text-muted-foreground">
+                Loading presets…
+              </p>
             )}
             {!presets.isLoading && rows.length === 0 && (
               <p className="px-2 py-4 text-center text-xs text-muted-foreground">
