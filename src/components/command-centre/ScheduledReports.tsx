@@ -33,10 +33,7 @@ import {
   type ReportSchedule,
 } from "@/features/command-centre/queries";
 import { logExportRun } from "@/features/command-centre/exportAudit";
-import {
-  ALL_SECTIONS,
-  reportTemplatesQuery,
-} from "@/features/command-centre/reportTemplates";
+import { ALL_SECTIONS, reportTemplatesQuery } from "@/features/command-centre/reportTemplates";
 import {
   ExportPreviewDialog,
   type ExportPreview,

@@ -192,10 +192,7 @@ function ConversationListPage() {
             You do not have access to the “{deepLinkWidget}” dashboard widget, so its drill-down
             filters were not applied. Showing the standard conversation view instead.
           </p>
-          <RequestWidgetAccess
-            widgetId={deepLinkWidget}
-            context="ConversationIQ deep link"
-          />
+          <RequestWidgetAccess widgetId={deepLinkWidget} context="ConversationIQ deep link" />
         </div>
       )}
 

@@ -93,7 +93,9 @@ export function resolveDefaultPreset(
   const defaults = presets.filter((p) => p.is_default);
   return (
     defaults.find((p) => p.scope === "outlet" && p.outlet_id && p.outlet_id === viewer.outletId) ??
-    defaults.find((p) => p.scope === "role" && p.scope_roles.some((r) => viewer.roles.includes(r))) ??
+    defaults.find(
+      (p) => p.scope === "role" && p.scope_roles.some((r) => viewer.roles.includes(r)),
+    ) ??
     defaults.find((p) => p.scope === "personal")
   );
 }

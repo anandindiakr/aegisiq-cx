@@ -18,7 +18,9 @@ function describe(event: ExportAuditEvent): string {
   const parts = [event.format.toUpperCase()];
   if (event.template_name) {
     parts.push(
-      event.template_version ? `${event.template_name} v${event.template_version}` : event.template_name,
+      event.template_version
+        ? `${event.template_name} v${event.template_version}`
+        : event.template_name,
     );
   }
   if (event.recipients.length) {

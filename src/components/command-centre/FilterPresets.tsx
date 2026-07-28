@@ -38,7 +38,6 @@ import {
   type FilterPreset,
 } from "@/features/command-centre/presets";
 
-
 /**
  * Saved filter presets: capture the current global filter set under a name and
  * re-apply or share it with the workspace in one click.
@@ -195,7 +194,6 @@ export function FilterPresets({
                     {scopeLabel(preset)} · {rangeLabel(presetToFilters(preset))} ·{" "}
                     {activeFilterCount(presetToFilters(preset))} filters
                   </span>
-
                 </button>
                 <Button
                   variant="ghost"
@@ -247,4 +245,3 @@ export function FilterPresets({
     </Popover>
   );
 }
-

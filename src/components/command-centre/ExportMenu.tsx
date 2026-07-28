@@ -102,7 +102,6 @@ export function ExportMenu({
   const [templateId, setTemplateId] = useState<string>(FULL_TEMPLATE.id);
   const [preview, setPreview] = useState<ExportPreview | null>(null);
 
-
   const templatesQuery = useQuery(reportTemplatesQuery);
   const templates = useMemo(
     () => [FULL_TEMPLATE, ...(templatesQuery.data ?? [])],
@@ -171,7 +170,6 @@ export function ExportMenu({
     }
   };
 
-
   return (
     <>
       <DropdownMenu>
@@ -239,7 +237,6 @@ export function ExportMenu({
         onOpenChange={setManageOpen}
         templates={templatesQuery.data ?? []}
       />
-
     </>
   );
 }
@@ -531,4 +528,3 @@ function TemplateVersionHistory({
     </Dialog>
   );
 }
-

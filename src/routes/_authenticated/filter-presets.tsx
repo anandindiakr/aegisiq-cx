@@ -104,12 +104,18 @@ function FilterPresetsPage() {
       setMakeDefault(false);
       toast.success("Preset created");
     },
-    onError: (error: Error) => toast.error("Could not create preset", { description: error.message }),
+    onError: (error: Error) =>
+      toast.error("Could not create preset", { description: error.message }),
   });
 
   const patch = useMutation({
-    mutationFn: ({ id, values }: { id: string; values: Parameters<typeof updateFilterPreset>[1] }) =>
-      updateFilterPreset(id, values),
+    mutationFn: ({
+      id,
+      values,
+    }: {
+      id: string;
+      values: Parameters<typeof updateFilterPreset>[1];
+    }) => updateFilterPreset(id, values),
     onSuccess: refresh,
     onError: (error: Error) => toast.error("Could not update", { description: error.message }),
   });
