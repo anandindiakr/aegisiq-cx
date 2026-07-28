@@ -19,7 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ErrorState, LoadingState } from "@/components/common/Primitives";
 import { executiveOverviewQuery } from "@/features/command-centre/queries";
-import { defaultFilters } from "@/features/command-centre/filters";
+import { defaultFilters, withPreset } from "@/features/command-centre/filters";
 import {
   cxScore,
   executiveBriefing,
@@ -236,7 +236,8 @@ export function TemplatePreviewDialog({
   onOpenChange: (open: boolean) => void;
   template: ReportTemplateInput;
 }) {
-  const filters = useMemo(() => defaultFilters(), []);
+  // A 30-day window keeps the sample representative rather than empty at 9am.
+  const filters = useMemo(() => withPreset(defaultFilters(), "30d"), []);
   const overview = useQuery({ ...executiveOverviewQuery(filters), enabled: open });
 
   const compact = template.formatting.density === "compact";
