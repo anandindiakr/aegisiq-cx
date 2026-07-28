@@ -23,6 +23,8 @@ export interface DeliveryResult {
   status: "sent" | "failed" | "skipped";
   responseStatus: number | null;
   error: string | null;
+  /** How many HTTP attempts this delivery took (email is always 1). */
+  attempts?: number;
 }
 
 const TIMEOUT_MS = 10_000;
@@ -332,72 +334,61 @@ export async function fanOutEvent(
           "x-aegisiq-event": event.type,
           "x-aegisiq-delivery": eventId,
         };
-    const outcome = await postJson(rule.destination, body, headers);
-    const status = outcome.error ? "failed" : "sent";
+    const outcome = await deliverWithRetry(admin, {
+      companyId,
+      eventId,
+      event,
+      channel: rule.channel,
+      destination: rule.destination,
+      label: rule.name,
+      body,
+      headers,
+      ruleId: rule.id,
+    });
     results.push({
       channel: rule.channel,
       destination: rule.destination,
-      status,
+      status: outcome.error ? "failed" : "sent",
       responseStatus: outcome.status || null,
       error: outcome.error,
-    });
-    await record(admin, {
-      company_id: companyId,
-      rule_id: rule.id,
-      event_id: eventId,
-      event_type: event.type,
-      channel: rule.channel,
-      destination: rule.destination,
-      target_label: rule.name,
-      status,
-      response_status: outcome.status || null,
-      error_message: outcome.error,
-      duration_ms: Date.now() - started,
-      payload: event.data,
+      attempts: outcome.attempts,
     });
   }
 
   for (const endpoint of (endpointRows ?? []) as EndpointRow[]) {
-    const started = Date.now();
     const body = webhookBody(companyId, eventId, event);
     const { header } = signPayload(endpoint.secret, body);
-    const outcome = await postJson(endpoint.url, body, {
-      [SIGNATURE_HEADER]: header,
-      "x-aegisiq-event": event.type,
-      "x-aegisiq-delivery": eventId,
+    const outcome = await deliverWithRetry(admin, {
+      companyId,
+      eventId,
+      event,
+      channel: "webhook",
+      destination: endpoint.url,
+      label: endpoint.name,
+      body,
+      headers: {
+        [SIGNATURE_HEADER]: header,
+        "x-aegisiq-event": event.type,
+        "x-aegisiq-delivery": eventId,
+      },
+      endpointId: endpoint.id,
     });
-    const status = outcome.error ? "failed" : "sent";
     results.push({
       channel: "webhook",
       destination: endpoint.url,
-      status,
+      status: outcome.error ? "failed" : "sent",
       responseStatus: outcome.status || null,
       error: outcome.error,
+      attempts: outcome.attempts,
     });
-    await Promise.all([
-      record(admin, {
-        company_id: companyId,
-        endpoint_id: endpoint.id,
-        event_id: eventId,
-        event_type: event.type,
-        channel: "webhook",
-        destination: endpoint.url,
-        target_label: endpoint.name,
-        status,
-        response_status: outcome.status || null,
-        error_message: outcome.error,
-        duration_ms: Date.now() - started,
-        payload: event.data,
-      }),
-      admin
-        .from("webhook_endpoints")
-        .update({
-          last_status: outcome.status || null,
-          last_error: outcome.error,
-          last_delivery_at: new Date().toISOString(),
-        })
-        .eq("id", endpoint.id),
-    ]);
+    await admin
+      .from("webhook_endpoints")
+      .update({
+        last_status: outcome.status || null,
+        last_error: outcome.error,
+        last_delivery_at: new Date().toISOString(),
+      })
+      .eq("id", endpoint.id);
   }
 
   return results;
