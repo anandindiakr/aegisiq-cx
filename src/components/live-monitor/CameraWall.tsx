@@ -65,7 +65,6 @@ export function CameraWall({
                 {formatRelative(camera.last_seen_at)}
               </span>
             </div>
-
           </motion.article>
         );
       })}
