@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          section: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          section: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          section?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       ai_engines: {
         Row: {
           api_configured: boolean
@@ -405,6 +435,54 @@ export type Database = {
           },
         ]
       }
+      api_credentials: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          hint: string | null
+          id: string
+          label: string | null
+          last_revealed_at: string | null
+          last_revealed_by: string | null
+          provider: string
+          rotated_at: string
+          secret_cipher: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          hint?: string | null
+          id?: string
+          label?: string | null
+          last_revealed_at?: string | null
+          last_revealed_by?: string | null
+          provider: string
+          rotated_at?: string
+          secret_cipher?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          hint?: string | null
+          id?: string
+          label?: string | null
+          last_revealed_at?: string | null
+          last_revealed_by?: string | null
+          provider?: string
+          rotated_at?: string
+          secret_cipher?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audio_streams: {
         Row: {
           bitrate_kbps: number
@@ -502,6 +580,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      backup_runs: {
+        Row: {
+          archive_location: string | null
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          retention_days: number
+          scope: string
+          size_mb: number
+          started_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          archive_location?: string | null
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          retention_days?: number
+          scope?: string
+          size_mb?: number
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          archive_location?: string | null
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          retention_days?: number
+          scope?: string
+          size_mb?: number
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       cameras: {
         Row: {
@@ -1874,6 +2000,45 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_connections: {
+        Row: {
+          category: string
+          company_id: string
+          config: Json
+          created_at: string
+          enabled: boolean
+          id: string
+          last_tested_at: string | null
+          provider: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          company_id?: string
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_tested_at?: string | null
+          provider: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_tested_at?: string | null
+          provider?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       keywords: {
         Row: {
           category: string
@@ -1931,8 +2096,13 @@ export type Database = {
           detection_confidence: number
           id: string
           is_active: boolean
+          keyword_dictionary: boolean
           name: string
           native_name: string | null
+          sentiment: boolean
+          speech_recognition: boolean
+          tier: string
+          translation: boolean
           updated_at: string
         }
         Insert: {
@@ -1944,8 +2114,13 @@ export type Database = {
           detection_confidence?: number
           id?: string
           is_active?: boolean
+          keyword_dictionary?: boolean
           name: string
           native_name?: string | null
+          sentiment?: boolean
+          speech_recognition?: boolean
+          tier?: string
+          translation?: boolean
           updated_at?: string
         }
         Update: {
@@ -1957,8 +2132,13 @@ export type Database = {
           detection_confidence?: number
           id?: string
           is_active?: boolean
+          keyword_dictionary?: boolean
           name?: string
           native_name?: string | null
+          sentiment?: boolean
+          speech_recognition?: boolean
+          tier?: string
+          translation?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -3366,7 +3546,17 @@ export type Database = {
         Args: { _id: string; _note?: string }
         Returns: undefined
       }
+      reveal_api_credential: { Args: { _id: string }; Returns: Json }
       reveal_device_credential: { Args: { _id: string }; Returns: Json }
+      save_api_credential: {
+        Args: {
+          _expires_at?: string
+          _label: string
+          _provider: string
+          _secret: string
+        }
+        Returns: string
+      }
       save_device_credential:
         | {
             Args: {
