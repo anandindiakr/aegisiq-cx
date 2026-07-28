@@ -157,6 +157,87 @@ export async function deleteFilterPreset(id: string) {
   if (error) throw new Error(error.message);
 }
 
+/* ------------------------------------------------------------------ */
+/* Bulk actions                                                        */
+/* ------------------------------------------------------------------ */
+
+/** Copies presets, optionally re-pointing them at another scope/audience. */
+export async function duplicateFilterPresets(
+  presets: FilterPreset[],
+  options: {
+    suffix?: string;
+    scope?: PresetScope;
+    scope_roles?: AppRole[];
+    outlet_ids?: string[];
+    is_shared?: boolean;
+  } = {},
+): Promise<number> {
+  const targets = options.scope === "outlet" && options.outlet_ids?.length
+    ? options.outlet_ids
+    : [null];
+  let created = 0;
+  for (const preset of presets) {
+    for (const outletId of targets) {
+      await createFilterPreset({
+        name: `${preset.name}${options.suffix ?? " (copy)"}`,
+        description: preset.description,
+        filters: presetToFilters(preset),
+        is_shared: options.is_shared ?? preset.is_shared,
+        is_default: false,
+        scope: options.scope ?? preset.scope,
+        scope_roles: options.scope_roles ?? preset.scope_roles,
+        outlet_id: outletId ?? preset.outlet_id,
+      });
+      created += 1;
+    }
+  }
+  return created;
+}
+
+/**
+ * Renames several presets at once using a pattern. `{name}` keeps the original
+ * name and `{n}` inserts a 1-based index, so "Q3 — {name}" or "Board view {n}"
+ * both work.
+ */
+export function applyRenamePattern(pattern: string, original: string, index: number): string {
+  const applied = pattern.replace(/\{name\}/g, original).replace(/\{n\}/g, String(index + 1));
+  return applied.trim() || original;
+}
+
+export async function bulkRenamePresets(presets: FilterPreset[], pattern: string): Promise<number> {
+  let renamed = 0;
+  for (const [index, preset] of presets.entries()) {
+    const next = applyRenamePattern(pattern, preset.name, index);
+    if (next === preset.name) continue;
+    await updateFilterPreset(preset.id, { name: next });
+    renamed += 1;
+  }
+  return renamed;
+}
+
+export async function bulkDeletePresets(presets: FilterPreset[]): Promise<number> {
+  for (const preset of presets) {
+    await deleteFilterPreset(preset.id);
+  }
+  return presets.length;
+}
+
+/** Re-targets presets at a different role group or outlet in one pass. */
+export async function bulkRescopePresets(
+  presets: FilterPreset[],
+  scope: PresetScope,
+  options: { scope_roles?: AppRole[]; outlet_id?: string | null } = {},
+): Promise<number> {
+  for (const preset of presets) {
+    await updateFilterPreset(preset.id, {
+      scope,
+      scope_roles: scope === "role" ? (options.scope_roles ?? []) : [],
+      outlet_id: scope === "outlet" ? (options.outlet_id ?? null) : null,
+    });
+  }
+  return presets.length;
+}
+
 /** Shareable link that reproduces the preset for a colleague. */
 export function presetShareUrl(preset: FilterPreset): string {
   const origin = typeof window === "undefined" ? "" : window.location.origin;
