@@ -125,8 +125,8 @@ export function DeviceCredentialsDialog({
             <KeyRound className="size-4 text-primary" /> Credentials · {deviceName}
           </DialogTitle>
           <DialogDescription>
-            Stream and ONVIF secrets are encrypted at rest. Only workspace admins can save or
-            reveal them, and every access is written to the change history.
+            Stream and ONVIF secrets are encrypted at rest. Only workspace admins can save or reveal
+            them, and every access is written to the change history.
           </DialogDescription>
         </DialogHeader>
 

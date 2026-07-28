@@ -109,7 +109,10 @@ function AudioStreamsPage() {
         />
       </div>
 
-      <Panel title="Stream telemetry" description="Select a row to monitor it live. Sampled every 30 seconds from the edge agents.">
+      <Panel
+        title="Stream telemetry"
+        description="Select a row to monitor it live. Sampled every 30 seconds from the edge agents."
+      >
         {error ? (
           <ErrorState message={error.message} onRetry={() => refetch()} />
         ) : isPending ? (

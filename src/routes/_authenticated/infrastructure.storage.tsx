@@ -120,13 +120,7 @@ function StoragePage() {
   );
 }
 
-function PoolCard({
-  pool,
-  onToggle,
-}: {
-  pool: StoragePool;
-  onToggle: (enabled: boolean) => void;
-}) {
+function PoolCard({ pool, onToggle }: { pool: StoragePool; onToggle: (enabled: boolean) => void }) {
   const percent = Number(pool.capacity_gb)
     ? (Number(pool.used_gb) / Number(pool.capacity_gb)) * 100
     : 0;

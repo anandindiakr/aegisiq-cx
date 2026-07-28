@@ -170,22 +170,34 @@ export function AudioStreamPreview({
       {
         label: "Latency",
         value: `${latest.latency_ms} ms`,
-        tone: latest.latency_ms < 180 ? "positive" : latest.latency_ms < 320 ? "warning" : "negative",
+        tone:
+          latest.latency_ms < 180 ? "positive" : latest.latency_ms < 320 ? "warning" : "negative",
       },
       {
         label: "Packet loss",
         value: `${latest.packet_loss.toFixed(2)}%`,
-        tone: latest.packet_loss < 0.5 ? "positive" : latest.packet_loss < 1.5 ? "warning" : "negative",
+        tone:
+          latest.packet_loss < 0.5 ? "positive" : latest.packet_loss < 1.5 ? "warning" : "negative",
       },
       {
         label: "Noise floor",
         value: `${latest.noise_floor_db.toFixed(1)} dB`,
-        tone: latest.noise_floor_db < -50 ? "positive" : latest.noise_floor_db < -38 ? "warning" : "negative",
+        tone:
+          latest.noise_floor_db < -50
+            ? "positive"
+            : latest.noise_floor_db < -38
+              ? "warning"
+              : "negative",
       },
       {
         label: "Signal",
         value: `${latest.signal_quality}`,
-        tone: latest.signal_quality > 70 ? "positive" : latest.signal_quality > 45 ? "warning" : "negative",
+        tone:
+          latest.signal_quality > 70
+            ? "positive"
+            : latest.signal_quality > 45
+              ? "warning"
+              : "negative",
       },
     ] as { label: string; value: string; tone: "positive" | "warning" | "negative" }[];
   }, [stream, latest]);
@@ -218,7 +230,11 @@ export function AudioStreamPreview({
                   : "negative"
             }
           />
-          <Button size="sm" variant={playing ? "outline" : "default"} onClick={() => setPlaying((v) => !v)}>
+          <Button
+            size="sm"
+            variant={playing ? "outline" : "default"}
+            onClick={() => setPlaying((v) => !v)}
+          >
             {playing ? (
               <>
                 <CircleStop className="mr-2 size-4" /> Stop

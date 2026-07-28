@@ -114,7 +114,15 @@ function CameraManagementPage() {
       if (status !== "all" && c.status !== status) return false;
       if (health !== "all" && c.health_state !== health) return false;
       if (!q) return true;
-      return [c.name, c.camera_code, c.zone, c.brand, c.model, c.ip_address, outletName(c.outlet_id)]
+      return [
+        c.name,
+        c.camera_code,
+        c.zone,
+        c.brand,
+        c.model,
+        c.ip_address,
+        outletName(c.outlet_id),
+      ]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(q));
     });

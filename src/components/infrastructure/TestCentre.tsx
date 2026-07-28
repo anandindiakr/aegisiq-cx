@@ -56,7 +56,8 @@ export function TestCentre({
       try {
         await logInfraEvent({
           source: definition?.source ?? "connection",
-          level: result.status === "passed" ? "info" : result.status === "warning" ? "warn" : "error",
+          level:
+            result.status === "passed" ? "info" : result.status === "warning" ? "warn" : "error",
           message: `${result.label}: ${result.detail}`,
         });
         queryClient.invalidateQueries({ queryKey: ["infrastructure", "events"] });

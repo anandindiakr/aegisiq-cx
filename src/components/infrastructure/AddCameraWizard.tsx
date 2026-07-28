@@ -125,8 +125,7 @@ export function AddCameraWizard({
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const canAdvance =
-    step !== 0 || (draft.name.trim().length > 1 && draft.outlet_id !== null);
+  const canAdvance = step !== 0 || (draft.name.trim().length > 1 && draft.outlet_id !== null);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -155,10 +154,7 @@ export function AddCameraWizard({
                 {index < step ? <Check className="size-3" /> : index + 1}
               </span>
               <span
-                className={cn(
-                  "text-xs",
-                  index === step ? "font-medium" : "text-muted-foreground",
-                )}
+                className={cn("text-xs", index === step ? "font-medium" : "text-muted-foreground")}
               >
                 {label}
               </span>
