@@ -302,7 +302,14 @@ export function CopilotDock() {
                     response={message.response}
                     busy={busy}
                     onFollowUp={(command) => submit(command)}
+                    onResume={
+                      message.response.report
+                        ? () =>
+                            void run(message.text, "text", { resume: message.response!.report })
+                        : undefined
+                    }
                   />
+
                 ) : (
                   <p key={message.id} className="text-xs text-muted-foreground">
                     {message.text}
