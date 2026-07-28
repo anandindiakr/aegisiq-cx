@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlarmClock, Gauge, ShieldAlert, Siren, Timer, Zap } from "lucide-react";
+import { AlarmClock, Download, FileText, Gauge, ShieldAlert, Siren, Timer, Zap } from "lucide-react";
 
 import {
   EmptyState,
@@ -37,6 +37,8 @@ import {
   saveAlertSlaPolicy,
 } from "@/features/alerts/sla";
 import { useAlertAccess } from "@/features/alerts/access";
+import { exportAlertAnalytics } from "@/features/alerts/exportAnalytics";
+import { useEscalationNotifications } from "@/features/alerts/escalationNotifications";
 import { formatNumber, formatRelative, titleCase } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/alert-analytics")({
@@ -79,6 +81,7 @@ function AlertAnalyticsPage() {
   const outlets = useQuery(outletsQuery);
   const policies = useQuery(alertSlaPoliciesQuery);
   const escalations = useQuery(recentEscalationsQuery);
+  useEscalationNotifications({ enabled: true });
   const queryClient = useQueryClient();
   const [windowDays, setWindowDays] = useState("30");
 
@@ -132,6 +135,31 @@ function AlertAnalyticsPage() {
                 <SelectItem value="90">Last 90 days</SelectItem>
               </SelectContent>
             </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={analytics.total === 0}
+              onClick={() => {
+                exportAlertAnalytics("csv", analytics, { windowDays: Number(windowDays) });
+                toast.success("Alert analytics CSV downloaded");
+              }}
+            >
+              <Download className="mr-2 size-4" /> CSV
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={analytics.total === 0}
+              onClick={() => {
+                try {
+                  exportAlertAnalytics("pdf", analytics, { windowDays: Number(windowDays) });
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Export failed");
+                }
+              }}
+            >
+              <FileText className="mr-2 size-4" /> PDF
+            </Button>
             <Button size="sm" disabled={sweep.isPending} onClick={() => sweep.mutate()}>
               <Zap className="mr-2 size-4" /> Run escalation sweep
             </Button>
