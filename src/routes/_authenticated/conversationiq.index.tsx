@@ -188,6 +188,15 @@ function ConversationListPage() {
       />
       <ConversationIqTabs />
 
+      {blocked && (
+        <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+          You do not have access to the “{deepLinkWidget}” dashboard widget, so its drill-down
+          filters were not applied. Showing the standard conversation view instead.
+        </p>
+      )}
+
+
+
       <div className="panel p-4">
         <div className="relative">
           <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" />
