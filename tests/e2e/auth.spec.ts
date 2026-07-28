@@ -3,7 +3,7 @@ import { signIn, hasCredentials } from "./helpers";
 
 test.describe("sign-in page", () => {
   test("renders the credential form and branding", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/signin");
 
     await expect(page.getByRole("heading", { name: "Company sign in" })).toBeVisible();
     await expect(page.getByLabel("Work email")).toBeVisible();
@@ -13,17 +13,17 @@ test.describe("sign-in page", () => {
   });
 
   test("validates a malformed email before hitting the backend", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/signin");
     await page.getByLabel("Work email").fill("not-an-email");
     await page.getByLabel("Password").fill("supersecret1");
     await page.getByRole("button", { name: "Sign in to console" }).click();
 
-    await expect(page).toHaveURL(/\/$/);
+    await expect(page).toHaveURL(/\/signin$/);
     await expect(page.getByRole("heading", { name: "Company sign in" })).toBeVisible();
   });
 
   test("switches to the workspace request tab", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/signin");
     const tab = page.getByRole("tab", { name: "Request workspace" });
 
     // Retry the click until React has hydrated the tab control.
