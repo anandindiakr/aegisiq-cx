@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
@@ -18,6 +18,7 @@ import {
 import { iqTagIndexQuery } from "@/features/conversationiq/review";
 import { DEFAULT_FILTERS, applyFilters, type IqFilters } from "@/features/conversationiq/filters";
 import { camerasQuery, outletsQuery } from "@/features/platform/queries";
+import { canViewWidgetQuery, widgetFromDeepLink } from "@/features/command-centre/widgetAccess";
 
 /** Deep-link contract shared with the Executive Command Centre widgets. */
 interface IqSearch {
@@ -111,8 +112,17 @@ function fromSearch(search: IqSearch): IqFilters {
 function ConversationListPage() {
   const search = Route.useSearch();
   // Deep links from the Command Centre seed the workbench; the user stays in
-  // control of the filters afterwards.
+  // control of the filters afterwards. The originating widget is re-checked
+  // against the database rules, so a restricted widget cannot be drilled into
+  // by hand-editing the URL.
+  const deepLinkWidget = widgetFromDeepLink(search.from);
+  const deepLinkAccess = useQuery(canViewWidgetQuery(deepLinkWidget));
+  const blocked = deepLinkWidget !== undefined && deepLinkAccess.data === false;
   const [filters, setFilters] = useState<IqFilters>(() => fromSearch(search));
+
+  useEffect(() => {
+    if (blocked) setFilters(DEFAULT_FILTERS);
+  }, [blocked]);
 
   const conversations = useQuery(iqConversationsQuery);
   const keywordIndex = useQuery(iqKeywordIndexQuery);
@@ -174,6 +184,13 @@ function ConversationListPage() {
         description="Every captured customer interaction, enriched with sentiment, risk, language and keyword intelligence."
       />
       <ConversationIqTabs />
+
+      {blocked && (
+        <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+          You do not have access to the “{deepLinkWidget}” dashboard widget, so its drill-down
+          filters were not applied. Showing the standard conversation view instead.
+        </p>
+      )}
 
       <div className="panel p-4">
         <div className="relative">

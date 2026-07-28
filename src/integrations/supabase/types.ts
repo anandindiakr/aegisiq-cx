@@ -295,6 +295,42 @@ export type Database = {
           },
         ]
       }
+      command_filter_presets: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          filters: Json
+          id: string
+          is_shared: boolean
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          filters?: Json
+          id?: string
+          is_shared?: boolean
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          filters?: Json
+          id?: string
+          is_shared?: boolean
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           active_role_template_id: string | null
@@ -799,6 +835,66 @@ export type Database = {
         }
         Relationships: []
       }
+      export_audit_events: {
+        Row: {
+          actor_id: string | null
+          actor_name: string | null
+          company_id: string
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          filters: Json
+          format: string
+          id: string
+          kind: string
+          recipients: string[]
+          schedule_id: string | null
+          sections: string[]
+          status: string
+          template_id: string | null
+          template_name: string | null
+          template_version: number | null
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name?: string | null
+          company_id: string
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          filters?: Json
+          format: string
+          id?: string
+          kind?: string
+          recipients?: string[]
+          schedule_id?: string | null
+          sections?: string[]
+          status?: string
+          template_id?: string | null
+          template_name?: string | null
+          template_version?: number | null
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string | null
+          company_id?: string
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          filters?: Json
+          format?: string
+          id?: string
+          kind?: string
+          recipients?: string[]
+          schedule_id?: string | null
+          sections?: string[]
+          status?: string
+          template_id?: string | null
+          template_name?: string | null
+          template_version?: number | null
+        }
+        Relationships: []
+      }
       keywords: {
         Row: {
           category: string
@@ -1090,6 +1186,59 @@ export type Database = {
           },
         ]
       }
+      report_template_versions: {
+        Row: {
+          author_name: string | null
+          change_summary: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          formats: string[]
+          id: string
+          name: string
+          sections: string[]
+          template_id: string
+          version: number
+        }
+        Insert: {
+          author_name?: string | null
+          change_summary?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          formats?: string[]
+          id?: string
+          name: string
+          sections?: string[]
+          template_id: string
+          version: number
+        }
+        Update: {
+          author_name?: string | null
+          change_summary?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          formats?: string[]
+          id?: string
+          name?: string
+          sections?: string[]
+          template_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_template_versions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "report_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       report_templates: {
         Row: {
           company_id: string
@@ -1102,6 +1251,7 @@ export type Database = {
           name: string
           sections: string[]
           updated_at: string
+          version: number
         }
         Insert: {
           company_id: string
@@ -1114,6 +1264,7 @@ export type Database = {
           name: string
           sections?: string[]
           updated_at?: string
+          version?: number
         }
         Update: {
           company_id?: string
@@ -1126,6 +1277,7 @@ export type Database = {
           name?: string
           sections?: string[]
           updated_at?: string
+          version?: number
         }
         Relationships: []
       }
@@ -1742,13 +1894,42 @@ export type Database = {
           },
         ]
       }
+      widget_access_rules: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          roles: Database["public"]["Enums"]["app_role"][]
+          updated_at: string
+          widget_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          roles?: Database["public"]["Enums"]["app_role"][]
+          updated_at?: string
+          widget_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          roles?: Database["public"]["Enums"]["app_role"][]
+          updated_at?: string
+          widget_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       actor_display_name: { Args: never; Returns: string }
+      allowed_widgets: { Args: never; Returns: string[] }
       can_operate: { Args: never; Returns: boolean }
+      can_view_widget: { Args: { _widget_id: string }; Returns: boolean }
       current_company_id: { Args: never; Returns: string }
       executive_overview: { Args: { p_filters?: Json }; Returns: Json }
       has_role: {

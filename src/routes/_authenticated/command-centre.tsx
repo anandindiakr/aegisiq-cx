@@ -28,6 +28,8 @@ import {
   TopIssues,
 } from "@/components/command-centre/AnalyticsWidgets";
 import { ExportMenu } from "@/components/command-centre/ExportMenu";
+import { ExportHistory } from "@/components/command-centre/ExportHistory";
+import { LiveStatusPanel } from "@/components/command-centre/LiveStatusPanel";
 import { WidgetDeepLink } from "@/components/command-centre/WidgetDeepLink";
 import { DashboardAuditTrail } from "@/components/command-centre/DashboardAuditTrail";
 import { ScheduledReports } from "@/components/command-centre/ScheduledReports";
@@ -46,6 +48,7 @@ import {
 } from "@/features/command-centre/queries";
 import { resolveOrder, WIDGETS } from "@/features/command-centre/widgets";
 import { useCommandCentreRealtime } from "@/features/command-centre/realtime";
+import { useWidgetAccess } from "@/features/command-centre/widgetAccess";
 import { getActiveTenant } from "@/features/platform/queries";
 import type { ExecutiveOverview, OutletPerformance } from "@/features/command-centre/types";
 
@@ -100,6 +103,7 @@ function CommandCentrePage() {
   });
   const overview = overviewQuery.data;
 
+  const access = useWidgetAccess();
   const order = useMemo(() => resolveOrder(layout.widget_order), [layout.widget_order]);
   const hidden = useMemo(() => new Set(layout.hidden_widgets), [layout.hidden_widgets]);
 
@@ -176,7 +180,11 @@ function CommandCentrePage() {
     "activity",
   ]);
 
-  const visible = order.filter((id) => !hidden.has(id));
+  // Layout preferences hide widgets; the database rules decide what the user is
+  // even allowed to see, so restricted widgets never render or deep-link.
+  const permitted = order.filter((id) => access.can(id));
+  const visible = permitted.filter((id) => !hidden.has(id));
+  const restricted = access.isLoading ? 0 : order.length - permitted.length;
 
   return (
     <>
@@ -206,6 +214,11 @@ function CommandCentrePage() {
               {overview &&
                 ` · updated ${new Date(overview.generatedAt).toLocaleTimeString("en-GB")}`}
             </Badge>
+            {restricted > 0 && (
+              <Badge variant="outline" className="text-[11px] text-muted-foreground">
+                {restricted} widget{restricted === 1 ? "" : "s"} restricted
+              </Badge>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -216,25 +229,9 @@ function CommandCentrePage() {
               <RefreshCw className={overviewQuery.isFetching ? "size-4 animate-spin" : "size-4"} />
               Refresh
             </Button>
-            <Badge
-              variant="outline"
-              className={
-                realtime.connected
-                  ? "gap-1.5 text-[11px] text-emerald-400"
-                  : "gap-1.5 text-[11px] text-muted-foreground"
-              }
-            >
-              <span
-                className={
-                  realtime.connected
-                    ? "size-1.5 rounded-full bg-emerald-400"
-                    : "size-1.5 rounded-full bg-muted-foreground"
-                }
-              />
-              {realtime.connected ? "Live" : "Offline"}
-              {realtime.events > 0 && ` · ${realtime.events}`}
-            </Badge>
+            <LiveStatusPanel status={realtime} />
             <ExportMenu overview={overview} filters={filters} />
+            <ExportHistory />
             <ScheduledReports />
             <DashboardAuditTrail />
             <DashboardSettings layout={layout} />

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, Loader2, Plus, Trash2 } from "lucide-react";
+import { CalendarClock, Loader2, Plus, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import {
   type ReportFrequency,
   type ReportSchedule,
 } from "@/features/command-centre/queries";
+import { logExportRun } from "@/features/command-centre/exportAudit";
 
 const FREQUENCIES: ReportFrequency[] = ["daily", "weekly", "monthly"];
 const FORMATS: ReportFormat[] = ["pdf", "excel", "csv", "powerpoint"];
@@ -83,6 +84,50 @@ export function ScheduledReports() {
       await invalidate();
       toast.success("Schedule removed");
     },
+  });
+
+  /**
+   * Records a delivery run against the schedule. Success or failure, the format,
+   * the recipients and the schedule name all land in the export audit trail.
+   */
+  const deliver = useMutation({
+    mutationFn: async (schedule: ReportSchedule) => {
+      const started = performance.now();
+      try {
+        await updateReportSchedule(
+          schedule.id,
+          { last_sent_at: new Date().toISOString() } as Partial<ReportSchedule>,
+          schedule,
+        );
+        await logExportRun({
+          kind: "delivery",
+          format: schedule.format,
+          templateName: schedule.name,
+          scheduleId: schedule.id,
+          recipients: schedule.recipients,
+          status: "success",
+          durationMs: Math.round(performance.now() - started),
+        });
+      } catch (error) {
+        await logExportRun({
+          kind: "delivery",
+          format: schedule.format,
+          templateName: schedule.name,
+          scheduleId: schedule.id,
+          recipients: schedule.recipients,
+          status: "failed",
+          errorMessage: error instanceof Error ? error.message : "Unknown error",
+          durationMs: Math.round(performance.now() - started),
+        });
+        throw error;
+      }
+    },
+    onSuccess: async () => {
+      await invalidate();
+      await queryClient.invalidateQueries({ queryKey: ["export-audit-events"] });
+      toast.success("Delivery recorded");
+    },
+    onError: (error: Error) => toast.error("Delivery failed", { description: error.message }),
   });
 
   return (
@@ -142,6 +187,16 @@ export function ScheduledReports() {
                 onCheckedChange={(checked) => toggle.mutate({ schedule, is_active: checked })}
                 aria-label="Toggle schedule"
               />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 text-muted-foreground hover:text-primary"
+                disabled={deliver.isPending}
+                onClick={() => deliver.mutate(schedule)}
+                aria-label={`Send ${schedule.name} now`}
+              >
+                <Send className="size-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
