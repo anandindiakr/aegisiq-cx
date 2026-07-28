@@ -43,7 +43,12 @@ export interface ResolveOptions {
   canViewTranscripts: boolean;
   /** Streaming hook — partial answers are pushed here while work continues. */
   onPartial?: (partial: CopilotResponse) => void;
+  /** Set when the executive already approved a dry-run preview. */
+  confirmed?: boolean;
+  /** Previous partial report — completed sections are reused, not recomputed. */
+  resume?: CopilotReportPartial;
 }
+
 
 const INTENT_RULES: { intent: CopilotIntent; patterns: RegExp[] }[] = [
   { intent: "export_report", patterns: [/\bexport\b/, /\bdownload\b/, /\bboard pack\b/] },
