@@ -42,7 +42,7 @@ export function DashboardSettings({ layout }: { layout: DashboardLayout }) {
   }, [layout, open]);
 
   const save = useMutation({
-    mutationFn: (next: DashboardLayout) => saveDashboardLayout(next),
+    mutationFn: (next: DashboardLayout) => saveDashboardLayout(next, layout),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: dashboardLayoutQuery.queryKey });
       toast.success("Dashboard preferences saved");

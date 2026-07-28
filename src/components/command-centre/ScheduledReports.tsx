@@ -30,6 +30,7 @@ import {
   updateReportSchedule,
   type ReportFormat,
   type ReportFrequency,
+  type ReportSchedule,
 } from "@/features/command-centre/queries";
 
 const FREQUENCIES: ReportFrequency[] = ["daily", "weekly", "monthly"];
@@ -71,13 +72,13 @@ export function ScheduledReports() {
   });
 
   const toggle = useMutation({
-    mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
-      updateReportSchedule(id, { is_active }),
+    mutationFn: ({ schedule, is_active }: { schedule: ReportSchedule; is_active: boolean }) =>
+      updateReportSchedule(schedule.id, { is_active }, schedule),
     onSuccess: invalidate,
   });
 
   const remove = useMutation({
-    mutationFn: (id: string) => deleteReportSchedule(id),
+    mutationFn: (schedule: ReportSchedule) => deleteReportSchedule(schedule.id, schedule),
     onSuccess: async () => {
       await invalidate();
       toast.success("Schedule removed");
@@ -138,16 +139,14 @@ export function ScheduledReports() {
               </Badge>
               <Switch
                 checked={schedule.is_active}
-                onCheckedChange={(checked) =>
-                  toggle.mutate({ id: schedule.id, is_active: checked })
-                }
+                onCheckedChange={(checked) => toggle.mutate({ schedule, is_active: checked })}
                 aria-label="Toggle schedule"
               />
               <Button
                 variant="ghost"
                 size="icon"
                 className="size-8 text-muted-foreground hover:text-destructive"
-                onClick={() => remove.mutate(schedule.id)}
+                onClick={() => remove.mutate(schedule)}
                 aria-label="Delete schedule"
               >
                 <Trash2 className="size-4" />
