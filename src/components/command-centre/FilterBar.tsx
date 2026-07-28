@@ -286,6 +286,7 @@ export function FilterBar({
         />
 
         <div className="ml-auto flex items-center gap-2">
+          <FilterPresets filters={filters} onApply={onChange} />
           {count > 0 && (
             <Badge variant="outline" className="border-primary/40 text-[11px] text-primary">
               {count} active
