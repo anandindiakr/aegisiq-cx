@@ -20,10 +20,21 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { executiveOverviewQuery } from "@/features/command-centre/queries";
-import { defaultFilters, withPreset, type CommandFilters } from "@/features/command-centre/filters";
+import {
+  defaultFilters,
+  rangeLabel,
+  withPreset,
+  type CommandFilters,
+} from "@/features/command-centre/filters";
 import { exportExecutiveReport } from "@/features/command-centre/export";
+import { notify } from "@/features/command-centre/notificationChannels";
 import { useIqAccess } from "@/features/conversationiq/access";
 import { resolveCopilotCommand } from "@/features/copilot/engine";
+import {
+  finishReportRun,
+  startReportRun,
+  type ReportRunStatus,
+} from "@/features/copilot/reportRuns";
 import {
   copilotPreferencesQuery,
   recordRecentSearch,
@@ -35,8 +46,14 @@ import { logCopilotEvent } from "@/features/copilot/audit";
 import type {
   CopilotInputMode,
   CopilotMessage,
+  CopilotReportPartial,
   CopilotSurfaceContext,
 } from "@/features/copilot/types";
+
+/** Extra execution hints — used to resume a partially failed report run. */
+export interface RunOptions {
+  resume?: CopilotReportPartial;
+}
 
 interface CopilotState {
   open: boolean;
@@ -51,7 +68,7 @@ interface CopilotState {
   minimise: () => void;
   restore: () => void;
   clear: () => void;
-  run: (text: string, mode?: CopilotInputMode) => Promise<void>;
+  run: (text: string, mode?: CopilotInputMode, options?: RunOptions) => Promise<void>;
   publishContext: (context: CopilotSurfaceContext | null) => void;
   savePreferences: (
     patch: Partial<Omit<CopilotPreferences, "id" | "company_id" | "user_id">>,
@@ -134,7 +151,7 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
   );
 
   const run = useCallback(
-    async (text: string, mode: CopilotInputMode = "text") => {
+    async (text: string, mode: CopilotInputMode = "text", options?: RunOptions) => {
       const trimmed = text.trim();
       if (!trimmed || busy) return;
       const started = Date.now();
@@ -163,6 +180,20 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           return next;
         });
 
+      // Report runs are recorded in "My executive reports" so a streamed job
+      // can be reopened, resumed or re-run later.
+      const isReport = /executive (report|summary|brief)|generate report|brief me/i.test(trimmed);
+      let runId: string | null = null;
+      if (isReport) {
+        runId = await startReportRun({
+          command: trimmed,
+          intent: "executive_report",
+          inputMode: mode,
+          rangeLabel: rangeLabel(filters),
+          filters: filters as unknown as Record<string, unknown>,
+        });
+      }
+
       try {
         const response = await resolveCopilotCommand({
           text: trimmed,
@@ -172,6 +203,7 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           prefs: prefsRef.current,
           canExport: access.can("exportCompliance"),
           canViewTranscripts: access.can("viewTranscripts"),
+          resume: options?.resume,
           onPartial: (partial) =>
             upsertAssistant({
               id: assistantId,
@@ -179,10 +211,12 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
               text: partial.title,
               mode,
               createdAt: new Date().toISOString(),
-              response: partial,
+              response: { ...partial, runId: runId ?? undefined },
               pending: true,
             }),
         });
+
+        if (runId) response.runId = runId;
 
         upsertAssistant({
           id: assistantId,
@@ -192,6 +226,34 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           createdAt: new Date().toISOString(),
           response,
         });
+
+        if (runId && response.intent === "executive_report") {
+          const failed = (response.report?.sections ?? []).filter(
+            (s) => s.status === "failed" || s.status === "skipped",
+          );
+          const status: ReportRunStatus = failed.length === 0 ? "completed" : "partial";
+          const durationMs = Date.now() - started;
+          void finishReportRun(runId, {
+            status,
+            response,
+            partial: response.report,
+            errorMessage: failed.length > 0 ? failed.map((s) => s.label).join(", ") : undefined,
+            durationMs,
+          }).then(() => queryClient.invalidateQueries({ queryKey: ["copilot", "report-runs"] }));
+          void notify(
+            status === "completed" ? "report.completed" : "report.failed",
+            status === "completed"
+              ? `Executive report ready — ${rangeLabel(filters)}`
+              : `Executive report incomplete — ${rangeLabel(filters)}`,
+            status === "completed"
+              ? `Generated in ${Math.round(durationMs / 100) / 10}s across ${response.report?.sections.length ?? 0} sections.`
+              : `${failed.length} section(s) failed: ${failed.map((s) => s.label).join(", ")}.`,
+            { runId, command: trimmed, status },
+          );
+          if (status === "partial") {
+            toast.warning("Executive report finished with failed sections");
+          }
+        }
 
         // Personalisation side effects requested by the resolver.
         if (response.intent === "set_favorite_outlet" && response.entities.outletId) {
@@ -211,6 +273,13 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           const overview = await queryClient.ensureQueryData(executiveOverviewQuery(filters));
           exportExecutiveReport(response.exportFormat, overview, filters);
           toast.success(`Executive report exported (${response.exportFormat.toUpperCase()})`);
+          void notify(
+            "export.completed",
+            `Copilot export ready (${response.exportFormat.toUpperCase()})`,
+            `Board pack for ${rangeLabel(filters)} exported from Aegis Copilot.`,
+            { format: response.exportFormat, command: trimmed },
+          );
+
           if (response.intent === "export_report") {
             const favourites = prefsRef.current?.favorite_reports ?? [];
             if (!favourites.includes(response.exportFormat)) {
@@ -273,6 +342,19 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
             },
           },
         ]);
+        if (runId) {
+          void finishReportRun(runId, {
+            status: "failed",
+            errorMessage: message,
+            durationMs: Date.now() - started,
+          }).then(() => queryClient.invalidateQueries({ queryKey: ["copilot", "report-runs"] }));
+          void notify(
+            "report.failed",
+            `Executive report failed — ${rangeLabel(filters)}`,
+            message,
+            { runId, command: trimmed },
+          );
+        }
         void logCopilotEvent({
           command: trimmed,
           intent: "unknown",

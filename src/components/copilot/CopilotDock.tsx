@@ -256,7 +256,6 @@ export function CopilotDock() {
             className="h-full px-3 py-3 [&_[data-radix-scroll-area-viewport]>div]:!block"
           >
             <div className="w-full min-w-0 space-y-3 pb-2">
-
               {messages.length === 0 && (
                 <div className="rounded-xl border border-dashed border-border p-4 text-center">
                   <p className="text-sm font-medium">Ask anything about your estate</p>
@@ -302,6 +301,11 @@ export function CopilotDock() {
                     response={message.response}
                     busy={busy}
                     onFollowUp={(command) => submit(command)}
+                    onResume={
+                      message.response.report
+                        ? () => void run(message.text, "text", { resume: message.response!.report })
+                        : undefined
+                    }
                   />
                 ) : (
                   <p key={message.id} className="text-xs text-muted-foreground">

@@ -37,7 +37,8 @@ export type CopilotOutcome =
   | "exported"
   | "denied"
   | "failed"
-  | "clarify";
+  | "clarify"
+  | "preview";
 
 /** One-tap chip that chains a related command without retyping. */
 export interface CopilotFollowUp {
@@ -60,11 +61,52 @@ export interface CopilotClarification {
   options: CopilotClarificationOption[];
 }
 
+/** One parameter shown in a dry-run preview before anything is executed. */
+export interface CopilotPreviewParam {
+  label: string;
+  value: string;
+}
+
+/**
+ * Dry run: what *would* happen if the command executed. Nothing is exported,
+ * delivered or written until the executive confirms.
+ */
+export interface CopilotPreview {
+  kind: "export" | "delivery";
+  summary: string;
+  parameters: CopilotPreviewParam[];
+  confirmLabel: string;
+  /** Command re-issued (pre-confirmed) when the executive approves. */
+  confirmCommand: string;
+}
+
+export type CopilotReportSectionStatus = "pending" | "running" | "ok" | "failed" | "skipped";
+
+/** One stage of a streamed executive report. */
+export interface CopilotReportSection {
+  key: string;
+  label: string;
+  status: CopilotReportSectionStatus;
+  attempts: number;
+  error?: string;
+}
+
+/** Everything produced so far — lets a failed run resume where it stopped. */
+export interface CopilotReportPartial {
+  sections: CopilotReportSection[];
+  metrics: CopilotMetric[];
+  body: string[];
+  chart?: { title: string; points: CopilotChartPoint[] };
+}
+
 /** Progress emitted while a long-running answer streams in. */
 export interface CopilotProgress {
   label: string;
   percent: number;
   done?: boolean;
+  /** True once at least one section failed after its retries. */
+  failed?: boolean;
+  sections?: CopilotReportSection[];
 }
 
 export interface CopilotLink {
@@ -106,6 +148,13 @@ export interface CopilotResponse {
   followUps?: CopilotFollowUp[];
   /** Set when the copilot needs a decision before it can execute. */
   clarification?: CopilotClarification;
+  /** Set when the command was dry run and awaits confirmation. */
+  preview?: CopilotPreview;
+  /** Section-level state of a streamed executive report (for resume). */
+  report?: CopilotReportPartial;
+  /** Row id in the executive report history, once persisted. */
+  runId?: string;
+
   /** Live progress while the answer is still streaming. */
   progress?: CopilotProgress;
 }

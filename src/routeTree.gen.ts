@@ -30,6 +30,7 @@ import { Route as AuthenticatedAssistantRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
 import { Route as AuthenticatedConversationiqIndexRouteImport } from './routes/_authenticated/conversationiq.index'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
+import { Route as AuthenticatedCopilotReportsRouteImport } from './routes/_authenticated/copilot.reports'
 import { Route as AuthenticatedConversationiqSlaRouteImport } from './routes/_authenticated/conversationiq.sla'
 import { Route as AuthenticatedConversationiqSearchRouteImport } from './routes/_authenticated/conversationiq.search'
 import { Route as AuthenticatedConversationiqReviewRouteImport } from './routes/_authenticated/conversationiq.review'
@@ -152,6 +153,12 @@ const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
   path: '/api/public/telemetry',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCopilotReportsRoute =
+  AuthenticatedCopilotReportsRouteImport.update({
+    id: '/copilot/reports',
+    path: '/copilot/reports',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConversationiqSlaRoute =
   AuthenticatedConversationiqSlaRouteImport.update({
     id: '/conversationiq/sla',
@@ -248,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/conversationiq/review': typeof AuthenticatedConversationiqReviewRoute
   '/conversationiq/search': typeof AuthenticatedConversationiqSearchRoute
   '/conversationiq/sla': typeof AuthenticatedConversationiqSlaRoute
+  '/copilot/reports': typeof AuthenticatedCopilotReportsRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
 }
@@ -281,6 +289,7 @@ export interface FileRoutesByTo {
   '/conversationiq/review': typeof AuthenticatedConversationiqReviewRoute
   '/conversationiq/search': typeof AuthenticatedConversationiqSearchRoute
   '/conversationiq/sla': typeof AuthenticatedConversationiqSlaRoute
+  '/copilot/reports': typeof AuthenticatedCopilotReportsRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/conversationiq': typeof AuthenticatedConversationiqIndexRoute
 }
@@ -316,6 +325,7 @@ export interface FileRoutesById {
   '/_authenticated/conversationiq/review': typeof AuthenticatedConversationiqReviewRoute
   '/_authenticated/conversationiq/search': typeof AuthenticatedConversationiqSearchRoute
   '/_authenticated/conversationiq/sla': typeof AuthenticatedConversationiqSlaRoute
+  '/_authenticated/copilot/reports': typeof AuthenticatedCopilotReportsRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/_authenticated/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
 }
@@ -351,6 +361,7 @@ export interface FileRouteTypes {
     | '/conversationiq/review'
     | '/conversationiq/search'
     | '/conversationiq/sla'
+    | '/copilot/reports'
     | '/api/public/telemetry'
     | '/conversationiq/'
   fileRoutesByTo: FileRoutesByTo
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/conversationiq/review'
     | '/conversationiq/search'
     | '/conversationiq/sla'
+    | '/copilot/reports'
     | '/api/public/telemetry'
     | '/conversationiq'
   id:
@@ -418,6 +430,7 @@ export interface FileRouteTypes {
     | '/_authenticated/conversationiq/review'
     | '/_authenticated/conversationiq/search'
     | '/_authenticated/conversationiq/sla'
+    | '/_authenticated/copilot/reports'
     | '/api/public/telemetry'
     | '/_authenticated/conversationiq/'
   fileRoutesById: FileRoutesById
@@ -579,6 +592,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTelemetryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/copilot/reports': {
+      id: '/_authenticated/copilot/reports'
+      path: '/copilot/reports'
+      fullPath: '/copilot/reports'
+      preLoaderRoute: typeof AuthenticatedCopilotReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/conversationiq/sla': {
       id: '/_authenticated/conversationiq/sla'
       path: '/conversationiq/sla'
@@ -686,6 +706,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConversationiqReviewRoute: typeof AuthenticatedConversationiqReviewRoute
   AuthenticatedConversationiqSearchRoute: typeof AuthenticatedConversationiqSearchRoute
   AuthenticatedConversationiqSlaRoute: typeof AuthenticatedConversationiqSlaRoute
+  AuthenticatedCopilotReportsRoute: typeof AuthenticatedCopilotReportsRoute
   AuthenticatedConversationiqIndexRoute: typeof AuthenticatedConversationiqIndexRoute
 }
 
@@ -722,6 +743,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConversationiqSearchRoute:
     AuthenticatedConversationiqSearchRoute,
   AuthenticatedConversationiqSlaRoute: AuthenticatedConversationiqSlaRoute,
+  AuthenticatedCopilotReportsRoute: AuthenticatedCopilotReportsRoute,
   AuthenticatedConversationiqIndexRoute: AuthenticatedConversationiqIndexRoute,
 }
 

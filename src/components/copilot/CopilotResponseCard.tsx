@@ -2,12 +2,65 @@
  * Structured answer card for Aegis Copilot™ responses.
  */
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, ArrowUpRight, HelpCircle, Loader2, Sparkles, Wand2 } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  Check,
+  HelpCircle,
+  Loader2,
+  RefreshCw,
+  ShieldQuestion,
+  Sparkles,
+  Wand2,
+  X,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { CopilotResponse } from "@/features/copilot/types";
+import type { CopilotReportSection, CopilotResponse } from "@/features/copilot/types";
+
+const SECTION_TONE: Record<CopilotReportSection["status"], string> = {
+  pending: "text-muted-foreground",
+  running: "text-primary",
+  ok: "text-success",
+  failed: "text-destructive",
+  skipped: "text-warning",
+};
+
+/** Per-section progress so a failure is legible, not just a stalled bar. */
+function SectionList({ sections }: { sections: CopilotReportSection[] }) {
+  return (
+    <ul className="mt-2 space-y-1">
+      {sections.map((section) => (
+        <li key={section.key} className="flex items-start gap-1.5 text-[11px]">
+          <span className={cn("mt-0.5", SECTION_TONE[section.status])}>
+            {section.status === "running" ? (
+              <Loader2 className="size-3 animate-spin" />
+            ) : section.status === "ok" ? (
+              <Check className="size-3" />
+            ) : section.status === "failed" ? (
+              <X className="size-3" />
+            ) : section.status === "skipped" ? (
+              <AlertTriangle className="size-3" />
+            ) : (
+              <span className="block size-1.5 rounded-full bg-current" />
+            )}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className={cn("truncate", SECTION_TONE[section.status])}>{section.label}</span>
+            {section.error && (
+              <span className="block truncate text-[10px] text-muted-foreground">
+                {section.error}
+                {section.attempts > 1 ? ` · ${section.attempts} attempts` : ""}
+              </span>
+            )}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function Inline({ text }: { text: string }) {
   // Minimal markdown: **bold** segments only, so answers stay render-safe.
@@ -50,10 +103,13 @@ function MiniChart({ points }: { points: { label: string; value: number }[] }) {
 export function CopilotResponseCard({
   response,
   onFollowUp,
+  onResume,
   busy = false,
 }: {
   response: CopilotResponse;
   onFollowUp?: (command: string) => void;
+  /** Re-runs only the sections that failed, reusing everything already done. */
+  onResume?: () => void;
   busy?: boolean;
 }) {
   const toneRing =
@@ -92,10 +148,78 @@ export function CopilotResponseCard({
           </div>
           <div className="h-1 overflow-hidden rounded-full bg-border">
             <div
-              className="h-full rounded-full bg-primary transition-all duration-500"
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                response.progress.failed ? "bg-warning" : "bg-primary",
+              )}
               style={{ width: `${response.progress.percent}%` }}
             />
           </div>
+          {response.progress.sections && <SectionList sections={response.progress.sections} />}
+        </div>
+      )}
+
+      {response.progress?.done && response.progress.failed && (
+        <div className="mb-3 rounded-lg border border-warning/40 bg-warning/5 p-2.5">
+          <p className="flex items-center gap-1.5 text-[11px] font-medium text-foreground">
+            <AlertTriangle className="size-3.5 text-warning" />
+            {response.progress.label}
+          </p>
+          {response.progress.sections && <SectionList sections={response.progress.sections} />}
+          {onResume && (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={busy}
+              className="mt-2 h-8 text-xs"
+              onClick={onResume}
+            >
+              <RefreshCw className="mr-1 size-3" />
+              Resume failed sections
+            </Button>
+          )}
+        </div>
+      )}
+
+      {response.preview && (
+        <div className="mb-3 rounded-lg border border-primary/30 bg-primary/5 p-2.5">
+          <p className="flex items-center gap-1.5 text-[11px] font-medium text-foreground">
+            <ShieldQuestion className="size-3.5 text-primary" />
+            Dry run — nothing has been executed yet
+          </p>
+          <p className="mt-1 text-[11px] text-muted-foreground">{response.preview.summary}</p>
+          <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
+            {response.preview.parameters.map((param) => (
+              <div key={param.label} className="min-w-0">
+                <dt className="truncate text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {param.label}
+                </dt>
+                <dd className="truncate text-[11px] text-foreground">{param.value}</dd>
+              </div>
+            ))}
+          </dl>
+          {onFollowUp && (
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              <Button
+                size="sm"
+                disabled={busy}
+                className="h-8 text-xs"
+                onClick={() => onFollowUp(response.preview!.confirmCommand)}
+              >
+                <Check className="mr-1 size-3" />
+                {response.preview.confirmLabel}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={busy}
+                className="h-8 text-xs"
+                onClick={() => onFollowUp("help")}
+              >
+                Cancel
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

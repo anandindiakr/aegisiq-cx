@@ -47,6 +47,7 @@ const OPERATIONS = [
   { title: "Reports", url: "/reports", icon: FileBarChart },
   { title: "Filter Presets", url: "/filter-presets", icon: Bookmark },
   { title: "Notifications", url: "/notifications", icon: BellRing },
+  { title: "My Reports", url: "/copilot/reports", icon: Bot },
   { title: "AI Assistant", url: "/assistant", icon: Sparkles },
 ];
 
