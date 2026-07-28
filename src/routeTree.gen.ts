@@ -20,6 +20,7 @@ import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedOutletsRouteImport } from './routes/_authenticated/outlets'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedLiveMonitorRouteImport } from './routes/_authenticated/live-monitor'
 import { Route as AuthenticatedFilterPresetsRouteImport } from './routes/_authenticated/filter-presets'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
@@ -28,6 +29,7 @@ import { Route as AuthenticatedCamerasRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
+import { Route as AuthenticatedAlertCentreRouteImport } from './routes/_authenticated/alert-centre'
 import { Route as AuthenticatedConversationiqIndexRouteImport } from './routes/_authenticated/conversationiq.index'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as AuthenticatedCopilotReportsRouteImport } from './routes/_authenticated/copilot.reports'
@@ -101,6 +103,12 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLiveMonitorRoute =
+  AuthenticatedLiveMonitorRouteImport.update({
+    id: '/live-monitor',
+    path: '/live-monitor',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFilterPresetsRoute =
   AuthenticatedFilterPresetsRouteImport.update({
     id: '/filter-presets',
@@ -144,6 +152,12 @@ const AuthenticatedAlertsRoute = AuthenticatedAlertsRouteImport.update({
   path: '/alerts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAlertCentreRoute =
+  AuthenticatedAlertCentreRouteImport.update({
+    id: '/alert-centre',
+    path: '/alert-centre',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConversationiqIndexRoute =
   AuthenticatedConversationiqIndexRouteImport.update({
     id: '/conversationiq/',
@@ -243,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/alerts': typeof AuthenticatedAlertsRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
@@ -251,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/filter-presets': typeof AuthenticatedFilterPresetsRoute
+  '/live-monitor': typeof AuthenticatedLiveMonitorRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/outlets': typeof AuthenticatedOutletsRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -279,6 +295,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/alerts': typeof AuthenticatedAlertsRoute
   '/assistant': typeof AuthenticatedAssistantRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
@@ -287,6 +304,7 @@ export interface FileRoutesByTo {
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/filter-presets': typeof AuthenticatedFilterPresetsRoute
+  '/live-monitor': typeof AuthenticatedLiveMonitorRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/outlets': typeof AuthenticatedOutletsRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -317,6 +335,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
   '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
@@ -325,6 +344,7 @@ export interface FileRoutesById {
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/filter-presets': typeof AuthenticatedFilterPresetsRoute
+  '/_authenticated/live-monitor': typeof AuthenticatedLiveMonitorRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/outlets': typeof AuthenticatedOutletsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -355,6 +375,7 @@ export interface FileRouteTypes {
     | '/'
     | '/forgot-password'
     | '/reset-password'
+    | '/alert-centre'
     | '/alerts'
     | '/assistant'
     | '/audit-logs'
@@ -363,6 +384,7 @@ export interface FileRouteTypes {
     | '/conversations'
     | '/dashboard'
     | '/filter-presets'
+    | '/live-monitor'
     | '/notifications'
     | '/outlets'
     | '/profile'
@@ -391,6 +413,7 @@ export interface FileRouteTypes {
     | '/'
     | '/forgot-password'
     | '/reset-password'
+    | '/alert-centre'
     | '/alerts'
     | '/assistant'
     | '/audit-logs'
@@ -399,6 +422,7 @@ export interface FileRouteTypes {
     | '/conversations'
     | '/dashboard'
     | '/filter-presets'
+    | '/live-monitor'
     | '/notifications'
     | '/outlets'
     | '/profile'
@@ -428,6 +452,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/forgot-password'
     | '/reset-password'
+    | '/_authenticated/alert-centre'
     | '/_authenticated/alerts'
     | '/_authenticated/assistant'
     | '/_authenticated/audit-logs'
@@ -436,6 +461,7 @@ export interface FileRouteTypes {
     | '/_authenticated/conversations'
     | '/_authenticated/dashboard'
     | '/_authenticated/filter-presets'
+    | '/_authenticated/live-monitor'
     | '/_authenticated/notifications'
     | '/_authenticated/outlets'
     | '/_authenticated/profile'
@@ -548,6 +574,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/live-monitor': {
+      id: '/_authenticated/live-monitor'
+      path: '/live-monitor'
+      fullPath: '/live-monitor'
+      preLoaderRoute: typeof AuthenticatedLiveMonitorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/filter-presets': {
       id: '/_authenticated/filter-presets'
       path: '/filter-presets'
@@ -602,6 +635,13 @@ declare module '@tanstack/react-router' {
       path: '/alerts'
       fullPath: '/alerts'
       preLoaderRoute: typeof AuthenticatedAlertsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/alert-centre': {
+      id: '/_authenticated/alert-centre'
+      path: '/alert-centre'
+      fullPath: '/alert-centre'
+      preLoaderRoute: typeof AuthenticatedAlertCentreRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/conversationiq/': {
@@ -720,6 +760,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAlertCentreRoute: typeof AuthenticatedAlertCentreRoute
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
   AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
@@ -728,6 +769,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFilterPresetsRoute: typeof AuthenticatedFilterPresetsRoute
+  AuthenticatedLiveMonitorRoute: typeof AuthenticatedLiveMonitorRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOutletsRoute: typeof AuthenticatedOutletsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
@@ -753,6 +795,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAlertCentreRoute: AuthenticatedAlertCentreRoute,
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
   AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
@@ -761,6 +804,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFilterPresetsRoute: AuthenticatedFilterPresetsRoute,
+  AuthenticatedLiveMonitorRoute: AuthenticatedLiveMonitorRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOutletsRoute: AuthenticatedOutletsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,

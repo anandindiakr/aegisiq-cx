@@ -9,6 +9,7 @@ import {
   Tags,
   Languages,
   Siren,
+  MonitorPlay,
   FileBarChart,
   Sparkles,
   Store,
@@ -44,6 +45,8 @@ import { companyQuery } from "@/features/platform/queries";
 const OPERATIONS = [
   { title: "Command Centre", url: "/command-centre", icon: Radar },
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Live Monitor", url: "/live-monitor", icon: MonitorPlay },
+  { title: "Alert Centre", url: "/alert-centre", icon: Siren },
   { title: "Alerts", url: "/alerts", icon: Siren },
   { title: "Reports", url: "/reports", icon: FileBarChart },
   { title: "Filter Presets", url: "/filter-presets", icon: Bookmark },
