@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, Loader2, Plus, Star, Trash2, Users } from "lucide-react";
+import { Copy, Link2, Loader2, Plus, Star, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { EmptyState, LoadingState, PageHeader, Panel } from "@/components/common/Primitives";
@@ -37,6 +37,9 @@ import {
   type FilterPreset,
   type PresetScope,
 } from "@/features/command-centre/presets";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PresetBulkBar } from "@/components/command-centre/PresetBulkBar";
+import { PresetShareDialog } from "@/components/command-centre/PresetShareDialog";
 import { outletsQuery, type AppRole } from "@/features/platform/queries";
 import { ASSIGNABLE_ROLES } from "@/features/platform/roles";
 
@@ -81,6 +84,11 @@ function FilterPresetsPage() {
   const [shared, setShared] = useState(true);
   const [makeDefault, setMakeDefault] = useState(false);
   const [filters] = useState<CommandFilters>(() => defaultFilters());
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [shareFor, setShareFor] = useState<FilterPreset | null>(null);
+  const selected = rows.filter((preset) => selectedIds.includes(preset.id));
+  const toggleSelected = (id: string) =>
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: filterPresetsQuery.queryKey });
 
@@ -166,6 +174,11 @@ function FilterPresetsPage() {
         key={preset.id}
         className="flex flex-wrap items-center gap-3 rounded-lg border border-border/70 bg-surface/40 p-3"
       >
+        <Checkbox
+          checked={selectedIds.includes(preset.id)}
+          onCheckedChange={() => toggleSelected(preset.id)}
+          aria-label={`Select ${preset.name}`}
+        />
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2 truncate text-sm font-medium">
             {preset.name}
@@ -232,6 +245,16 @@ function FilterPresetsPage() {
           aria-label={`Copy link to ${preset.name}`}
         >
           <Copy className="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          onClick={() => setShareFor(preset)}
+          aria-label={`Create a share link for ${preset.name}`}
+          title="Expiring share link"
+        >
+          <Link2 className="size-4" />
         </Button>
         <Button
           variant="ghost"
@@ -375,6 +398,16 @@ function FilterPresetsPage() {
           description="Create your first preset above to standardise how your leadership team reads the Command Centre."
         />
       )}
+
+      {selected.length > 0 && (
+        <PresetBulkBar
+          selected={selected}
+          outlets={(outlets.data ?? []).map((o) => ({ id: o.id, name: o.name }))}
+          onDone={() => setSelectedIds([])}
+        />
+      )}
+
+      <PresetShareDialog preset={shareFor} onOpenChange={(open) => !open && setShareFor(null)} />
 
       {(["role", "outlet", "personal"] as const).map((key) =>
         grouped[key].length > 0 ? (

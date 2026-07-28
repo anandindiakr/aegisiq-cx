@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 
 import { ErrorState, PageHeader } from "@/components/common/Primitives";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +47,7 @@ import {
   executiveOverviewQuery,
   type DashboardLayout,
 } from "@/features/command-centre/queries";
+import { sharedFilters, sharedPresetQuery } from "@/features/command-centre/presetShares";
 import { resolveOrder, WIDGETS } from "@/features/command-centre/widgets";
 import { useCommandCentreRealtime } from "@/features/command-centre/realtime";
 import { useWidgetAccess } from "@/features/command-centre/widgetAccess";
@@ -56,6 +58,10 @@ import { getActiveTenant, myRolesQuery } from "@/features/platform/queries";
 import type { ExecutiveOverview, OutletPerformance } from "@/features/command-centre/types";
 
 export const Route = createFileRoute("/_authenticated/command-centre")({
+  // `share` carries a preset share token so a recipient lands on the exact view.
+  validateSearch: (search: Record<string, unknown>) => ({
+    share: typeof search.share === "string" ? search.share : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Executive Command Centre — AegisIQ CX™" },
@@ -93,6 +99,21 @@ const WIDGET_LABELS = new Map(WIDGETS.map((w) => [w.id, w.label]));
 function CommandCentrePage() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<CommandFilters>(() => defaultFilters());
+
+  // A share token resolves server-side (expiry and role checks included) and is
+  // applied once, read-only: the recipient can refine the view locally but the
+  // owner's preset is untouched.
+  const { share: shareToken } = Route.useSearch();
+  const share = useQuery(sharedPresetQuery(shareToken));
+  const appliedShare = useRef<string | null>(null);
+  useEffect(() => {
+    if (!shareToken || !share.data?.ok || appliedShare.current === shareToken) return;
+    appliedShare.current = shareToken;
+    setFilters(sharedFilters(share.data));
+    toast.success(`Applied shared view "${share.data.preset?.name ?? "preset"}"`, {
+      description: "Read-only: your changes here will not affect the original preset.",
+    });
+  }, [shareToken, share.data]);
   const [drill, setDrill] = useState<DrillDown | null>(null);
 
   const realtime = useCommandCentreRealtime(getActiveTenant());
