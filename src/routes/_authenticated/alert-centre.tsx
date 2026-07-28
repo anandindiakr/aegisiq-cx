@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2, Download, Siren, UserCheck, XCircle } from "lucide-react";
+import { BarChart3, CheckCircle2, Download, Siren, UserCheck, XCircle } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 import {
   EmptyState,
@@ -33,6 +34,9 @@ import {
 import type { AlertStatus } from "@/features/platform/queries";
 import { bulkUpdateAlertStatus } from "@/features/live-monitor/queries";
 import { useLiveMonitorStream } from "@/features/live-monitor/stream";
+import { SlaTimer } from "@/components/alerts/SlaTimer";
+import { alertSlaPoliciesQuery } from "@/features/alerts/sla";
+import { useAlertAccess } from "@/features/alerts/access";
 import { formatDateTime, formatNumber, titleCase } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/alert-centre")({
@@ -72,6 +76,8 @@ function AlertCentrePage() {
   const alerts = useQuery(alertsQuery);
   const outlets = useQuery(outletsQuery);
   const profile = useQuery(myProfileQuery);
+  const policies = useQuery(alertSlaPoliciesQuery);
+  const access = useAlertAccess();
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
@@ -109,7 +115,8 @@ function AlertCentrePage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const allSelected = rows.length > 0 && selected.length === rows.length;
+  const actionable = rows.filter((r) => access.canActOn("acknowledge", r.outlet_id));
+  const allSelected = actionable.length > 0 && selected.length === actionable.length;
 
   const exportCsv = () => {
     const header = ["Triggered", "Severity", "Status", "Category", "Outlet", "Title"];
@@ -143,9 +150,18 @@ function AlertCentrePage() {
         title="Alert Centre"
         description="Triage every signal with owners, notes and bulk resolution — synchronised live with the estate."
         actions={
-          <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
-            <Download className="mr-2 size-4" /> Export CSV
-          </Button>
+          <div className="flex items-center gap-2">
+            {access.canViewAnalytics && (
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/alert-analytics">
+                  <BarChart3 className="mr-2 size-4" /> Analytics & SLA
+                </Link>
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={exportCsv} disabled={rows.length === 0}>
+              <Download className="mr-2 size-4" /> Export CSV
+            </Button>
+          </div>
         }
       />
 
@@ -207,18 +223,22 @@ function AlertCentrePage() {
             <Button
               size="sm"
               variant="outline"
-              disabled={bulk.isPending}
+              disabled={bulk.isPending || !access.can("acknowledge")}
               onClick={() => bulk.mutate("acknowledged")}
             >
               <UserCheck className="mr-2 size-4" /> Acknowledge
             </Button>
-            <Button size="sm" disabled={bulk.isPending} onClick={() => bulk.mutate("resolved")}>
+            <Button
+              size="sm"
+              disabled={bulk.isPending || !access.can("resolve")}
+              onClick={() => bulk.mutate("resolved")}
+            >
               <CheckCircle2 className="mr-2 size-4" /> Resolve
             </Button>
             <Button
               size="sm"
               variant="ghost"
-              disabled={bulk.isPending}
+              disabled={bulk.isPending || !access.can("dismiss")}
               onClick={() => bulk.mutate("dismissed")}
             >
               <XCircle className="mr-2 size-4" /> Dismiss
@@ -244,7 +264,15 @@ function AlertCentrePage() {
               <label className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
                 <Checkbox
                   checked={allSelected}
-                  onCheckedChange={(v) => setSelected(v ? rows.map((r) => r.id) : [])}
+                  onCheckedChange={(v) =>
+                  setSelected(
+                    v
+                      ? rows
+                          .filter((r) => access.canActOn("acknowledge", r.outlet_id))
+                          .map((r) => r.id)
+                      : [],
+                  )
+                }
                 />
                 Select all in view
               </label>
@@ -257,6 +285,7 @@ function AlertCentrePage() {
                     <Checkbox
                       className="mt-1"
                       aria-label={`Select ${alert.title}`}
+                      disabled={!access.canActOn("acknowledge", alert.outlet_id)}
                       checked={selected.includes(alert.id)}
                       onCheckedChange={(v) =>
                         setSelected((prev) =>
@@ -277,6 +306,17 @@ function AlertCentrePage() {
                           tone={SEVERITY_TONE[alert.severity] ?? "neutral"}
                         />
                         <StatusPill label={alert.status} />
+                        <SlaTimer
+                          alert={alert}
+                          policy={policies.data?.get(alert.severity)}
+                          compact
+                        />
+                        {(alert.escalation_level ?? 0) > 0 && (
+                          <StatusPill
+                            label={`escalated L${alert.escalation_level}`}
+                            tone="negative"
+                          />
+                        )}
                       </div>
                       <p className="mt-1 truncate text-xs text-muted-foreground">
                         {outletName(alert.outlet_id)} · {titleCase(alert.category)} ·{" "}

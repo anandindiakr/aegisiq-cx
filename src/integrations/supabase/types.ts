@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      alert_escalations: {
+        Row: {
+          alert_id: string
+          company_id: string
+          created_at: string
+          from_user_id: string | null
+          id: string
+          level: number
+          minutes_overdue: number
+          reason: string
+          to_role: Database["public"]["Enums"]["app_role"] | null
+          to_user_id: string | null
+          to_user_name: string | null
+        }
+        Insert: {
+          alert_id: string
+          company_id: string
+          created_at?: string
+          from_user_id?: string | null
+          id?: string
+          level?: number
+          minutes_overdue?: number
+          reason: string
+          to_role?: Database["public"]["Enums"]["app_role"] | null
+          to_user_id?: string | null
+          to_user_name?: string | null
+        }
+        Update: {
+          alert_id?: string
+          company_id?: string
+          created_at?: string
+          from_user_id?: string | null
+          id?: string
+          level?: number
+          minutes_overdue?: number
+          reason?: string
+          to_role?: Database["public"]["Enums"]["app_role"] | null
+          to_user_id?: string | null
+          to_user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_escalations_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alert_events: {
         Row: {
           actor_id: string | null
@@ -141,6 +191,51 @@ export type Database = {
           },
         ]
       }
+      alert_sla_policies: {
+        Row: {
+          ack_minutes: number
+          backup_role: Database["public"]["Enums"]["app_role"] | null
+          backup_user_id: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          escalate_after_minutes: number
+          id: string
+          is_active: boolean
+          resolve_minutes: number
+          severity: Database["public"]["Enums"]["alert_severity"]
+          updated_at: string
+        }
+        Insert: {
+          ack_minutes?: number
+          backup_role?: Database["public"]["Enums"]["app_role"] | null
+          backup_user_id?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          escalate_after_minutes?: number
+          id?: string
+          is_active?: boolean
+          resolve_minutes?: number
+          severity: Database["public"]["Enums"]["alert_severity"]
+          updated_at?: string
+        }
+        Update: {
+          ack_minutes?: number
+          backup_role?: Database["public"]["Enums"]["app_role"] | null
+          backup_user_id?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          escalate_after_minutes?: number
+          id?: string
+          is_active?: boolean
+          resolve_minutes?: number
+          severity?: Database["public"]["Enums"]["alert_severity"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       alerts: {
         Row: {
           acknowledged_at: string | null
@@ -154,9 +249,15 @@ export type Database = {
           created_by: string | null
           deleted_at: string | null
           description: string | null
+          escalated_at: string | null
+          escalation_level: number
           id: string
           outlet_id: string | null
+          resolved_at: string | null
+          resolved_by: string | null
           severity: Database["public"]["Enums"]["alert_severity"]
+          sla_breached: boolean
+          sla_due_at: string | null
           status: Database["public"]["Enums"]["alert_status"]
           title: string
           triggered_at: string
@@ -174,9 +275,15 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           description?: string | null
+          escalated_at?: string | null
+          escalation_level?: number
           id?: string
           outlet_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           severity?: Database["public"]["Enums"]["alert_severity"]
+          sla_breached?: boolean
+          sla_due_at?: string | null
           status?: Database["public"]["Enums"]["alert_status"]
           title: string
           triggered_at?: string
@@ -194,9 +301,15 @@ export type Database = {
           created_by?: string | null
           deleted_at?: string | null
           description?: string | null
+          escalated_at?: string | null
+          escalation_level?: number
           id?: string
           outlet_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           severity?: Database["public"]["Enums"]["alert_severity"]
+          sla_breached?: boolean
+          sla_due_at?: string | null
           status?: Database["public"]["Enums"]["alert_status"]
           title?: string
           triggered_at?: string
@@ -2701,8 +2814,10 @@ export type Database = {
       actor_display_name: { Args: never; Returns: string }
       allowed_widgets: { Args: never; Returns: string[] }
       can_operate: { Args: never; Returns: boolean }
+      can_triage_alert: { Args: { _outlet_id: string }; Returns: boolean }
       can_view_widget: { Args: { _widget_id: string }; Returns: boolean }
       current_company_id: { Args: never; Returns: string }
+      escalate_overdue_alerts: { Args: never; Returns: number }
       executive_overview: { Args: { p_filters?: Json }; Returns: Json }
       expire_widget_access_requests: { Args: never; Returns: number }
       has_role: {
