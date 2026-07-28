@@ -232,7 +232,21 @@ export function FilterPresets({
             ))}
           </div>
         </ScrollArea>
+
+        <div className="border-t border-border p-2">
+          <Link
+            to="/filter-presets"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            <Settings2 className="size-3.5" />
+            Manage presets, defaults and role groups
+          </Link>
+        </div>
       </PopoverContent>
     </Popover>
+  );
+}
+
   );
 }
