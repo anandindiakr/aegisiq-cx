@@ -37,14 +37,33 @@ function csvCell(value: unknown): string {
 }
 
 interface Sheet {
+  id: string;
   name: string;
   rows: (string | number)[][];
 }
 
-function buildSheets(overview: ExecutiveOverview, filters: CommandFilters): Sheet[] {
+/** Report sections, in board-pack order. Mirrors REPORT_SECTIONS. */
+export const DEFAULT_SECTIONS = [
+  "summary",
+  "kpis",
+  "outlets",
+  "regions",
+  "languages",
+  "keywords",
+  "issues",
+  "daily",
+  "recommendations",
+];
+
+function buildSheets(
+  overview: ExecutiveOverview,
+  filters: CommandFilters,
+  sections: string[] = DEFAULT_SECTIONS,
+): Sheet[] {
   const k = overview.kpis;
-  return [
+  const all: Sheet[] = [
     {
+      id: "kpis",
       name: "Summary",
       rows: [
         ["Metric", "Value", "Previous"],
@@ -66,6 +85,7 @@ function buildSheets(overview: ExecutiveOverview, filters: CommandFilters): Shee
       ],
     },
     {
+      id: "outlets",
       name: "Outlets",
       rows: [
         [
@@ -93,6 +113,7 @@ function buildSheets(overview: ExecutiveOverview, filters: CommandFilters): Shee
       ],
     },
     {
+      id: "regions",
       name: "Regions",
       rows: [
         ["Region", "Conversations", "Positive", "Negative", "Avg sentiment", "Escalations"],
@@ -107,6 +128,7 @@ function buildSheets(overview: ExecutiveOverview, filters: CommandFilters): Shee
       ],
     },
     {
+      id: "languages",
       name: "Languages",
       rows: [
         ["Language", "Code", "Conversations", "Avg sentiment", "Previous period"],
@@ -120,6 +142,7 @@ function buildSheets(overview: ExecutiveOverview, filters: CommandFilters): Shee
       ],
     },
     {
+      id: "keywords",
       name: "Keywords",
       rows: [
         ["Term", "Mentions", "Avg sentiment"],
@@ -127,6 +150,7 @@ function buildSheets(overview: ExecutiveOverview, filters: CommandFilters): Shee
       ],
     },
     {
+      id: "issues",
       name: "Issues",
       rows: [
         ["Issue", "Occurrences", "Avg sentiment", "Previous period"],
@@ -139,6 +163,7 @@ function buildSheets(overview: ExecutiveOverview, filters: CommandFilters): Shee
       ],
     },
     {
+      id: "daily",
       name: "Daily trend",
       rows: [
         ["Date", "Conversations", "Negative", "Avg sentiment"],
@@ -151,10 +176,27 @@ function buildSheets(overview: ExecutiveOverview, filters: CommandFilters): Shee
       ],
     },
   ];
+  const wanted = new Set(sections);
+  return all.filter((sheet) => wanted.has(sheet.id));
 }
 
-function exportCsv(overview: ExecutiveOverview, filters: CommandFilters, stamp: string) {
-  const body = buildSheets(overview, filters)
+function sheetById(sheets: Sheet[], id: string): Sheet | undefined {
+  return sheets.find((s) => s.id === id);
+}
+
+function sheetSection(sheets: Sheet[], id: string, title: string, limit = 20): string {
+  const sheet = sheetById(sheets, id);
+  if (!sheet) return "";
+  return `<h2>${escapeHtml(title)}</h2>${tableBlock(sheet, limit)}`;
+}
+
+function exportCsv(
+  overview: ExecutiveOverview,
+  filters: CommandFilters,
+  stamp: string,
+  sections: string[],
+) {
+  const body = buildSheets(overview, filters, sections)
     .map(
       (sheet) =>
         `# ${sheet.name}\n${sheet.rows.map((row) => row.map(csvCell).join(",")).join("\n")}`,
@@ -164,8 +206,13 @@ function exportCsv(overview: ExecutiveOverview, filters: CommandFilters, stamp: 
 }
 
 /** SpreadsheetML keeps multi-sheet fidelity and opens natively in Excel. */
-function exportExcel(overview: ExecutiveOverview, filters: CommandFilters, stamp: string) {
-  const sheets = buildSheets(overview, filters)
+function exportExcel(
+  overview: ExecutiveOverview,
+  filters: CommandFilters,
+  stamp: string,
+  sections: string[],
+) {
+  const sheets = buildSheets(overview, filters, sections)
     .map((sheet) => {
       const rows = sheet.rows
         .map(
@@ -253,50 +300,76 @@ function tableBlock(sheet: Sheet, limit = 20): string {
     .join("")}</tbody></table>`;
 }
 
-function exportPdf(overview: ExecutiveOverview, filters: CommandFilters) {
-  const sheets = buildSheets(overview, filters);
+function exportPdf(overview: ExecutiveOverview, filters: CommandFilters, sections: string[]) {
+  const sheets = buildSheets(overview, filters, sections);
+  const has = (id: string) => sections.includes(id);
   const score = cxScore(overview);
   const body = `
     <h1>AegisIQ CX — Executive Command Centre</h1>
     <p class="muted">${escapeHtml(rangeLabel(filters))} · generated ${new Date(overview.generatedAt).toLocaleString("en-GB")} · CX score ${score} (${cxBand(score).label})</p>
-    <h2>Executive summary</h2>
-    ${executiveBriefing(overview)
-      .map((line) => `<p>${escapeHtml(line)}</p>`)
-      .join("")}
-    <h2>Key indicators</h2>
-    ${kpiBlock(overview)}
-    <h2>Outlet performance</h2>
-    ${tableBlock(sheets[1])}
-    <h2>Regional comparison</h2>
-    ${tableBlock(sheets[2])}
-    <h2>Top issues</h2>
-    ${tableBlock(sheets[5], 10)}
-    <h2>Recommended actions</h2>
-    ${recommendations(overview)
-      .map(
-        (r) =>
-          `<p><strong>${escapeHtml(r.title)}</strong> — ${escapeHtml(r.detail)} <em class="muted">(${r.priority} priority · ${escapeHtml(r.owner)})</em></p>`,
-      )
-      .join("")}
+    ${
+      has("summary")
+        ? `<h2>Executive summary</h2>${executiveBriefing(overview)
+            .map((line) => `<p>${escapeHtml(line)}</p>`)
+            .join("")}`
+        : ""
+    }
+    ${has("kpis") ? `<h2>Key indicators</h2>${kpiBlock(overview)}` : ""}
+    ${sheetSection(sheets, "outlets", "Outlet performance")}
+    ${sheetSection(sheets, "regions", "Regional comparison")}
+    ${sheetSection(sheets, "languages", "Language analytics", 15)}
+    ${sheetSection(sheets, "keywords", "Top keywords", 15)}
+    ${sheetSection(sheets, "issues", "Top issues", 10)}
+    ${sheetSection(sheets, "daily", "Daily trend", 31)}
+    ${
+      has("recommendations")
+        ? `<h2>Recommended actions</h2>${recommendations(overview)
+            .map(
+              (r) =>
+                `<p><strong>${escapeHtml(r.title)}</strong> — ${escapeHtml(r.detail)} <em class="muted">(${r.priority} priority · ${escapeHtml(r.owner)})</em></p>`,
+            )
+            .join("")}`
+        : ""
+    }
   `;
   openPrintable(documentShell("AegisIQ CX Executive Report", body));
 }
 
-function exportDeck(overview: ExecutiveOverview, filters: CommandFilters) {
-  const sheets = buildSheets(overview, filters);
+function exportDeck(overview: ExecutiveOverview, filters: CommandFilters, sections: string[]) {
+  const sheets = buildSheets(overview, filters, sections);
+  const has = (id: string) => sections.includes(id);
   const score = cxScore(overview);
+  const slide = (title: string, inner: string) =>
+    inner ? `<div class="slide"><h1>${escapeHtml(title)}</h1>${inner}</div>` : "";
+  const tableSlide = (id: string, title: string, limit: number) => {
+    const sheet = sheetById(sheets, id);
+    return sheet ? slide(title, tableBlock(sheet, limit)) : "";
+  };
   const slides = [
     `<div class="slide"><h1>AegisIQ CX — Executive Briefing</h1><p class="muted">${escapeHtml(rangeLabel(filters))}</p><h2>Overall CX score</h2><p style="font-size:64px;font-weight:600;margin:0">${score}</p><p class="muted">${cxBand(score).label}</p></div>`,
-    `<div class="slide"><h1>Key indicators</h1>${kpiBlock(overview)}</div>`,
-    `<div class="slide"><h1>Executive summary</h1>${executiveBriefing(overview)
-      .map((l) => `<p>${escapeHtml(l)}</p>`)
-      .join("")}</div>`,
-    `<div class="slide"><h1>Outlet performance</h1>${tableBlock(sheets[1], 12)}</div>`,
-    `<div class="slide"><h1>Regional comparison</h1>${tableBlock(sheets[2], 12)}</div>`,
-    `<div class="slide"><h1>Top issues</h1>${tableBlock(sheets[5], 10)}</div>`,
-    `<div class="slide"><h1>Recommended actions</h1>${recommendations(overview)
-      .map((r) => `<p><strong>${escapeHtml(r.title)}</strong> — ${escapeHtml(r.detail)}</p>`)
-      .join("")}</div>`,
+    has("kpis") ? slide("Key indicators", kpiBlock(overview)) : "",
+    has("summary")
+      ? slide(
+          "Executive summary",
+          executiveBriefing(overview)
+            .map((l) => `<p>${escapeHtml(l)}</p>`)
+            .join(""),
+        )
+      : "",
+    tableSlide("outlets", "Outlet performance", 12),
+    tableSlide("regions", "Regional comparison", 12),
+    tableSlide("languages", "Language analytics", 12),
+    tableSlide("keywords", "Top keywords", 12),
+    tableSlide("issues", "Top issues", 10),
+    tableSlide("daily", "Daily trend", 15),
+    has("recommendations")
+      ? slide(
+          "Recommended actions",
+          recommendations(overview)
+            .map((r) => `<p><strong>${escapeHtml(r.title)}</strong> — ${escapeHtml(r.detail)}</p>`)
+            .join(""),
+        )
+      : "",
   ].join("");
   openPrintable(documentShell("AegisIQ CX Executive Deck", slides));
 }
@@ -305,16 +378,18 @@ export function exportExecutiveReport(
   format: ExportFormat,
   overview: ExecutiveOverview,
   filters: CommandFilters,
+  sections: string[] = DEFAULT_SECTIONS,
 ) {
   const stamp = new Date().toISOString().slice(0, 10);
+  const active = sections.length > 0 ? sections : DEFAULT_SECTIONS;
   switch (format) {
     case "csv":
-      return exportCsv(overview, filters, stamp);
+      return exportCsv(overview, filters, stamp, active);
     case "excel":
-      return exportExcel(overview, filters, stamp);
+      return exportExcel(overview, filters, stamp, active);
     case "pdf":
-      return exportPdf(overview, filters);
+      return exportPdf(overview, filters, active);
     case "powerpoint":
-      return exportDeck(overview, filters);
+      return exportDeck(overview, filters, active);
   }
 }
