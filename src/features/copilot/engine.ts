@@ -175,8 +175,211 @@ async function transcriptFor(opts: ResolveOptions, conversationId: string) {
 }
 
 // ---------------------------------------------------------------------------
+// Dry run
+// ---------------------------------------------------------------------------
+
+/** Prefix the confirm chip prepends so the engine skips the preview step. */
+export const CONFIRM_PREFIX = "confirm: ";
+const CONFIRM_RE = /^(confirm|yes,? ?(run|do) it|approved)\s*[:,-]?\s*/i;
+
+/** Strips the confirmation prefix, reporting whether it was present. */
+export function stripConfirmation(text: string): { text: string; confirmed: boolean } {
+  const match = CONFIRM_RE.exec(text);
+  if (!match) return { text, confirmed: false };
+  const rest = text.slice(match[0].length).trim();
+  return rest ? { text: rest, confirmed: true } : { text, confirmed: false };
+}
+
+function previewParameters(
+  opts: ResolveOptions,
+  format: ExportFormat,
+  overview: ExecutiveOverview,
+): { label: string; value: string }[] {
+  const f = opts.filters;
+  return [
+    { label: "Format", value: format.toUpperCase() },
+    { label: "Period", value: rangeLabel(f) },
+    { label: "Outlet", value: opts.context?.outletName ?? f.outletId ?? "All outlets" },
+    { label: "Region", value: f.region ?? "All regions" },
+    { label: "Language", value: f.language ?? "All languages" },
+    { label: "Conversations", value: formatNumber(overview.kpis.total) },
+    { label: "Delivery", value: "Download to this device" },
+  ];
+}
+
+// ---------------------------------------------------------------------------
+// Executive report — streamed, retried, resumable
+// ---------------------------------------------------------------------------
+
+const REPORT_SECTIONS = [
+  { key: "snapshot", label: "Collecting tenant snapshot", percent: 20 },
+  { key: "score", label: "Scoring customer experience", percent: 40 },
+  { key: "briefing", label: "Writing the executive briefing", percent: 60 },
+  { key: "chart", label: "Charting the trend", percent: 80 },
+  { key: "recommendations", label: "Drafting recommendations", percent: 100 },
+] as const;
+
+async function withRetry<T>(run: () => Promise<T>, attempts = 2): Promise<{ value: T; tries: number }> {
+  let lastError: unknown;
+  for (let tryIndex = 1; tryIndex <= attempts; tryIndex += 1) {
+    try {
+      return { value: await run(), tries: tryIndex };
+    } catch (error) {
+      lastError = error;
+      if (tryIndex < attempts) await new Promise((resolve) => setTimeout(resolve, 400 * tryIndex));
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("Section failed");
+}
+
+/**
+ * Produces the executive report section by section. Each section retries once
+ * before it is marked failed; the run continues with the sections that can
+ * still be produced, and the partial state is returned so a later command can
+ * resume from the last successful section instead of starting over.
+ */
+async function runExecutiveReport(opts: ResolveOptions): Promise<CopilotResponse> {
+  const response = base("executive_report", `Executive report — ${rangeLabel(opts.filters)}`);
+  const prior = opts.resume;
+  const sections: CopilotReportSection[] = REPORT_SECTIONS.map((section) => {
+    const before = prior?.sections.find((s) => s.key === section.key);
+    return {
+      key: section.key,
+      label: section.label,
+      status: before?.status === "ok" ? "ok" : "pending",
+      attempts: before?.attempts ?? 0,
+    };
+  });
+
+  if (prior) {
+    response.metrics = [...prior.metrics];
+    response.body = [...prior.body];
+    if (prior.chart) response.chart = prior.chart;
+  }
+
+  const emit = (label: string, percent: number, done = false) => {
+    response.progress = {
+      label,
+      percent,
+      done,
+      failed: sections.some((s) => s.status === "failed"),
+      sections: sections.map((s) => ({ ...s })),
+    };
+    opts.onPartial?.({
+      ...response,
+      body: [...response.body],
+      metrics: [...response.metrics],
+      progress: response.progress,
+    });
+  };
+
+  let overview: ExecutiveOverview | null = null;
+
+  const work: Record<string, () => Promise<void>> = {
+    snapshot: async () => {
+      overview = await overviewFor(opts);
+    },
+    score: async () => {
+      if (!overview) throw new Error("Snapshot unavailable");
+      const score = cxScore(overview);
+      const band = cxBand(score);
+      response.metrics = [
+        { label: "CX score", value: `${score}`, hint: band.label },
+        ...kpiMetrics(overview),
+      ];
+      response.tone = score < 50 ? "danger" : score < 65 ? "warning" : "default";
+    },
+    briefing: async () => {
+      if (!overview) throw new Error("Snapshot unavailable");
+      response.body = executiveBriefing(overview);
+    },
+    chart: async () => {
+      if (!overview) throw new Error("Snapshot unavailable");
+      response.chart = {
+        title: "Daily conversation volume",
+        points: overview.daily
+          .slice(-14)
+          .map((d) => ({ label: d.day.slice(5), value: d.conversations })),
+      };
+    },
+    recommendations: async () => {
+      if (!overview) throw new Error("Snapshot unavailable");
+      const recs = recommendations(overview).slice(0, 3);
+      if (recs.length > 0) response.body.push(...recs.map((r) => `**${r.title}** — ${r.detail}`));
+    },
+  };
+
+  for (const definition of REPORT_SECTIONS) {
+    const state = sections.find((s) => s.key === definition.key)!;
+    // Resume: a section already produced in an earlier run is reused as-is.
+    if (state.status === "ok" && definition.key !== "snapshot") {
+      emit(`${definition.label} (reused)`, definition.percent);
+      continue;
+    }
+    if (definition.key !== "snapshot" && !overview) {
+      state.status = "skipped";
+      state.error = "Skipped — tenant snapshot unavailable";
+      emit(`${definition.label} skipped`, definition.percent);
+      continue;
+    }
+    state.status = "running";
+    emit(`${definition.label}…`, Math.max(definition.percent - 12, 5));
+    try {
+      const { tries } = await withRetry(work[definition.key]);
+      state.status = "ok";
+      state.attempts += tries;
+      delete state.error;
+      emit(definition.label, definition.percent);
+    } catch (error) {
+      state.status = "failed";
+      state.attempts += 2;
+      state.error = error instanceof Error ? error.message : "Section failed";
+      emit(`${definition.label} failed — continuing`, definition.percent);
+    }
+  }
+
+  const failed = sections.filter((s) => s.status === "failed" || s.status === "skipped");
+  response.links = [
+    { label: "Open Command Centre", to: "/command-centre" },
+    { label: "My executive reports", to: "/copilot/reports" },
+  ];
+  response.report = {
+    sections,
+    metrics: [...response.metrics],
+    body: [...response.body],
+    chart: response.chart,
+  };
+
+  if (failed.length > 0) {
+    response.tone = "warning";
+    response.body.push(
+      `**${failed.length} section${failed.length === 1 ? "" : "s"} incomplete** — ${failed
+        .map((s) => s.label)
+        .join(", ")}. Everything else is final; resume to retry only what failed.`,
+    );
+    response.progress = {
+      label: `Completed with ${failed.length} failed section${failed.length === 1 ? "" : "s"}`,
+      percent: 100,
+      done: true,
+      failed: true,
+      sections: sections.map((s) => ({ ...s })),
+    };
+  } else {
+    response.progress = {
+      label: "Report complete",
+      percent: 100,
+      done: true,
+      sections: sections.map((s) => ({ ...s })),
+    };
+  }
+  return response;
+}
+
+// ---------------------------------------------------------------------------
 // Resolver
 // ---------------------------------------------------------------------------
+
+
 
 async function resolveIntent(opts: ResolveOptions): Promise<CopilotResponse> {
   const intent = detectIntent(opts.text, opts.context);
