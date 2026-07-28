@@ -25,6 +25,7 @@ import {
   type DatePreset,
 } from "@/features/command-centre/filters";
 import type { ExecutiveFilterOptions } from "@/features/command-centre/types";
+import { FilterPresets } from "./FilterPresets";
 
 interface Option {
   value: string;
