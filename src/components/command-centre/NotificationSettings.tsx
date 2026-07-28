@@ -232,10 +232,7 @@ function EndpointEditor({ existing, onDone }: { existing?: WebhookEndpoint; onDo
 
   const save = useMutation({
     mutationFn: () =>
-      saveWebhookEndpoint(
-        { ...draft, description: draft.description || null },
-        existing?.id,
-      ),
+      saveWebhookEndpoint({ ...draft, description: draft.description || null }, existing?.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["webhook-endpoints"] });
       toast.success(existing ? "Endpoint updated" : "Endpoint created");
@@ -303,8 +300,12 @@ function EndpointEditor({ existing, onDone }: { existing?: WebhookEndpoint; onDo
         <p className="text-xs text-muted-foreground">
           Every callback carries{" "}
           <code className="font-mono">x-aegisiq-signature: t=&lt;unix&gt;,v1=&lt;hmac&gt;</code> —
-          an HMAC-SHA256 of <code className="font-mono">`${"{t}"}.${"{raw body}"}`</code> using this
-          secret. Compare it in constant time and reject timestamps older than five minutes.
+          an HMAC-SHA256 of{" "}
+          <code className="font-mono">
+            `${"{t}"}.${"{raw body}"}`
+          </code>{" "}
+          using this secret. Compare it in constant time and reject timestamps older than five
+          minutes.
         </p>
       </div>
 
@@ -526,9 +527,13 @@ export function NotificationSettings() {
                   <td className="p-2 whitespace-nowrap">
                     {new Date(row.created_at).toLocaleString()}
                   </td>
-                  <td className="p-2">{EVENT_LABELS[row.event_type as NotificationEvent] ?? row.event_type}</td>
+                  <td className="p-2">
+                    {EVENT_LABELS[row.event_type as NotificationEvent] ?? row.event_type}
+                  </td>
                   <td className="p-2">{row.channel}</td>
-                  <td className="p-2 max-w-[240px] truncate">{row.target_label ?? row.destination}</td>
+                  <td className="p-2 max-w-[240px] truncate">
+                    {row.target_label ?? row.destination}
+                  </td>
                   <td className="p-2">
                     <Badge
                       variant={

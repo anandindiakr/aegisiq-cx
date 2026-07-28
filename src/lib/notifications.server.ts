@@ -29,7 +29,11 @@ const TIMEOUT_MS = 10_000;
 const SIGNATURE_HEADER = "x-aegisiq-signature";
 
 /** `t=<unix seconds>,v1=<hex hmac of "t.body">` — Stripe-style, replay safe. */
-export function signPayload(secret: string, body: string, timestamp = Math.floor(Date.now() / 1000)) {
+export function signPayload(
+  secret: string,
+  body: string,
+  timestamp = Math.floor(Date.now() / 1000),
+) {
   const signature = createHmac("sha256", secret).update(`${timestamp}.${body}`).digest("hex");
   return { header: `t=${timestamp},v1=${signature}`, timestamp, signature };
 }
@@ -112,7 +116,10 @@ async function sendEmail(
   try {
     const { sendLovableEmail } = await import("@lovable.dev/email-js");
     const rows = Object.entries(event.data)
-      .map(([key, value]) => `<tr><td style="padding:4px 12px 4px 0;color:#64748b">${key}</td><td style="padding:4px 0">${redact(value)}</td></tr>`)
+      .map(
+        ([key, value]) =>
+          `<tr><td style="padding:4px 12px 4px 0;color:#64748b">${key}</td><td style="padding:4px 0">${redact(value)}</td></tr>`,
+      )
       .join("");
     await sendLovableEmail(
       {
@@ -160,10 +167,7 @@ async function recipientEmails(admin: Admin, userIds: string[]): Promise<string[
   return ((data ?? []) as { email: string }[]).map((row) => row.email).filter(Boolean);
 }
 
-async function record(
-  admin: Admin,
-  row: Record<string, unknown>,
-): Promise<void> {
+async function record(admin: Admin, row: Record<string, unknown>): Promise<void> {
   await admin.from("notification_deliveries").insert(row);
 }
 

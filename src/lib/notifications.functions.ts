@@ -9,7 +9,12 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { NOTIFICATION_EVENTS } from "@/features/command-centre/notificationEvents";
-import { fanOutEvent, assertMembership, signPayload, webhookBody } from "@/lib/notifications.server";
+import {
+  fanOutEvent,
+  assertMembership,
+  signPayload,
+  webhookBody,
+} from "@/lib/notifications.server";
 
 const dispatchSchema = z.object({
   companyId: z.string().uuid(),
