@@ -34,6 +34,7 @@ import { Route as AuthenticatedAlertCentreRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAlertAnalyticsRouteImport } from './routes/_authenticated/alert-analytics'
 import { Route as AuthenticatedAdministrationRouteImport } from './routes/_authenticated/administration'
 import { Route as AuthenticatedConversationiqIndexRouteImport } from './routes/_authenticated/conversationiq.index'
+import { Route as AuthenticatedAdministrationIndexRouteImport } from './routes/_authenticated/administration.index'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as AuthenticatedInfrastructureStorageRouteImport } from './routes/_authenticated/infrastructure.storage'
 import { Route as AuthenticatedInfrastructureNetworkRouteImport } from './routes/_authenticated/infrastructure.network'
@@ -191,6 +192,12 @@ const AuthenticatedConversationiqIndexRoute =
     path: '/conversationiq/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdministrationIndexRoute =
+  AuthenticatedAdministrationIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
   id: '/api/public/telemetry',
   path: '/api/public/telemetry',
@@ -327,7 +334,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
-  '/administration': typeof AuthenticatedAdministrationRoute
+  '/administration': typeof AuthenticatedAdministrationRouteWithChildren
   '/alert-analytics': typeof AuthenticatedAlertAnalyticsRoute
   '/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/alerts': typeof AuthenticatedAlertsRoute
@@ -368,6 +375,7 @@ export interface FileRoutesByFullPath {
   '/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
   '/infrastructure/storage': typeof AuthenticatedInfrastructureStorageRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
+  '/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
 }
 export interface FileRoutesByTo {
@@ -375,7 +383,6 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
-  '/administration': typeof AuthenticatedAdministrationRoute
   '/alert-analytics': typeof AuthenticatedAlertAnalyticsRoute
   '/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/alerts': typeof AuthenticatedAlertsRoute
@@ -416,6 +423,7 @@ export interface FileRoutesByTo {
   '/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
   '/infrastructure/storage': typeof AuthenticatedInfrastructureStorageRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
+  '/administration': typeof AuthenticatedAdministrationIndexRoute
   '/conversationiq': typeof AuthenticatedConversationiqIndexRoute
 }
 export interface FileRoutesById {
@@ -425,7 +433,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signin': typeof SigninRoute
-  '/_authenticated/administration': typeof AuthenticatedAdministrationRoute
+  '/_authenticated/administration': typeof AuthenticatedAdministrationRouteWithChildren
   '/_authenticated/alert-analytics': typeof AuthenticatedAlertAnalyticsRoute
   '/_authenticated/alert-centre': typeof AuthenticatedAlertCentreRoute
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
@@ -466,6 +474,7 @@ export interface FileRoutesById {
   '/_authenticated/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
   '/_authenticated/infrastructure/storage': typeof AuthenticatedInfrastructureStorageRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
+  '/_authenticated/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/_authenticated/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
 }
 export interface FileRouteTypes {
@@ -516,6 +525,7 @@ export interface FileRouteTypes {
     | '/infrastructure/network'
     | '/infrastructure/storage'
     | '/api/public/telemetry'
+    | '/administration/'
     | '/conversationiq/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -523,7 +533,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/reset-password'
     | '/signin'
-    | '/administration'
     | '/alert-analytics'
     | '/alert-centre'
     | '/alerts'
@@ -564,6 +573,7 @@ export interface FileRouteTypes {
     | '/infrastructure/network'
     | '/infrastructure/storage'
     | '/api/public/telemetry'
+    | '/administration'
     | '/conversationiq'
   id:
     | '__root__'
@@ -613,6 +623,7 @@ export interface FileRouteTypes {
     | '/_authenticated/infrastructure/network'
     | '/_authenticated/infrastructure/storage'
     | '/api/public/telemetry'
+    | '/_authenticated/administration/'
     | '/_authenticated/conversationiq/'
   fileRoutesById: FileRoutesById
 }
@@ -802,6 +813,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConversationiqIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/administration/': {
+      id: '/_authenticated/administration/'
+      path: '/'
+      fullPath: '/administration/'
+      preLoaderRoute: typeof AuthenticatedAdministrationIndexRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/api/public/telemetry': {
       id: '/api/public/telemetry'
       path: '/api/public/telemetry'
@@ -959,8 +977,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdministrationRouteChildren {
+  AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
+}
+
+const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRouteChildren =
+  {
+    AuthenticatedAdministrationIndexRoute:
+      AuthenticatedAdministrationIndexRoute,
+  }
+
+const AuthenticatedAdministrationRouteWithChildren =
+  AuthenticatedAdministrationRoute._addFileChildren(
+    AuthenticatedAdministrationRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdministrationRoute: typeof AuthenticatedAdministrationRoute
+  AuthenticatedAdministrationRoute: typeof AuthenticatedAdministrationRouteWithChildren
   AuthenticatedAlertAnalyticsRoute: typeof AuthenticatedAlertAnalyticsRoute
   AuthenticatedAlertCentreRoute: typeof AuthenticatedAlertCentreRoute
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
@@ -1004,7 +1037,8 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdministrationRoute: AuthenticatedAdministrationRoute,
+  AuthenticatedAdministrationRoute:
+    AuthenticatedAdministrationRouteWithChildren,
   AuthenticatedAlertAnalyticsRoute: AuthenticatedAlertAnalyticsRoute,
   AuthenticatedAlertCentreRoute: AuthenticatedAlertCentreRoute,
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
