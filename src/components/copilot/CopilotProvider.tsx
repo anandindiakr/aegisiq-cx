@@ -51,7 +51,13 @@ import type {
 } from "@/features/copilot/types";
 
 
+/** Extra execution hints — used to resume a partially failed report run. */
+export interface RunOptions {
+  resume?: CopilotReportPartial;
+}
+
 interface CopilotState {
+
   open: boolean;
   minimised: boolean;
   messages: CopilotMessage[];
