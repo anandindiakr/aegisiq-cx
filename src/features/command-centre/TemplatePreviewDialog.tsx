@@ -183,13 +183,15 @@ function renderSection(
           {charts ? (
             <div className="flex h-16 items-end gap-1">
               {overview.daily.slice(-30).map((point) => {
-                const max = Math.max(...overview.daily.map((d) => d.conversations), 1);
+                // Values can arrive as numeric strings from the RPC payload.
+                const max = Math.max(...overview.daily.map((d) => Number(d.conversations) || 0), 1);
+                const value = Number(point.conversations) || 0;
                 return (
                   <div
                     key={point.day}
                     className="flex-1 rounded-sm bg-primary/60"
-                    style={{ height: `${Math.max(6, (point.conversations / max) * 100)}%` }}
-                    title={`${point.day}: ${point.conversations}`}
+                    style={{ height: `${Math.max(6, (value / max) * 100)}%` }}
+                    title={`${point.day}: ${value}`}
                   />
                 );
               })}
