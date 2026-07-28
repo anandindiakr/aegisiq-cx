@@ -55,6 +55,7 @@ import { Route as AuthenticatedConversationiqLanguagesRouteImport } from './rout
 import { Route as AuthenticatedConversationiqKeywordsRouteImport } from './routes/_authenticated/conversationiq.keywords'
 import { Route as AuthenticatedConversationiqAuditRouteImport } from './routes/_authenticated/conversationiq.audit'
 import { Route as AuthenticatedConversationiqConversationIdRouteImport } from './routes/_authenticated/conversationiq.$conversationId'
+import { Route as AuthenticatedAdministrationSpeechRouteImport } from './routes/_authenticated/administration.speech'
 import { Route as AuthenticatedAdministrationGeneralRouteImport } from './routes/_authenticated/administration.general'
 import { Route as AuthenticatedAdministrationAiRouteImport } from './routes/_authenticated/administration.ai'
 import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated/admin.roles'
@@ -319,6 +320,12 @@ const AuthenticatedConversationiqConversationIdRoute =
     path: '/conversationiq/$conversationId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdministrationSpeechRoute =
+  AuthenticatedAdministrationSpeechRouteImport.update({
+    id: '/speech',
+    path: '/speech',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationGeneralRoute =
   AuthenticatedAdministrationGeneralRouteImport.update({
     id: '/general',
@@ -371,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/administration/ai': typeof AuthenticatedAdministrationAiRoute
   '/administration/general': typeof AuthenticatedAdministrationGeneralRoute
+  '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
@@ -421,6 +429,7 @@ export interface FileRoutesByTo {
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/administration/ai': typeof AuthenticatedAdministrationAiRoute
   '/administration/general': typeof AuthenticatedAdministrationGeneralRoute
+  '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
@@ -474,6 +483,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/_authenticated/administration/ai': typeof AuthenticatedAdministrationAiRoute
   '/_authenticated/administration/general': typeof AuthenticatedAdministrationGeneralRoute
+  '/_authenticated/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/_authenticated/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/_authenticated/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
@@ -527,6 +537,7 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/administration/ai'
     | '/administration/general'
+    | '/administration/speech'
     | '/conversationiq/$conversationId'
     | '/conversationiq/audit'
     | '/conversationiq/keywords'
@@ -577,6 +588,7 @@ export interface FileRouteTypes {
     | '/admin/roles'
     | '/administration/ai'
     | '/administration/general'
+    | '/administration/speech'
     | '/conversationiq/$conversationId'
     | '/conversationiq/audit'
     | '/conversationiq/keywords'
@@ -629,6 +641,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/roles'
     | '/_authenticated/administration/ai'
     | '/_authenticated/administration/general'
+    | '/_authenticated/administration/speech'
     | '/_authenticated/conversationiq/$conversationId'
     | '/_authenticated/conversationiq/audit'
     | '/_authenticated/conversationiq/keywords'
@@ -986,6 +999,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConversationiqConversationIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/administration/speech': {
+      id: '/_authenticated/administration/speech'
+      path: '/speech'
+      fullPath: '/administration/speech'
+      preLoaderRoute: typeof AuthenticatedAdministrationSpeechRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/general': {
       id: '/_authenticated/administration/general'
       path: '/general'
@@ -1020,6 +1040,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationAiRoute: typeof AuthenticatedAdministrationAiRoute
   AuthenticatedAdministrationGeneralRoute: typeof AuthenticatedAdministrationGeneralRoute
+  AuthenticatedAdministrationSpeechRoute: typeof AuthenticatedAdministrationSpeechRoute
   AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
 }
 
@@ -1028,6 +1049,8 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
     AuthenticatedAdministrationAiRoute: AuthenticatedAdministrationAiRoute,
     AuthenticatedAdministrationGeneralRoute:
       AuthenticatedAdministrationGeneralRoute,
+    AuthenticatedAdministrationSpeechRoute:
+      AuthenticatedAdministrationSpeechRoute,
     AuthenticatedAdministrationIndexRoute:
       AuthenticatedAdministrationIndexRoute,
   }
