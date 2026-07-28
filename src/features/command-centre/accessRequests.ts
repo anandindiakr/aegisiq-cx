@@ -126,9 +126,7 @@ export function existingPendingRequest(
 export async function expireStaleAccessRequests(): Promise<number> {
   const { data, error } = await (
     supabase as unknown as {
-      rpc: (
-        name: string,
-      ) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
+      rpc: (name: string) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
     }
   ).rpc("expire_widget_access_requests");
   if (error) throw new Error(error.message);

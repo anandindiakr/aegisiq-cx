@@ -53,7 +53,9 @@ export async function retryDelivery(
     recipients: row.recipients,
     scheduleId: row.schedule_id,
     runId: rootId,
-    detail: options.auto ? `Automatic retry (attempt ${attempt})` : `Manual retry (attempt ${attempt})`,
+    detail: options.auto
+      ? `Automatic retry (attempt ${attempt})`
+      : `Manual retry (attempt ${attempt})`,
   });
 
   try {

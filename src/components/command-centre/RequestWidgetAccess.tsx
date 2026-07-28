@@ -52,11 +52,7 @@ export function RequestWidgetAccess({
   // Surfacing the open request stops people raising the same ask twice.
   const session = useSession();
   const requests = useQuery(widgetAccessRequestsQuery);
-  const outstanding = existingPendingRequest(
-    requests.data ?? [],
-    widgetId,
-    session.user?.id,
-  );
+  const outstanding = existingPendingRequest(requests.data ?? [], widgetId, session.user?.id);
 
   const submit = useMutation({
     mutationFn: () => requestWidgetAccess({ widgetId, reason: reason.trim(), context }),

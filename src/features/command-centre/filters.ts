@@ -124,9 +124,7 @@ export function rangeLabel(filters: CommandFilters): string {
 }
 
 /** Human-readable breakdown of a filter set, used by read-only share views. */
-export function filterSummaryEntries(
-  filters: CommandFilters,
-): { label: string; value: string }[] {
+export function filterSummaryEntries(filters: CommandFilters): { label: string; value: string }[] {
   const list = (values: string[]) => (values.length === 0 ? "All" : values.join(", "));
   return [
     { label: "Date range", value: rangeLabel(filters) },
@@ -135,7 +133,10 @@ export function filterSummaryEntries(
       value: `${String(filters.hourFrom).padStart(2, "0")}:00 – ${String(filters.hourTo).padStart(2, "0")}:59`,
     },
     { label: "Regions", value: list(filters.regions) },
-    { label: "Outlets", value: filters.outlets.length === 0 ? "All" : `${filters.outlets.length} selected` },
+    {
+      label: "Outlets",
+      value: filters.outlets.length === 0 ? "All" : `${filters.outlets.length} selected`,
+    },
     { label: "Languages", value: list(filters.languages) },
     { label: "Topics", value: list(filters.topics) },
     { label: "Risk levels", value: list(filters.risks) },

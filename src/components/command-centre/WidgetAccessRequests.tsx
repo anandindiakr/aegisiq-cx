@@ -70,7 +70,9 @@ export function WidgetAccessRequests() {
     onSuccess: async (count: number) => {
       await refresh();
       toast.success(
-        count === 0 ? "Nothing to expire" : `${count} stale request${count === 1 ? "" : "s"} expired`,
+        count === 0
+          ? "Nothing to expire"
+          : `${count} stale request${count === 1 ? "" : "s"} expired`,
       );
     },
     onError: (error: Error) => toast.error("Could not expire", { description: error.message }),

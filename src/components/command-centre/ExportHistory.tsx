@@ -1,14 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  CheckCircle2,
-  Download,
-  FileClock,
-  Loader2,
-  RefreshCw,
-  Send,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Download, FileClock, Loader2, RefreshCw, Send, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -179,80 +171,80 @@ export function ExportHistory() {
           </TabsContent>
 
           <TabsContent value="runs" className="mt-3">
-        <ScrollArea className="max-h-[55vh] pr-3">
-          <div className="space-y-2">
-            {history.isLoading && (
-              <p className="py-6 text-center text-xs text-muted-foreground">Loading history…</p>
-            )}
-            {!history.isLoading && rows.length === 0 && (
-              <p className="py-6 text-center text-xs text-muted-foreground">
-                No exports have been run yet.
-              </p>
-            )}
-            {rows.map((row) => (
-              <article
-                key={row.id}
-                className="rounded-lg border border-border/70 bg-surface/40 p-3 text-xs"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  {row.status === "success" ? (
-                    <CheckCircle2 className="size-4 text-emerald-400" />
-                  ) : (
-                    <XCircle className="size-4 text-destructive" />
-                  )}
-                  <span className="font-medium">{row.format.toUpperCase()}</span>
-                  <Badge variant="outline" className="gap-1 text-[10px]">
-                    {row.kind === "delivery" ? <Send className="size-2.5" /> : null}
-                    {row.kind === "delivery" ? "Scheduled delivery" : "Manual export"}
-                  </Badge>
-                  {row.template_name && (
-                    <Badge variant="secondary" className="text-[10px]">
-                      {row.template_name} v{row.template_version ?? 1}
-                    </Badge>
-                  )}
-                  <span className="ml-auto text-[11px] text-muted-foreground">
-                    {new Date(row.created_at).toLocaleString("en-GB")}
-                  </span>
-                </div>
-                <p className="mt-1.5 text-[11px] text-muted-foreground">
-                  {row.actor_name ?? "System"}
-                  {row.duration_ms !== null && ` · ${row.duration_ms}ms`}
-                  {row.sections.length > 0 && ` · sections: ${row.sections.join(", ")}`}
-                </p>
-                {row.recipients.length > 0 && (
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    Recipients: {row.recipients.join(", ")}
+            <ScrollArea className="max-h-[55vh] pr-3">
+              <div className="space-y-2">
+                {history.isLoading && (
+                  <p className="py-6 text-center text-xs text-muted-foreground">Loading history…</p>
+                )}
+                {!history.isLoading && rows.length === 0 && (
+                  <p className="py-6 text-center text-xs text-muted-foreground">
+                    No exports have been run yet.
                   </p>
                 )}
-                {row.error_message && (
-                  <p className="mt-1 text-[11px] text-destructive">{row.error_message}</p>
-                )}
-                <div className="mt-1.5 flex items-center gap-2">
-                  <span className="text-[11px] text-muted-foreground">
-                    Attempt {row.attempt ?? 1} of {attemptsFor(row, rows)}
-                    {row.auto_retry ? " · automatic" : ""}
-                  </span>
-                  {isRetryable(row, rows) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="ml-auto h-7 gap-1.5 text-[11px]"
-                      disabled={retry.isPending}
-                      onClick={() => retry.mutate(row)}
-                    >
-                      {retry.isPending ? (
-                        <Loader2 className="size-3 animate-spin" />
+                {rows.map((row) => (
+                  <article
+                    key={row.id}
+                    className="rounded-lg border border-border/70 bg-surface/40 p-3 text-xs"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      {row.status === "success" ? (
+                        <CheckCircle2 className="size-4 text-emerald-400" />
                       ) : (
-                        <RefreshCw className="size-3" />
+                        <XCircle className="size-4 text-destructive" />
                       )}
-                      Retry {row.kind === "delivery" ? "delivery" : "export"}
-                    </Button>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-        </ScrollArea>
+                      <span className="font-medium">{row.format.toUpperCase()}</span>
+                      <Badge variant="outline" className="gap-1 text-[10px]">
+                        {row.kind === "delivery" ? <Send className="size-2.5" /> : null}
+                        {row.kind === "delivery" ? "Scheduled delivery" : "Manual export"}
+                      </Badge>
+                      {row.template_name && (
+                        <Badge variant="secondary" className="text-[10px]">
+                          {row.template_name} v{row.template_version ?? 1}
+                        </Badge>
+                      )}
+                      <span className="ml-auto text-[11px] text-muted-foreground">
+                        {new Date(row.created_at).toLocaleString("en-GB")}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-muted-foreground">
+                      {row.actor_name ?? "System"}
+                      {row.duration_ms !== null && ` · ${row.duration_ms}ms`}
+                      {row.sections.length > 0 && ` · sections: ${row.sections.join(", ")}`}
+                    </p>
+                    {row.recipients.length > 0 && (
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        Recipients: {row.recipients.join(", ")}
+                      </p>
+                    )}
+                    {row.error_message && (
+                      <p className="mt-1 text-[11px] text-destructive">{row.error_message}</p>
+                    )}
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <span className="text-[11px] text-muted-foreground">
+                        Attempt {row.attempt ?? 1} of {attemptsFor(row, rows)}
+                        {row.auto_retry ? " · automatic" : ""}
+                      </span>
+                      {isRetryable(row, rows) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="ml-auto h-7 gap-1.5 text-[11px]"
+                          disabled={retry.isPending}
+                          onClick={() => retry.mutate(row)}
+                        >
+                          {retry.isPending ? (
+                            <Loader2 className="size-3 animate-spin" />
+                          ) : (
+                            <RefreshCw className="size-3" />
+                          )}
+                          Retry {row.kind === "delivery" ? "delivery" : "export"}
+                        </Button>
+                      )}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </ScrollArea>
           </TabsContent>
         </Tabs>
       </DialogContent>

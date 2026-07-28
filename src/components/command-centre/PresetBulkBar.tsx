@@ -113,7 +113,10 @@ export function PresetBulkBar({
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="space-y-1.5">
           <Label className="text-xs">Target audience</Label>
-          <Select value={targetScope} onValueChange={(value) => setTargetScope(value as PresetScope)}>
+          <Select
+            value={targetScope}
+            onValueChange={(value) => setTargetScope(value as PresetScope)}
+          >
             <SelectTrigger className="h-9 text-sm">
               <SelectValue />
             </SelectTrigger>
@@ -128,7 +131,10 @@ export function PresetBulkBar({
         </div>
         <div className="space-y-1.5">
           <Label className="text-xs">
-            Rename pattern <span className="text-muted-foreground">— {"{name}"} and {"{n}"}</span>
+            Rename pattern{" "}
+            <span className="text-muted-foreground">
+              — {"{name}"} and {"{n}"}
+            </span>
           </Label>
           <Input
             value={pattern}

@@ -172,9 +172,8 @@ export async function duplicateFilterPresets(
     is_shared?: boolean;
   } = {},
 ): Promise<number> {
-  const targets = options.scope === "outlet" && options.outlet_ids?.length
-    ? options.outlet_ids
-    : [null];
+  const targets =
+    options.scope === "outlet" && options.outlet_ids?.length ? options.outlet_ids : [null];
   let created = 0;
   for (const preset of presets) {
     for (const outletId of targets) {

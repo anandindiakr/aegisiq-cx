@@ -52,8 +52,7 @@ export function PresetShareDialog({
   const [roles, setRoles] = useState<AppRole[]>([]);
 
   const scoped = (links.data ?? []).filter((link) => link.preset_id === preset?.id);
-  const refresh = () =>
-    queryClient.invalidateQueries({ queryKey: presetShareLinksQuery.queryKey });
+  const refresh = () => queryClient.invalidateQueries({ queryKey: presetShareLinksQuery.queryKey });
 
   const copy = async (url: string) => {
     try {
