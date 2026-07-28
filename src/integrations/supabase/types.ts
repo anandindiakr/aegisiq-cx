@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_engines: {
+        Row: {
+          api_configured: boolean
+          capability: string
+          company_id: string
+          config: Json
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          endpoint: string | null
+          health: string
+          id: string
+          last_tested_at: string | null
+          latency_ms: number
+          name: string
+          notes: string | null
+          provider: string
+          region: string | null
+          status: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          api_configured?: boolean
+          capability?: string
+          company_id: string
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          endpoint?: string | null
+          health?: string
+          id?: string
+          last_tested_at?: string | null
+          latency_ms?: number
+          name: string
+          notes?: string | null
+          provider: string
+          region?: string | null
+          status?: string
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          api_configured?: boolean
+          capability?: string
+          company_id?: string
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          endpoint?: string | null
+          health?: string
+          id?: string
+          last_tested_at?: string | null
+          latency_ms?: number
+          name?: string
+          notes?: string | null
+          provider?: string
+          region?: string | null
+          status?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
       alert_escalations: {
         Row: {
           alert_id: string
@@ -339,6 +405,57 @@ export type Database = {
           },
         ]
       }
+      audio_streams: {
+        Row: {
+          bitrate_kbps: number
+          camera_id: string
+          channels: number
+          codec: string
+          company_id: string
+          created_at: string
+          id: string
+          latency_ms: number
+          noise_floor_db: number
+          packet_loss: number
+          sampling_rate: number
+          signal_quality: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bitrate_kbps?: number
+          camera_id: string
+          channels?: number
+          codec?: string
+          company_id: string
+          created_at?: string
+          id?: string
+          latency_ms?: number
+          noise_floor_db?: number
+          packet_loss?: number
+          sampling_rate?: number
+          signal_quality?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bitrate_kbps?: number
+          camera_id?: string
+          channels?: number
+          codec?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          latency_ms?: number
+          noise_floor_db?: number
+          packet_loss?: number
+          sampling_rate?: number
+          signal_quality?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -388,52 +505,121 @@ export type Database = {
       }
       cameras: {
         Row: {
+          audio_codec: string
           audio_enabled: boolean
+          bitrate_kbps: number
+          brand: string | null
+          camera_code: string | null
           company_id: string
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          description: string | null
+          echo_cancellation: boolean
           firmware: string | null
+          fps: number
+          gain: number
+          gateway_id: string | null
+          health_score: number
+          health_state: string
+          https_enabled: boolean
           id: string
+          ip_address: string | null
           last_seen_at: string | null
           location: string | null
+          mic_type: string
+          model: string | null
           name: string
+          noise_reduction: boolean
+          onvif_enabled: boolean
           outlet_id: string | null
+          port: number
+          resolution: string
           rtsp_url: string | null
+          sampling_rate: number
           status: Database["public"]["Enums"]["camera_status"]
+          stream_username: string | null
           updated_at: string
+          video_codec: string
+          zone: string | null
         }
         Insert: {
+          audio_codec?: string
           audio_enabled?: boolean
+          bitrate_kbps?: number
+          brand?: string | null
+          camera_code?: string | null
           company_id: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          description?: string | null
+          echo_cancellation?: boolean
           firmware?: string | null
+          fps?: number
+          gain?: number
+          gateway_id?: string | null
+          health_score?: number
+          health_state?: string
+          https_enabled?: boolean
           id?: string
+          ip_address?: string | null
           last_seen_at?: string | null
           location?: string | null
+          mic_type?: string
+          model?: string | null
           name: string
+          noise_reduction?: boolean
+          onvif_enabled?: boolean
           outlet_id?: string | null
+          port?: number
+          resolution?: string
           rtsp_url?: string | null
+          sampling_rate?: number
           status?: Database["public"]["Enums"]["camera_status"]
+          stream_username?: string | null
           updated_at?: string
+          video_codec?: string
+          zone?: string | null
         }
         Update: {
+          audio_codec?: string
           audio_enabled?: boolean
+          bitrate_kbps?: number
+          brand?: string | null
+          camera_code?: string | null
           company_id?: string
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          description?: string | null
+          echo_cancellation?: boolean
           firmware?: string | null
+          fps?: number
+          gain?: number
+          gateway_id?: string | null
+          health_score?: number
+          health_state?: string
+          https_enabled?: boolean
           id?: string
+          ip_address?: string | null
           last_seen_at?: string | null
           location?: string | null
+          mic_type?: string
+          model?: string | null
           name?: string
+          noise_reduction?: boolean
+          onvif_enabled?: boolean
           outlet_id?: string | null
+          port?: number
+          resolution?: string
           rtsp_url?: string | null
+          sampling_rate?: number
           status?: Database["public"]["Enums"]["camera_status"]
+          stream_username?: string | null
           updated_at?: string
+          video_codec?: string
+          zone?: string | null
         }
         Relationships: [
           {
@@ -1196,6 +1382,90 @@ export type Database = {
         }
         Relationships: []
       }
+      edge_gateways: {
+        Row: {
+          agent_version: string
+          company_id: string
+          cpu_model: string
+          cpu_usage: number
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          disk_usage: number
+          gpu_model: string
+          gpu_usage: number
+          id: string
+          ip_address: string | null
+          last_heartbeat_at: string | null
+          location: string | null
+          memory_usage: number
+          name: string
+          notes: string | null
+          operating_system: string
+          outlet_ids: string[]
+          ram_gb: number
+          serial_number: string
+          status: string
+          storage_gb: number
+          temperature_c: number
+          updated_at: string
+        }
+        Insert: {
+          agent_version?: string
+          company_id: string
+          cpu_model?: string
+          cpu_usage?: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          disk_usage?: number
+          gpu_model?: string
+          gpu_usage?: number
+          id?: string
+          ip_address?: string | null
+          last_heartbeat_at?: string | null
+          location?: string | null
+          memory_usage?: number
+          name: string
+          notes?: string | null
+          operating_system?: string
+          outlet_ids?: string[]
+          ram_gb?: number
+          serial_number: string
+          status?: string
+          storage_gb?: number
+          temperature_c?: number
+          updated_at?: string
+        }
+        Update: {
+          agent_version?: string
+          company_id?: string
+          cpu_model?: string
+          cpu_usage?: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          disk_usage?: number
+          gpu_model?: string
+          gpu_usage?: number
+          id?: string
+          ip_address?: string | null
+          last_heartbeat_at?: string | null
+          location?: string | null
+          memory_usage?: number
+          name?: string
+          notes?: string | null
+          operating_system?: string
+          outlet_ids?: string[]
+          ram_gb?: number
+          serial_number?: string
+          status?: string
+          storage_gb?: number
+          temperature_c?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       executive_report_schedules: {
         Row: {
           auto_retry: boolean
@@ -1385,6 +1655,45 @@ export type Database = {
           template_id?: string | null
           template_name?: string | null
           template_version?: number | null
+        }
+        Relationships: []
+      }
+      infra_events: {
+        Row: {
+          company_id: string
+          created_at: string
+          device_id: string | null
+          device_name: string | null
+          device_type: string | null
+          id: string
+          level: string
+          message: string
+          metadata: Json
+          source: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          device_id?: string | null
+          device_name?: string | null
+          device_type?: string | null
+          id?: string
+          level?: string
+          message: string
+          metadata?: Json
+          source?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          device_id?: string | null
+          device_name?: string | null
+          device_type?: string | null
+          id?: string
+          level?: string
+          message?: string
+          metadata?: Json
+          source?: string
         }
         Relationships: []
       }
@@ -2379,6 +2688,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      storage_pools: {
+        Row: {
+          archive_enabled: boolean
+          archive_target: string | null
+          capacity_gb: number
+          company_id: string
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          retention_days: number
+          tier: string
+          updated_at: string
+          used_gb: number
+        }
+        Insert: {
+          archive_enabled?: boolean
+          archive_target?: string | null
+          capacity_gb?: number
+          company_id: string
+          created_at?: string
+          id?: string
+          kind?: string
+          name: string
+          retention_days?: number
+          tier?: string
+          updated_at?: string
+          used_gb?: number
+        }
+        Update: {
+          archive_enabled?: boolean
+          archive_target?: string | null
+          capacity_gb?: number
+          company_id?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          retention_days?: number
+          tier?: string
+          updated_at?: string
+          used_gb?: number
+        }
+        Relationships: []
       }
       summaries: {
         Row: {

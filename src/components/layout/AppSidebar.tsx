@@ -26,6 +26,11 @@ import {
   BellRing,
   Bot,
   FileText,
+  ServerCog,
+  AudioLines,
+  Activity,
+  Network,
+  Database,
 } from "lucide-react";
 
 import {
@@ -73,6 +78,16 @@ const ESTATE = [
   { title: "Cameras", url: "/cameras", icon: Cctv },
   { title: "Users", url: "/users", icon: Users },
   { title: "Roles & Access", url: "/admin/roles", icon: KeyRound },
+];
+
+const INFRASTRUCTURE = [
+  { title: "Camera Management", url: "/infrastructure/cameras", icon: Cctv },
+  { title: "Edge Gateways", url: "/infrastructure/gateways", icon: ServerCog },
+  { title: "AI Engines", url: "/infrastructure/engines", icon: BrainCircuit },
+  { title: "Audio Streams", url: "/infrastructure/audio", icon: AudioLines },
+  { title: "Device Health", url: "/infrastructure/health", icon: Activity },
+  { title: "Network", url: "/infrastructure/network", icon: Network },
+  { title: "Storage", url: "/infrastructure/storage", icon: Database },
 ];
 
 const GOVERNANCE = [
@@ -166,6 +181,12 @@ export function AppSidebar() {
           pathname={pathname}
         />
         <NavGroup label="Estate" items={ESTATE} collapsed={collapsed} pathname={pathname} />
+        <NavGroup
+          label="Infrastructure"
+          items={INFRASTRUCTURE}
+          collapsed={collapsed}
+          pathname={pathname}
+        />
         <NavGroup label="Governance" items={GOVERNANCE} collapsed={collapsed} pathname={pathname} />
       </SidebarContent>
 
