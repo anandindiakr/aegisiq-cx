@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   Timer,
   KeyRound,
+  Bookmark,
 } from "lucide-react";
 
 import {
@@ -42,6 +43,7 @@ const OPERATIONS = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Alerts", url: "/alerts", icon: Siren },
   { title: "Reports", url: "/reports", icon: FileBarChart },
+  { title: "Filter Presets", url: "/filter-presets", icon: Bookmark },
   { title: "AI Assistant", url: "/assistant", icon: Sparkles },
 ];
 
