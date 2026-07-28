@@ -1099,6 +1099,78 @@ export type Database = {
           },
         ]
       }
+      notification_deliveries: {
+        Row: {
+          attempt: number
+          channel: string
+          company_id: string
+          created_at: string
+          destination: string
+          duration_ms: number | null
+          endpoint_id: string | null
+          error_message: string | null
+          event_id: string
+          event_type: string
+          id: string
+          payload: Json
+          response_status: number | null
+          rule_id: string | null
+          status: string
+          target_label: string | null
+        }
+        Insert: {
+          attempt?: number
+          channel: string
+          company_id: string
+          created_at?: string
+          destination: string
+          duration_ms?: number | null
+          endpoint_id?: string | null
+          error_message?: string | null
+          event_id: string
+          event_type: string
+          id?: string
+          payload?: Json
+          response_status?: number | null
+          rule_id?: string | null
+          status: string
+          target_label?: string | null
+        }
+        Update: {
+          attempt?: number
+          channel?: string
+          company_id?: string
+          created_at?: string
+          destination?: string
+          duration_ms?: number | null
+          endpoint_id?: string | null
+          error_message?: string | null
+          event_id?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          response_status?: number | null
+          rule_id?: string | null
+          status?: string
+          target_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_deliveries_endpoint_id_fkey"
+            columns: ["endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_deliveries_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "notification_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           company_id: string
@@ -1144,6 +1216,48 @@ export type Database = {
           sla_in_app?: boolean
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      notification_rules: {
+        Row: {
+          active: boolean
+          channel: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          destination: string
+          events: string[]
+          id: string
+          name: string
+          recipient_user_ids: string[]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          channel: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          destination: string
+          events?: string[]
+          id?: string
+          name: string
+          recipient_user_ids?: string[]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          channel?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          destination?: string
+          events?: string[]
+          id?: string
+          name?: string
+          recipient_user_ids?: string[]
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2059,6 +2173,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      webhook_endpoints: {
+        Row: {
+          active: boolean
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          events: string[]
+          id: string
+          last_delivery_at: string | null
+          last_error: string | null
+          last_status: number | null
+          name: string
+          secret: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          active?: boolean
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          events?: string[]
+          id?: string
+          last_delivery_at?: string | null
+          last_error?: string | null
+          last_status?: number | null
+          name: string
+          secret: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          active?: boolean
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          events?: string[]
+          id?: string
+          last_delivery_at?: string | null
+          last_error?: string | null
+          last_status?: number | null
+          name?: string
+          secret?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
       }
       widget_access_requests: {
         Row: {

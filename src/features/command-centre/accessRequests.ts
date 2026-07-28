@@ -12,6 +12,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getActiveTenant, type AppRole } from "@/features/platform/queries";
 import { logExportAction } from "./exportActions";
+import { notify } from "./notificationChannels";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const table = (name: string): any => (supabase as any).from(name);
@@ -169,6 +170,13 @@ export async function requestWidgetAccess(input: {
     surface: input.context ?? "command-centre",
     detail: input.reason,
   });
+
+  await notify(
+    "access_request.created",
+    `Widget access requested — ${input.widgetId}`,
+    input.reason,
+    { widget: input.widgetId, surface: input.context ?? "command-centre" },
+  );
 }
 
 async function decidedBy() {
@@ -247,5 +255,18 @@ async function closeRequest(id: string, status: AccessRequestStatus, note: strin
     action: "access_decided",
     outcome: status === "approved" ? "ok" : "cancelled",
     detail: `${status}${note ? ` — ${note}` : ""}`,
+  });
+
+  const event =
+    status === "approved"
+      ? "access_request.approved"
+      : status === "expired"
+        ? "access_request.expired"
+        : "access_request.denied";
+  await notify(event, `Widget access ${status}`, note ?? `Request ${status}.`, {
+    request_id: id,
+    status,
+    decided_by: actor.name ?? "System",
+    note: note ?? null,
   });
 }
