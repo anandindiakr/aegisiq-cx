@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Cctv, Download, Plus, Search, Trash2, Wrench } from "lucide-react";
+import { Cctv, Download, KeyRound, Plus, Search, Trash2, Wrench } from "lucide-react";
 
 import {
   EmptyState,
@@ -32,6 +32,9 @@ import {
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { AddCameraWizard } from "@/components/infrastructure/AddCameraWizard";
+import { DeviceCredentialsDialog } from "@/components/infrastructure/DeviceCredentialsDialog";
+import { InfraChangeHistory } from "@/components/infrastructure/InfraChangeHistory";
+import { useCredentialAccess } from "@/features/infrastructure/audit";
 import { outletsQuery } from "@/features/platform/queries";
 import {
   bulkUpdateCameras,
@@ -92,6 +95,12 @@ function CameraManagementPage() {
   const [sort, setSort] = useState<SortKey>("name");
   const [selected, setSelected] = useState<string[]>([]);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const credentialAccess = useCredentialAccess();
+  const [credentialFor, setCredentialFor] = useState<{
+    id: string;
+    name: string;
+    rtsp: string | null;
+  } | null>(null);
 
   const outletName = useMemo(() => {
     const map = new Map((outlets.data ?? []).map((o) => [o.id, o.name]));
@@ -121,6 +130,7 @@ function CameraManagementPage() {
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["infrastructure"] });
     queryClient.invalidateQueries({ queryKey: ["cameras"] });
+    queryClient.invalidateQueries({ queryKey: ["infrastructure", "audit"] });
   };
 
   const toggleAudio = useMutation({
@@ -144,7 +154,7 @@ function CameraManagementPage() {
       });
     },
     onSuccess: (count) => {
-      toast.success(`${count} cameras updated`);
+      toast.success(`${count} cameras updated · recorded in change history`);
       setSelected([]);
       invalidate();
     },
@@ -237,6 +247,20 @@ function CameraManagementPage() {
             <Button size="sm" variant="outline" onClick={() => bulk.mutate("audio_off")}>
               Audio off
             </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const chosen = rows.filter((r) => selected.includes(r.id));
+                downloadCsv(
+                  `aegisiq-cameras-selection-${new Date().toISOString().slice(0, 10)}.csv`,
+                  camerasToCsv(chosen, outletName),
+                );
+                toast.success(`${chosen.length} cameras exported`);
+              }}
+            >
+              <Download className="mr-2 size-3.5" /> Export selection
+            </Button>
             <Button size="sm" variant="ghost" onClick={() => bulk.mutate("delete")}>
               <Trash2 className="mr-2 size-3.5" /> Retire
             </Button>
@@ -284,6 +308,7 @@ function CameraManagementPage() {
                   <TableHead>Firmware</TableHead>
                   <TableHead>Last seen</TableHead>
                   <TableHead>Health</TableHead>
+                  <TableHead className="w-32">Credentials</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -349,6 +374,22 @@ function CameraManagementPage() {
                         </span>
                       </div>
                     </TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={!credentialAccess.canView}
+                        onClick={() =>
+                          setCredentialFor({
+                            id: camera.id,
+                            name: camera.name,
+                            rtsp: camera.rtsp_url,
+                          })
+                        }
+                      >
+                        <KeyRound className="mr-2 size-3.5" /> Manage
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -357,7 +398,23 @@ function CameraManagementPage() {
         )}
       </Panel>
 
+      <div className="mt-5">
+        <InfraChangeHistory
+          scope={["camera", "camera_credential"]}
+          title="Camera change history"
+          description="Registrations, edits, bulk actions, decommissions and credential access, with before and after values."
+        />
+      </div>
+
       <AddCameraWizard open={wizardOpen} onOpenChange={setWizardOpen} />
+      <DeviceCredentialsDialog
+        open={credentialFor !== null}
+        onOpenChange={(value) => !value && setCredentialFor(null)}
+        deviceType="camera"
+        deviceId={credentialFor?.id ?? null}
+        deviceName={credentialFor?.name ?? ""}
+        defaultRtspUrl={credentialFor?.rtsp ?? null}
+      />
     </div>
   );
 }
