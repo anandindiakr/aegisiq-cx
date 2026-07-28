@@ -292,33 +292,35 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
                   },
                 });
               }
-              toast.success(`Template exports ready (${delivery.formats.join(", ").toUpperCase()})`);
+              toast.success(
+                `Template exports ready (${delivery.formats.join(", ").toUpperCase()})`,
+              );
               void queryClient.invalidateQueries({ queryKey: ["copilot", "report-artifacts"] });
             });
           }
 
           if (shouldNotify)
-          void notify(
-            status === "completed" ? "report.completed" : "report.failed",
-            status === "completed"
-              ? `Executive report ready — ${rangeLabel(filters)}`
-              : `Executive report incomplete — ${rangeLabel(filters)}`,
-            status === "completed"
-              ? `Generated in ${Math.round(durationMs / 100) / 10}s across ${response.report?.sections.length ?? 0} sections.`
-              : `${failed.length} section(s) failed: ${failed.map((s) => s.label).join(", ")}.`,
-            { runId, command: trimmed, status },
-          ).then(() =>
-            recordReportArtifact({
-              runId,
-              kind: "delivery",
-              channel: "notification",
-              destination: "configured recipients",
-              status: status === "completed" ? "delivered" : "partial",
-              metadata: { range: rangeLabel(filters) },
-            }).then(() =>
-              queryClient.invalidateQueries({ queryKey: ["copilot", "report-artifacts"] }),
-            ),
-          );
+            void notify(
+              status === "completed" ? "report.completed" : "report.failed",
+              status === "completed"
+                ? `Executive report ready — ${rangeLabel(filters)}`
+                : `Executive report incomplete — ${rangeLabel(filters)}`,
+              status === "completed"
+                ? `Generated in ${Math.round(durationMs / 100) / 10}s across ${response.report?.sections.length ?? 0} sections.`
+                : `${failed.length} section(s) failed: ${failed.map((s) => s.label).join(", ")}.`,
+              { runId, command: trimmed, status },
+            ).then(() =>
+              recordReportArtifact({
+                runId,
+                kind: "delivery",
+                channel: "notification",
+                destination: "configured recipients",
+                status: status === "completed" ? "delivered" : "partial",
+                metadata: { range: rangeLabel(filters) },
+              }).then(() =>
+                queryClient.invalidateQueries({ queryKey: ["copilot", "report-artifacts"] }),
+              ),
+            );
           if (status === "partial") {
             toast.warning("Executive report finished with failed sections");
           }

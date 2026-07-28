@@ -55,9 +55,7 @@ export const sendSampleNotification = createServerFn({ method: "POST" })
     const failed = data.type.endsWith(".failed");
     const results = await fanOutEvent(data.companyId, {
       type: data.type,
-      title: failed
-        ? "[Test] Executive report failed"
-        : "[Test] Executive report ready",
+      title: failed ? "[Test] Executive report failed" : "[Test] Executive report ready",
       summary: failed
         ? "Sample failure notification from AegisIQ CX — no real report failed."
         : "Sample completion notification from AegisIQ CX — no real report was generated.",

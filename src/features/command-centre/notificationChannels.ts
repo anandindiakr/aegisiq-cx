@@ -10,10 +10,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getActiveTenant } from "@/features/platform/queries";
 import { captureError } from "@/lib/observability";
-import {
-  dispatchNotificationEvent,
-  sendSampleNotification,
-} from "@/lib/notifications.functions";
+import { dispatchNotificationEvent, sendSampleNotification } from "@/lib/notifications.functions";
 import type {
   NotificationChannel,
   NotificationEvent,

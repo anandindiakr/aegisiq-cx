@@ -352,15 +352,11 @@ function CopilotNotifications() {
                     <span className="truncate text-foreground">{result.destination}</span>
                     <span className="flex items-center gap-2">
                       {result.attempts && result.attempts > 1 && (
-                        <span className="text-muted-foreground">
-                          {result.attempts} attempts
-                        </span>
+                        <span className="text-muted-foreground">{result.attempts} attempts</span>
                       )}
                       <Badge
                         variant="outline"
-                        className={
-                          result.status === "sent" ? "text-success" : "text-destructive"
-                        }
+                        className={result.status === "sent" ? "text-success" : "text-destructive"}
                       >
                         {result.status}
                         {result.error ? ` · ${result.error}` : ""}

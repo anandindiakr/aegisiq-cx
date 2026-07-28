@@ -63,8 +63,7 @@ export const Route = createFileRoute("/_authenticated/copilot/report-templates")
       { property: "og:title", content: "Executive report templates — AegisIQ CX™" },
       {
         property: "og:description",
-        content:
-          "Manage reusable executive report templates for Aegis Copilot in AegisIQ CX.",
+        content: "Manage reusable executive report templates for Aegis Copilot in AegisIQ CX.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -142,7 +141,8 @@ function TemplateEditor({
       toast.success(existing ? "Template updated" : "Template saved");
       onDone();
     },
-    onError: (error: Error) => toast.error("Could not save template", { description: error.message }),
+    onError: (error: Error) =>
+      toast.error("Could not save template", { description: error.message }),
   });
 
   return (
@@ -189,7 +189,10 @@ function TemplateEditor({
         <Label>Sections</Label>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {REPORT_SECTIONS.map((section) => (
-            <label key={section.id} className="flex items-start gap-2 text-sm text-muted-foreground">
+            <label
+              key={section.id}
+              className="flex items-start gap-2 text-sm text-muted-foreground"
+            >
               <Checkbox
                 checked={draft.sections.includes(section.id)}
                 onCheckedChange={() => patch({ sections: toggle(draft.sections, section.id) })}
@@ -263,7 +266,10 @@ function TemplateEditor({
               onCheckedChange={(v) =>
                 patchDelivery({
                   autoExport: v,
-                  formats: v && draft.delivery.formats.length === 0 ? draft.formats : draft.delivery.formats,
+                  formats:
+                    v && draft.delivery.formats.length === 0
+                      ? draft.formats
+                      : draft.delivery.formats,
                 })
               }
             />
@@ -300,7 +306,9 @@ function TemplateEditor({
           </div>
         )}
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Extra recipients (comma separated)</Label>
+          <Label className="text-xs text-muted-foreground">
+            Extra recipients (comma separated)
+          </Label>
           <Input
             value={recipients}
             maxLength={400}
@@ -312,10 +320,7 @@ function TemplateEditor({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Switch
-            checked={draft.is_default}
-            onCheckedChange={(v) => patch({ is_default: v })}
-          />
+          <Switch checked={draft.is_default} onCheckedChange={(v) => patch({ is_default: v })} />
           Use as my default template
         </label>
         <div className="flex gap-2">
@@ -367,9 +372,7 @@ function ReportTemplatesManager() {
         }
       >
         <div className="space-y-3">
-          {creating && (
-            <TemplateEditor initial={EMPTY} onDone={() => setCreating(false)} />
-          )}
+          {creating && <TemplateEditor initial={EMPTY} onDone={() => setCreating(false)} />}
 
           {isLoading ? (
             <LoadingState rows={3} />
