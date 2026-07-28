@@ -830,6 +830,69 @@ export type Database = {
           },
         ]
       }
+      copilot_report_runs: {
+        Row: {
+          command: string
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          filters: Json
+          id: string
+          input_mode: string
+          intent: string
+          partial: Json
+          range_label: string | null
+          response: Json | null
+          sections: Json
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          command: string
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          filters?: Json
+          id?: string
+          input_mode?: string
+          intent?: string
+          partial?: Json
+          range_label?: string | null
+          response?: Json | null
+          sections?: Json
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          command?: string
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          filters?: Json
+          id?: string
+          input_mode?: string
+          intent?: string
+          partial?: Json
+          range_label?: string | null
+          response?: Json | null
+          sections?: Json
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dashboard_audit_events: {
         Row: {
           action: string
