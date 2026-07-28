@@ -812,42 +812,57 @@ export type Database = {
       }
       executive_report_schedules: {
         Row: {
+          auto_retry: boolean
           company_id: string
+          consecutive_failures: number
           created_at: string
           created_by: string | null
           format: string
           frequency: string
           id: string
           is_active: boolean
+          last_error: string | null
           last_sent_at: string | null
+          last_status: string | null
+          max_retries: number
           name: string
           recipients: string[]
           send_hour: number
           updated_at: string
         }
         Insert: {
+          auto_retry?: boolean
           company_id: string
+          consecutive_failures?: number
           created_at?: string
           created_by?: string | null
           format?: string
           frequency?: string
           id?: string
           is_active?: boolean
+          last_error?: string | null
           last_sent_at?: string | null
+          last_status?: string | null
+          max_retries?: number
           name: string
           recipients?: string[]
           send_hour?: number
           updated_at?: string
         }
         Update: {
+          auto_retry?: boolean
           company_id?: string
+          consecutive_failures?: number
           created_at?: string
           created_by?: string | null
           format?: string
           frequency?: string
           id?: string
           is_active?: boolean
+          last_error?: string | null
           last_sent_at?: string | null
+          last_status?: string | null
+          max_retries?: number
           name?: string
           recipients?: string[]
           send_hour?: number
@@ -855,10 +870,75 @@ export type Database = {
         }
         Relationships: []
       }
+      export_action_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string | null
+          company_id: string
+          created_at: string
+          detail: string | null
+          format: string | null
+          id: string
+          metadata: Json
+          outcome: string
+          recipients: string[]
+          run_id: string | null
+          schedule_id: string | null
+          sections: string[]
+          surface: string
+          template_name: string | null
+          template_version: number | null
+          widget_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string | null
+          company_id: string
+          created_at?: string
+          detail?: string | null
+          format?: string | null
+          id?: string
+          metadata?: Json
+          outcome?: string
+          recipients?: string[]
+          run_id?: string | null
+          schedule_id?: string | null
+          sections?: string[]
+          surface?: string
+          template_name?: string | null
+          template_version?: number | null
+          widget_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string | null
+          company_id?: string
+          created_at?: string
+          detail?: string | null
+          format?: string | null
+          id?: string
+          metadata?: Json
+          outcome?: string
+          recipients?: string[]
+          run_id?: string | null
+          schedule_id?: string | null
+          sections?: string[]
+          surface?: string
+          template_name?: string | null
+          template_version?: number | null
+          widget_id?: string | null
+        }
+        Relationships: []
+      }
       export_audit_events: {
         Row: {
           actor_id: string | null
           actor_name: string | null
+          attempt: number
+          auto_retry: boolean
           company_id: string
           created_at: string
           duration_ms: number | null
@@ -868,6 +948,7 @@ export type Database = {
           id: string
           kind: string
           recipients: string[]
+          retry_of_id: string | null
           schedule_id: string | null
           sections: string[]
           status: string
@@ -878,6 +959,8 @@ export type Database = {
         Insert: {
           actor_id?: string | null
           actor_name?: string | null
+          attempt?: number
+          auto_retry?: boolean
           company_id: string
           created_at?: string
           duration_ms?: number | null
@@ -887,6 +970,7 @@ export type Database = {
           id?: string
           kind?: string
           recipients?: string[]
+          retry_of_id?: string | null
           schedule_id?: string | null
           sections?: string[]
           status?: string
@@ -897,6 +981,8 @@ export type Database = {
         Update: {
           actor_id?: string | null
           actor_name?: string | null
+          attempt?: number
+          auto_retry?: boolean
           company_id?: string
           created_at?: string
           duration_ms?: number | null
@@ -906,6 +992,7 @@ export type Database = {
           id?: string
           kind?: string
           recipients?: string[]
+          retry_of_id?: string | null
           schedule_id?: string | null
           sections?: string[]
           status?: string
@@ -1130,6 +1217,65 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      preset_share_links: {
+        Row: {
+          allowed_roles: Database["public"]["Enums"]["app_role"][]
+          company_id: string
+          created_at: string
+          created_by: string | null
+          created_by_name: string | null
+          expires_at: string
+          id: string
+          label: string | null
+          last_viewed_at: string | null
+          preset_id: string
+          revoked_at: string | null
+          token: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          allowed_roles?: Database["public"]["Enums"]["app_role"][]
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          expires_at?: string
+          id?: string
+          label?: string | null
+          last_viewed_at?: string | null
+          preset_id: string
+          revoked_at?: string | null
+          token?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          allowed_roles?: Database["public"]["Enums"]["app_role"][]
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_name?: string | null
+          expires_at?: string
+          id?: string
+          label?: string | null
+          last_viewed_at?: string | null
+          preset_id?: string
+          revoked_at?: string | null
+          token?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preset_share_links_preset_id_fkey"
+            columns: ["preset_id"]
+            isOneToOne: false
+            referencedRelation: "command_filter_presets"
             referencedColumns: ["id"]
           },
         ]
@@ -1916,6 +2062,7 @@ export type Database = {
       }
       widget_access_requests: {
         Row: {
+          access_expires_at: string | null
           company_id: string
           context: string | null
           created_at: string
@@ -1923,16 +2070,20 @@ export type Database = {
           decided_by: string | null
           decided_by_name: string | null
           decision_note: string | null
+          due_at: string | null
+          expires_at: string | null
           id: string
           reason: string | null
           requester_email: string | null
           requester_id: string
           requester_name: string | null
+          sla_minutes: number
           status: string
           updated_at: string
           widget_id: string
         }
         Insert: {
+          access_expires_at?: string | null
           company_id: string
           context?: string | null
           created_at?: string
@@ -1940,16 +2091,20 @@ export type Database = {
           decided_by?: string | null
           decided_by_name?: string | null
           decision_note?: string | null
+          due_at?: string | null
+          expires_at?: string | null
           id?: string
           reason?: string | null
           requester_email?: string | null
           requester_id: string
           requester_name?: string | null
+          sla_minutes?: number
           status?: string
           updated_at?: string
           widget_id: string
         }
         Update: {
+          access_expires_at?: string | null
           company_id?: string
           context?: string | null
           created_at?: string
@@ -1957,11 +2112,14 @@ export type Database = {
           decided_by?: string | null
           decided_by_name?: string | null
           decision_note?: string | null
+          due_at?: string | null
+          expires_at?: string | null
           id?: string
           reason?: string | null
           requester_email?: string | null
           requester_id?: string
           requester_name?: string | null
+          sla_minutes?: number
           status?: string
           updated_at?: string
           widget_id?: string
@@ -2006,6 +2164,7 @@ export type Database = {
       can_view_widget: { Args: { _widget_id: string }; Returns: boolean }
       current_company_id: { Args: never; Returns: string }
       executive_overview: { Args: { p_filters?: Json }; Returns: Json }
+      expire_widget_access_requests: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2014,6 +2173,7 @@ export type Database = {
         Returns: boolean
       }
       is_company_admin: { Args: never; Returns: boolean }
+      preset_by_share_token: { Args: { _token: string }; Returns: Json }
       tenant_branding: {
         Args: never
         Returns: {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { KeyRound, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,7 +15,13 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { requestWidgetAccess } from "@/features/command-centre/accessRequests";
+import {
+  accessRequestSla,
+  existingPendingRequest,
+  requestWidgetAccess,
+  widgetAccessRequestsQuery,
+} from "@/features/command-centre/accessRequests";
+import { useSession } from "@/features/auth/useSession";
 import { WIDGETS } from "@/features/command-centre/widgets";
 
 const LABELS = new Map(WIDGETS.map((w) => [w.id, w.label]));
@@ -42,6 +48,11 @@ export function RequestWidgetAccess({
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
+
+  // Surfacing the open request stops people raising the same ask twice.
+  const session = useSession();
+  const requests = useQuery(widgetAccessRequestsQuery);
+  const outstanding = existingPendingRequest(requests.data ?? [], widgetId, session.user?.id);
 
   const submit = useMutation({
     mutationFn: () => requestWidgetAccess({ widgetId, reason: reason.trim(), context }),
@@ -75,6 +86,14 @@ export function RequestWidgetAccess({
             need it and they can grant it from the access request queue.
           </DialogDescription>
         </DialogHeader>
+        {outstanding && (
+          <p className="rounded-md border border-border bg-surface/60 p-2.5 text-[11px] text-muted-foreground">
+            You already have a request open for this widget, raised{" "}
+            {new Date(outstanding.created_at).toLocaleString("en-GB")} —{" "}
+            {accessRequestSla(outstanding).label.toLowerCase()}. Sending another will not speed it
+            up.
+          </p>
+        )}
         <div className="space-y-1.5">
           <Label className="text-xs">Business justification</Label>
           <Textarea
@@ -88,7 +107,10 @@ export function RequestWidgetAccess({
           <Button variant="ghost" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button disabled={!reason.trim() || submit.isPending} onClick={() => submit.mutate()}>
+          <Button
+            disabled={!reason.trim() || submit.isPending || Boolean(outstanding)}
+            onClick={() => submit.mutate()}
+          >
             {submit.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
             Send request
           </Button>

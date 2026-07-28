@@ -14,6 +14,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedSharedPresetRouteImport } from './routes/_authenticated/shared-preset'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -63,6 +64,12 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSharedPresetRoute =
+  AuthenticatedSharedPresetRouteImport.update({
+    id: '/shared-preset',
+    path: '/shared-preset',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -213,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/shared-preset': typeof AuthenticatedSharedPresetRoute
   '/users': typeof AuthenticatedUsersRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
@@ -243,6 +251,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/shared-preset': typeof AuthenticatedSharedPresetRoute
   '/users': typeof AuthenticatedUsersRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
@@ -275,6 +284,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/shared-preset': typeof AuthenticatedSharedPresetRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
@@ -307,6 +317,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reports'
     | '/settings'
+    | '/shared-preset'
     | '/users'
     | '/admin/roles'
     | '/conversationiq/$conversationId'
@@ -337,6 +348,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reports'
     | '/settings'
+    | '/shared-preset'
     | '/users'
     | '/admin/roles'
     | '/conversationiq/$conversationId'
@@ -368,6 +380,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
+    | '/_authenticated/shared-preset'
     | '/_authenticated/users'
     | '/_authenticated/admin/roles'
     | '/_authenticated/conversationiq/$conversationId'
@@ -426,6 +439,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shared-preset': {
+      id: '/_authenticated/shared-preset'
+      path: '/shared-preset'
+      fullPath: '/shared-preset'
+      preLoaderRoute: typeof AuthenticatedSharedPresetRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -612,6 +632,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSharedPresetRoute: typeof AuthenticatedSharedPresetRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedAdminRolesRoute: typeof AuthenticatedAdminRolesRoute
   AuthenticatedConversationiqConversationIdRoute: typeof AuthenticatedConversationiqConversationIdRoute
@@ -639,6 +660,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSharedPresetRoute: AuthenticatedSharedPresetRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedAdminRolesRoute: AuthenticatedAdminRolesRoute,
   AuthenticatedConversationiqConversationIdRoute:

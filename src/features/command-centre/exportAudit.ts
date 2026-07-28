@@ -32,6 +32,9 @@ export interface ExportAuditEvent {
   status: ExportRunStatus;
   error_message: string | null;
   duration_ms: number | null;
+  retry_of_id: string | null;
+  attempt: number;
+  auto_retry: boolean;
   created_at: string;
 }
 
@@ -48,6 +51,9 @@ export interface ExportRunInput {
   errorMessage?: string | null;
   durationMs?: number | null;
   filters?: Record<string, unknown>;
+  retryOfId?: string | null;
+  attempt?: number;
+  autoRetry?: boolean;
 }
 
 async function actorName(userId: string | undefined, email: string | null): Promise<string | null> {
@@ -82,6 +88,9 @@ export async function logExportRun(input: ExportRunInput): Promise<void> {
       error_message: input.errorMessage ?? null,
       duration_ms: input.durationMs ?? null,
       filters: input.filters ?? {},
+      retry_of_id: input.retryOfId ?? null,
+      attempt: input.attempt ?? 1,
+      auto_retry: input.autoRetry ?? false,
     });
   } catch (error) {
     captureError(error, { area: "export-audit" });
@@ -93,7 +102,7 @@ export const exportAuditQuery = queryOptions({
   queryFn: async () => {
     const { data, error } = await table("export_audit_events")
       .select(
-        "id,actor_name,kind,format,template_id,template_name,template_version,sections,recipients,schedule_id,status,error_message,duration_ms,created_at",
+        "id,actor_name,kind,format,template_id,template_name,template_version,sections,recipients,schedule_id,status,error_message,duration_ms,retry_of_id,attempt,auto_retry,created_at",
       )
       .order("created_at", { ascending: false })
       .limit(200);
@@ -138,4 +147,15 @@ export function exportAuditCsv(rows: ExportAuditEvent[]): string {
         .join(","),
     ),
   ].join("\n");
+}
+
+/** A failed run can be retried when nothing later already succeeded for it. */
+export function isRetryable(row: ExportAuditEvent, rows: ExportAuditEvent[]): boolean {
+  if (row.status !== "failed") return false;
+  return !rows.some((other) => other.retry_of_id === row.id && other.status === "success");
+}
+
+export function attemptsFor(row: ExportAuditEvent, rows: ExportAuditEvent[]): number {
+  const rootId = row.retry_of_id ?? row.id;
+  return rows.filter((r) => r.id === rootId || r.retry_of_id === rootId).length;
 }

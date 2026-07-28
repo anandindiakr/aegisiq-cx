@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Download,
@@ -50,6 +50,8 @@ import {
 } from "@/components/command-centre/ExportPreviewDialog";
 
 import { logExportRun } from "@/features/command-centre/exportAudit";
+import { logExportAction } from "@/features/command-centre/exportActions";
+import { RETRY_EXPORT_EVENT, type RetryRequestDetail } from "@/features/command-centre/exportRetry";
 import type { ExecutiveOverview } from "@/features/command-centre/types";
 import {
   ALL_SECTIONS,
@@ -112,7 +114,13 @@ export function ExportMenu({
     templates.find((t) => t.is_default) ??
     FULL_TEMPLATE;
 
-  const audit = (format: ExportFormat, status: "success" | "failed", extra?: string, ms?: number) =>
+  const audit = (
+    format: ExportFormat,
+    status: "success" | "failed",
+    extra?: string,
+    ms?: number,
+    retry?: { runId: string; attempt: number; auto?: boolean },
+  ) =>
     void logExportRun({
       kind: "export",
       format,
@@ -124,6 +132,9 @@ export function ExportMenu({
       errorMessage: extra ?? null,
       durationMs: ms ?? null,
       filters: toRpcPayload(filters),
+      retryOfId: retry?.runId ?? null,
+      attempt: retry?.attempt ?? 1,
+      autoRetry: retry?.auto ?? false,
     }).then(() => queryClient.invalidateQueries({ queryKey: ["export-audit-events"] }));
 
   /** Step one: show exactly what will render before anything is generated. */
@@ -136,6 +147,14 @@ export function ExportMenu({
       });
       return;
     }
+    void logExportAction({
+      action: "previewed",
+      format,
+      templateName: active.name,
+      templateVersion: active.version,
+      sections: active.sections,
+      detail: rangeLabel(filters),
+    });
     setPreview({
       kind: "export",
       format,
@@ -149,26 +168,96 @@ export function ExportMenu({
     });
   };
 
+  /**
+   * Generates the file. A first failure is retried once automatically before the
+   * user is asked to intervene; both attempts are recorded separately.
+   */
+  const generate = useCallback(
+    (
+      format: ExportFormat,
+      sections: string[],
+      retry?: { runId: string; attempt: number; auto?: boolean },
+      allowAutoRetry = true,
+    ) => {
+      if (!overview) return;
+      setBusy(true);
+      const started = performance.now();
+      try {
+        exportExecutiveReport(format, overview, filters, sections);
+        audit(format, "success", undefined, Math.round(performance.now() - started), retry);
+        void logExportAction({
+          action: retry ? "retried" : "ran",
+          format,
+          templateName: active.name,
+          templateVersion: active.version,
+          sections,
+          runId: retry?.runId ?? null,
+          detail: retry ? `Attempt ${retry.attempt}` : undefined,
+        });
+        toast.success(retry ? "Export re-run" : "Export started", {
+          description: `${format.toUpperCase()} generated from "${active.name}" v${active.version}.`,
+        });
+        setPreview(null);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        audit(format, "failed", message, Math.round(performance.now() - started), retry);
+        void logExportAction({
+          action: retry ? "retried" : "ran",
+          outcome: "failed",
+          format,
+          templateName: active.name,
+          templateVersion: active.version,
+          sections,
+          detail: message,
+        });
+        if (allowAutoRetry) {
+          toast.warning("Export failed — retrying automatically", { description: message });
+          window.setTimeout(
+            () =>
+              generate(
+                format,
+                sections,
+                { runId: retry?.runId ?? "", attempt: (retry?.attempt ?? 1) + 1, auto: true },
+                false,
+              ),
+            800,
+          );
+        } else {
+          toast.error("Export failed", {
+            description: `${message} — retry manually from the export history.`,
+          });
+        }
+      } finally {
+        setBusy(false);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [overview, filters, active],
+  );
+
   const run = () => {
     const format = preview?.format as ExportFormat | undefined;
-    if (!overview || !format) return;
-    setBusy(true);
-    const started = performance.now();
-    try {
-      exportExecutiveReport(format, overview, filters, active.sections);
-      audit(format, "success", undefined, Math.round(performance.now() - started));
-      toast.success("Export started", {
-        description: `${format.toUpperCase()} generated from "${active.name}" v${active.version}.`,
-      });
-      setPreview(null);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      audit(format, "failed", message, Math.round(performance.now() - started));
-      toast.error("Export failed", { description: message });
-    } finally {
-      setBusy(false);
-    }
+    if (!format) return;
+    generate(format, active.sections);
   };
+
+  // Re-runs requested from the export history land here, where the rendered
+  // dashboard data is available.
+  const generateRef = useRef(generate);
+  generateRef.current = generate;
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<RetryRequestDetail>).detail;
+      generateRef.current(
+        detail.format as ExportFormat,
+        detail.sections.length > 0 ? detail.sections : active.sections,
+        { runId: detail.runId, attempt: detail.attempt },
+        false,
+      );
+    };
+    window.addEventListener(RETRY_EXPORT_EVENT, handler);
+    return () => window.removeEventListener(RETRY_EXPORT_EVENT, handler);
+  }, [active.sections]);
 
   return (
     <>

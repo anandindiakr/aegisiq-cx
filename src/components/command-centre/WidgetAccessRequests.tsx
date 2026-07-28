@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2, ShieldQuestion, X } from "lucide-react";
+import { AlarmClock, Check, Clock, Hourglass, Loader2, ShieldQuestion, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -14,8 +14,13 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  accessRequestSla,
   approveWidgetAccess,
+  averageTurnaround,
   denyWidgetAccess,
+  expireStaleAccessRequests,
+  expireWidgetAccess,
+  formatMinutes,
   widgetAccessRequestsQuery,
   type WidgetAccessRequest,
 } from "@/features/command-centre/accessRequests";
@@ -33,6 +38,8 @@ export function WidgetAccessRequests() {
   const requests = useQuery(widgetAccessRequestsQuery);
   const rows = requests.data ?? [];
   const pending = rows.filter((r) => r.status === "pending");
+  const breached = pending.filter((r) => accessRequestSla(r).state === "breached");
+  const median = averageTurnaround(rows);
 
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: widgetAccessRequestsQuery.queryKey });
@@ -47,6 +54,28 @@ export function WidgetAccessRequests() {
       toast.success("Access granted");
     },
     onError: (error: Error) => toast.error("Could not approve", { description: error.message }),
+  });
+
+  const expireOne = useMutation({
+    mutationFn: (request: WidgetAccessRequest) => expireWidgetAccess(request),
+    onSuccess: async () => {
+      await refresh();
+      toast.success("Request expired");
+    },
+    onError: (error: Error) => toast.error("Could not expire", { description: error.message }),
+  });
+
+  const expireStale = useMutation({
+    mutationFn: expireStaleAccessRequests,
+    onSuccess: async (count: number) => {
+      await refresh();
+      toast.success(
+        count === 0
+          ? "Nothing to expire"
+          : `${count} stale request${count === 1 ? "" : "s"} expired`,
+      );
+    },
+    onError: (error: Error) => toast.error("Could not expire", { description: error.message }),
   });
 
   const deny = useMutation({
@@ -65,7 +94,13 @@ export function WidgetAccessRequests() {
           <ShieldQuestion className="size-4" />
           Access requests
           {pending.length > 0 && (
-            <span className="rounded-full bg-primary/15 px-1.5 text-[10px] tabular-nums text-primary">
+            <span
+              className={
+                breached.length > 0
+                  ? "rounded-full bg-destructive/15 px-1.5 text-[10px] tabular-nums text-destructive"
+                  : "rounded-full bg-primary/15 px-1.5 text-[10px] tabular-nums text-primary"
+              }
+            >
               {pending.length}
             </span>
           )}
@@ -79,6 +114,33 @@ export function WidgetAccessRequests() {
             ConversationIQ drill-downs.
           </DialogDescription>
         </DialogHeader>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/70 bg-surface/40 px-3 py-2 text-[11px] text-muted-foreground">
+          <span className="flex flex-wrap items-center gap-3">
+            <span className="flex items-center gap-1.5">
+              <Hourglass className="size-3.5" />
+              {pending.length} pending
+            </span>
+            <span className="flex items-center gap-1.5 text-destructive">
+              <AlarmClock className="size-3.5" />
+              {breached.length} past SLA
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="size-3.5" />
+              Median turnaround {median === null ? "—" : formatMinutes(median)}
+            </span>
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-[11px]"
+            disabled={expireStale.isPending}
+            onClick={() => expireStale.mutate()}
+          >
+            {expireStale.isPending && <Loader2 className="mr-1.5 size-3 animate-spin" />}
+            Expire stale requests
+          </Button>
+        </div>
 
         <ScrollArea className="max-h-[60vh]">
           <div className="space-y-2 pr-3">
@@ -110,10 +172,35 @@ export function WidgetAccessRequests() {
                     {request.reason && (
                       <p className="mt-1.5 text-xs text-muted-foreground">{request.reason}</p>
                     )}
+                    {request.status === "pending" &&
+                      (() => {
+                        const sla = accessRequestSla(request);
+                        return (
+                          <p
+                            className={
+                              sla.state === "breached"
+                                ? "mt-1.5 text-[11px] font-medium text-destructive"
+                                : sla.state === "due_soon"
+                                  ? "mt-1.5 text-[11px] font-medium text-warning"
+                                  : "mt-1.5 text-[11px] text-muted-foreground"
+                            }
+                          >
+                            {sla.label} · target {formatMinutes(request.sla_minutes ?? 480)} ·
+                            waiting {formatMinutes(sla.turnaroundMinutes)}
+                          </p>
+                        );
+                      })()}
                     {request.status !== "pending" && (
                       <p className="mt-1.5 text-[11px] text-muted-foreground">
-                        {request.status === "approved" ? "Approved" : "Denied"} by{" "}
-                        {request.decided_by_name ?? "an admin"}
+                        {request.status === "approved"
+                          ? "Approved"
+                          : request.status === "expired"
+                            ? "Expired"
+                            : "Denied"}{" "}
+                        {request.status === "expired"
+                          ? ""
+                          : `by ${request.decided_by_name ?? "an admin"} `}
+                        after {formatMinutes(accessRequestSla(request).turnaroundMinutes)}
                         {request.decision_note ? ` — ${request.decision_note}` : ""}
                       </p>
                     )}
@@ -139,6 +226,16 @@ export function WidgetAccessRequests() {
                         aria-label="Deny request"
                       >
                         <X className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 text-muted-foreground"
+                        disabled={expireOne.isPending}
+                        onClick={() => expireOne.mutate(request)}
+                        aria-label="Expire request"
+                      >
+                        <Hourglass className="size-4" />
                       </Button>
                     </div>
                   ) : (
