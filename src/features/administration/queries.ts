@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
  * the tenant audit trail automatically.
  */
 
-const db = supabase as never as ReturnType<typeof supabase.schema>;
 
 export type SettingsSection =
   | "general"
@@ -387,4 +386,3 @@ export async function deleteKeyword(id: string) {
 }
 
 export type { SettingsDoc as AdminSettingsDoc };
-export { db };
