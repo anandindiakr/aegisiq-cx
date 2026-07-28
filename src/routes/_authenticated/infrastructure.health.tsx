@@ -11,8 +11,9 @@ import {
   audioStreamsQuery,
   edgeGatewaysQuery,
   infraCamerasQuery,
+  storagePoolsQuery,
 } from "@/features/infrastructure/queries";
-import { buildEstateHealth, healthLabel } from "@/features/infrastructure/pipeline";
+import { buildEstateHealth } from "@/features/infrastructure/pipeline";
 
 export const Route = createFileRoute("/_authenticated/infrastructure/health")({
   head: () => ({
