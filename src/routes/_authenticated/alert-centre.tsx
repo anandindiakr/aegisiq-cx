@@ -32,11 +32,12 @@ import {
   outletsQuery,
 } from "@/features/platform/queries";
 import type { AlertStatus } from "@/features/platform/queries";
-import { bulkUpdateAlertStatus } from "@/features/live-monitor/queries";
+import { bulkTriageAlerts, type BulkTriageSummary } from "@/features/alerts/bulkTriage";
 import { useLiveMonitorStream } from "@/features/live-monitor/stream";
 import { SlaTimer } from "@/components/alerts/SlaTimer";
 import { alertSlaPoliciesQuery } from "@/features/alerts/sla";
 import { useAlertAccess } from "@/features/alerts/access";
+import { useEscalationNotifications } from "@/features/alerts/escalationNotifications";
 import { formatDateTime, formatNumber, titleCase } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/alert-centre")({
@@ -86,8 +87,10 @@ function AlertCentrePage() {
   const [outletId, setOutletId] = useState("all");
   const [selected, setSelected] = useState<string[]>([]);
   const [active, setActive] = useState<TriageAlert | null>(null);
+  const [triageSummary, setTriageSummary] = useState<BulkTriageSummary | null>(null);
 
   useLiveMonitorStream({ companyId: company.data?.id, paused: false });
+  useEscalationNotifications({ enabled: true });
 
   const outletName = useMemo(() => {
     const map = new Map((outlets.data ?? []).map((o) => [o.id, o.name]));
@@ -106,10 +109,32 @@ function AlertCentrePage() {
   }, [alerts.data, search, severity, status, outletId]);
 
   const bulk = useMutation({
-    mutationFn: (next: AlertStatus) => bulkUpdateAlertStatus(selected, next),
-    onSuccess: (_d, next) => {
-      toast.success(`${selected.length} alerts ${next}`);
+    mutationFn: (action: "acknowledge" | "resolve" | "dismiss") =>
+      bulkTriageAlerts(
+        rows
+          .filter((r) => selected.includes(r.id))
+          .map((r) => ({
+            id: r.id,
+            title: r.title,
+            outlet_id: r.outlet_id,
+            status: r.status,
+          })),
+        action,
+        { denyReason: access.denyReason },
+      ),
+    onSuccess: (summary) => {
+      setTriageSummary(summary);
       setSelected([]);
+      const blocked = summary.denied + summary.failed;
+      if (summary.updated > 0 && blocked === 0) {
+        toast.success(`${summary.updated} alerts ${summary.status}`);
+      } else if (summary.updated > 0) {
+        toast.warning(
+          `${summary.updated} ${summary.status} · ${blocked} could not be updated`,
+        );
+      } else {
+        toast.error(`No alerts were ${summary.status}`);
+      }
       void queryClient.invalidateQueries({ queryKey: ["alerts"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -224,14 +249,14 @@ function AlertCentrePage() {
               size="sm"
               variant="outline"
               disabled={bulk.isPending || !access.can("acknowledge")}
-              onClick={() => bulk.mutate("acknowledged")}
+              onClick={() => bulk.mutate("acknowledge")}
             >
               <UserCheck className="mr-2 size-4" /> Acknowledge
             </Button>
             <Button
               size="sm"
               disabled={bulk.isPending || !access.can("resolve")}
-              onClick={() => bulk.mutate("resolved")}
+              onClick={() => bulk.mutate("resolve")}
             >
               <CheckCircle2 className="mr-2 size-4" /> Resolve
             </Button>
@@ -239,13 +264,64 @@ function AlertCentrePage() {
               size="sm"
               variant="ghost"
               disabled={bulk.isPending || !access.can("dismiss")}
-              onClick={() => bulk.mutate("dismissed")}
+              onClick={() => bulk.mutate("dismiss")}
             >
               <XCircle className="mr-2 size-4" /> Dismiss
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setSelected([])}>
               Clear
             </Button>
+          </div>
+        )}
+
+        {triageSummary && (
+          <div className="mt-4 rounded-lg border border-border bg-surface/50 px-3 py-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium">
+                Bulk {triageSummary.action} results
+              </span>
+              <StatusPill label={`${triageSummary.updated} updated`} tone="positive" />
+              {triageSummary.skipped > 0 && (
+                <StatusPill label={`${triageSummary.skipped} unchanged`} tone="neutral" />
+              )}
+              {triageSummary.denied > 0 && (
+                <StatusPill label={`${triageSummary.denied} not permitted`} tone="warning" />
+              )}
+              {triageSummary.failed > 0 && (
+                <StatusPill label={`${triageSummary.failed} failed`} tone="negative" />
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                className="ml-auto"
+                onClick={() => setTriageSummary(null)}
+              >
+                Dismiss
+              </Button>
+            </div>
+            <ul className="mt-2 space-y-1">
+              {triageSummary.results.map((result) => (
+                <li
+                  key={result.id}
+                  className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
+                >
+                  <StatusPill
+                    label={result.outcome}
+                    tone={
+                      result.outcome === "updated"
+                        ? "positive"
+                        : result.outcome === "failed"
+                          ? "negative"
+                          : result.outcome === "denied"
+                            ? "warning"
+                            : "neutral"
+                    }
+                  />
+                  <span className="truncate text-foreground">{result.title}</span>
+                  {result.reason && <span>— {result.reason}</span>}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
