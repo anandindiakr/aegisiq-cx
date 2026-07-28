@@ -493,4 +493,3 @@ function TemplateVersionHistory({
   );
 }
 
-export { updateReportTemplate };
