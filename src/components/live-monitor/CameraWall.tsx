@@ -47,9 +47,7 @@ export function CameraWall({
                 <span
                   className={cn(
                     "grid size-9 shrink-0 place-items-center rounded-lg",
-                    offline
-                      ? "bg-destructive/12 text-destructive"
-                      : "bg-primary/12 text-primary",
+                    offline ? "bg-destructive/12 text-destructive" : "bg-primary/12 text-primary",
                   )}
                 >
                   {offline ? <WifiOff className="size-4" /> : <Cctv className="size-4" />}

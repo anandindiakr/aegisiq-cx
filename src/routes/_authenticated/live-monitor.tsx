@@ -27,12 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CameraWall } from "@/components/live-monitor/CameraWall";
 import { LiveFeed } from "@/components/live-monitor/LiveFeed";
-import {
-  alertsQuery,
-  camerasQuery,
-  companyQuery,
-  outletsQuery,
-} from "@/features/platform/queries";
+import { alertsQuery, camerasQuery, companyQuery, outletsQuery } from "@/features/platform/queries";
 import { liveConversationsQuery } from "@/features/live-monitor/queries";
 import { useLiveMonitorStream } from "@/features/live-monitor/stream";
 import { formatNumber, formatRelative } from "@/lib/format";
@@ -191,7 +186,12 @@ function LiveMonitorPage() {
               title="Live signal feed"
               description="Alerts, conversations and device changes as they arrive"
               actions={
-                <Button variant="ghost" size="sm" onClick={clearEvents} disabled={events.length === 0}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearEvents}
+                  disabled={events.length === 0}
+                >
                   <RotateCcw className="mr-2 size-4" /> Clear
                 </Button>
               }

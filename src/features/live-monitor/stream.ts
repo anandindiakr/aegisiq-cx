@@ -90,19 +90,23 @@ export function useLiveMonitorStream({ companyId, paused, onAlert }: Options) {
           });
         },
       )
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "cameras", filter }, (p) => {
-        const row = p.new as Record<string, unknown>;
-        void queryClient.invalidateQueries({ queryKey: ["cameras"] });
-        const state = String(row.status ?? "unknown");
-        push({
-          id: `cam-${String(row.id)}-${Date.now()}`,
-          kind: "camera",
-          title: `${String(row.name ?? "Camera")} is ${state}`,
-          detail: String(row.location ?? "Estate device"),
-          severity: state === "offline" ? "critical" : state === "degraded" ? "warning" : "info",
-          at: new Date().toISOString(),
-        });
-      })
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "cameras", filter },
+        (p) => {
+          const row = p.new as Record<string, unknown>;
+          void queryClient.invalidateQueries({ queryKey: ["cameras"] });
+          const state = String(row.status ?? "unknown");
+          push({
+            id: `cam-${String(row.id)}-${Date.now()}`,
+            kind: "camera",
+            title: `${String(row.name ?? "Camera")} is ${state}`,
+            detail: String(row.location ?? "Estate device"),
+            severity: state === "offline" ? "critical" : state === "degraded" ? "warning" : "info",
+            at: new Date().toISOString(),
+          });
+        },
+      )
       .subscribe((state) => {
         if (state === "SUBSCRIBED") setStatus("live");
         if (state === "CHANNEL_ERROR" || state === "TIMED_OUT") {
