@@ -20,10 +20,21 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { executiveOverviewQuery } from "@/features/command-centre/queries";
-import { defaultFilters, withPreset, type CommandFilters } from "@/features/command-centre/filters";
+import {
+  defaultFilters,
+  rangeLabel,
+  withPreset,
+  type CommandFilters,
+} from "@/features/command-centre/filters";
 import { exportExecutiveReport } from "@/features/command-centre/export";
+import { notify } from "@/features/command-centre/notificationChannels";
 import { useIqAccess } from "@/features/conversationiq/access";
 import { resolveCopilotCommand } from "@/features/copilot/engine";
+import {
+  finishReportRun,
+  startReportRun,
+  type ReportRunStatus,
+} from "@/features/copilot/reportRuns";
 import {
   copilotPreferencesQuery,
   recordRecentSearch,
@@ -35,8 +46,10 @@ import { logCopilotEvent } from "@/features/copilot/audit";
 import type {
   CopilotInputMode,
   CopilotMessage,
+  CopilotReportPartial,
   CopilotSurfaceContext,
 } from "@/features/copilot/types";
+
 
 interface CopilotState {
   open: boolean;
