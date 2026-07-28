@@ -723,6 +723,113 @@ export type Database = {
           },
         ]
       }
+      copilot_audit_events: {
+        Row: {
+          actor_id: string | null
+          actor_name: string | null
+          command: string
+          company_id: string
+          created_at: string
+          denied_reason: string | null
+          duration_ms: number | null
+          id: string
+          input_mode: string
+          intent: string
+          outcome: string
+          resolved_entities: Json
+          route: string | null
+          surface: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_name?: string | null
+          command: string
+          company_id?: string
+          created_at?: string
+          denied_reason?: string | null
+          duration_ms?: number | null
+          id?: string
+          input_mode?: string
+          intent?: string
+          outcome?: string
+          resolved_entities?: Json
+          route?: string | null
+          surface?: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_name?: string | null
+          command?: string
+          company_id?: string
+          created_at?: string
+          denied_reason?: string | null
+          duration_ms?: number | null
+          id?: string
+          input_mode?: string
+          intent?: string
+          outcome?: string
+          resolved_entities?: Json
+          route?: string | null
+          surface?: string
+        }
+        Relationships: []
+      }
+      copilot_preferences: {
+        Row: {
+          company_id: string
+          created_at: string
+          default_language: string
+          favorite_commands: string[]
+          favorite_outlet_id: string | null
+          favorite_reports: string[]
+          id: string
+          pinned_dashboards: string[]
+          recent_searches: string[]
+          speech_rate: number
+          updated_at: string
+          user_id: string
+          voice_enabled: boolean
+        }
+        Insert: {
+          company_id?: string
+          created_at?: string
+          default_language?: string
+          favorite_commands?: string[]
+          favorite_outlet_id?: string | null
+          favorite_reports?: string[]
+          id?: string
+          pinned_dashboards?: string[]
+          recent_searches?: string[]
+          speech_rate?: number
+          updated_at?: string
+          user_id?: string
+          voice_enabled?: boolean
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          default_language?: string
+          favorite_commands?: string[]
+          favorite_outlet_id?: string | null
+          favorite_reports?: string[]
+          id?: string
+          pinned_dashboards?: string[]
+          recent_searches?: string[]
+          speech_rate?: number
+          updated_at?: string
+          user_id?: string
+          voice_enabled?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_preferences_favorite_outlet_id_fkey"
+            columns: ["favorite_outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dashboard_audit_events: {
         Row: {
           action: string

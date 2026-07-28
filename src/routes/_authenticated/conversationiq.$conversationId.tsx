@@ -47,6 +47,8 @@ import {
 import { AlertReviewPanel } from "@/components/conversationiq/AlertReviewPanel";
 import { ReviewNotesPanel } from "@/components/conversationiq/ReviewNotesPanel";
 import { iqConversationQuery } from "@/features/conversationiq/queries";
+import { useCopilotContext } from "@/components/copilot/CopilotProvider";
+
 import { transcriptAnchorsQuery } from "@/features/conversationiq/anchors";
 import {
   applyRedactions,
@@ -165,6 +167,25 @@ function ConversationViewer() {
   const [revealed, setRevealed] = useState(false);
   const reveal = canRevealRedactions && revealed;
   const redactionsByLine = useMemo(() => byTranscript(redactions.data ?? []), [redactions.data]);
+
+  // Tell the copilot which conversation it is looking at, so summarise /
+  // translate / sentiment commands target this record.
+  const copilotTarget = detail.data?.conversation;
+  useCopilotContext(
+    copilotTarget
+      ? {
+          surface: "conversationiq",
+          label: `Conversation ${copilotTarget.reference}`,
+          conversationId: copilotTarget.id,
+          reference: copilotTarget.reference,
+          outletId: copilotTarget.outlet_id ?? undefined,
+          language: copilotTarget.language_code,
+        }
+      : { surface: "conversationiq", label: "ConversationIQ" },
+  );
+
+
+
 
   /** Masks the sensitive ranges saved against an utterance. */
   function displayContent(lineId: string, content: string) {
