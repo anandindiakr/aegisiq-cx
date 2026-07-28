@@ -229,9 +229,9 @@ export async function saveApiCredential(input: {
 }) {
   const { error } = await supabase.rpc("save_api_credential", {
     _provider: input.provider,
-    _label: input.label,
+    _label: input.label ?? "",
     _secret: input.secret,
-    _expires_at: input.expiresAt,
+    _expires_at: input.expiresAt ?? undefined,
   });
   if (error) throw new Error(error.message);
 }
