@@ -40,9 +40,11 @@ function DeviceHealthPage() {
   const gateways = useQuery(edgeGatewaysQuery);
   const engines = useQuery(aiEnginesQuery);
   const streams = useQuery(audioStreamsQuery);
+  const pools = useQuery(storagePoolsQuery);
 
   const error = cameras.error ?? gateways.error ?? engines.error ?? streams.error;
-  const estate = buildEstateHealth(cameras.data ?? [], gateways.data ?? [], engines.data ?? []);
+  const estate = buildEstateHealth(cameras.data ?? [], gateways.data ?? [], pools.data ?? []);
+  const enginesHealthy = (engines.data ?? []).filter((e) => e.health === "healthy").length;
 
   return (
     <div>
