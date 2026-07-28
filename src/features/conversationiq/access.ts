@@ -24,7 +24,13 @@ export type IqCapability =
   | "manageSla"
   | "manageRedactions"
   | "revealRedactions"
-  | "manageRoles";
+  | "manageRoles"
+  | "alertAcknowledge"
+  | "alertResolve"
+  | "alertDismiss"
+  | "alertAssign"
+  | "manageAlertSla"
+  | "viewAlertAnalytics";
 
 const MATRIX: Record<IqCapability, AppRole[]> = {
   viewTranscripts: [
@@ -51,6 +57,24 @@ const MATRIX: Record<IqCapability, AppRole[]> = {
   manageRedactions: ["super_admin", "tenant_admin", "regional_manager", "outlet_manager"],
   revealRedactions: ["super_admin", "tenant_admin"],
   manageRoles: ["super_admin", "tenant_admin"],
+  alertAcknowledge: [
+    "super_admin",
+    "tenant_admin",
+    "regional_manager",
+    "outlet_manager",
+    "supervisor",
+  ],
+  alertResolve: ["super_admin", "tenant_admin", "regional_manager", "outlet_manager", "supervisor"],
+  alertDismiss: ["super_admin", "tenant_admin", "regional_manager", "outlet_manager"],
+  alertAssign: ["super_admin", "tenant_admin", "regional_manager", "outlet_manager"],
+  manageAlertSla: ["super_admin", "tenant_admin", "regional_manager"],
+  viewAlertAnalytics: [
+    "super_admin",
+    "tenant_admin",
+    "regional_manager",
+    "outlet_manager",
+    "supervisor",
+  ],
 };
 
 export const CAPABILITY_LABELS: Record<IqCapability, string> = {
@@ -66,6 +90,12 @@ export const CAPABILITY_LABELS: Record<IqCapability, string> = {
   manageRedactions: "Create and remove transcript redactions",
   revealRedactions: "Reveal redacted transcript text",
   manageRoles: "Assign roles and manage workspace members",
+  alertAcknowledge: "Acknowledge alerts",
+  alertResolve: "Resolve alerts",
+  alertDismiss: "Dismiss alerts",
+  alertAssign: "Assign alert owners",
+  manageAlertSla: "Configure alert SLA timers and escalation backups",
+  viewAlertAnalytics: "View alert analytics (MTTA / MTTR)",
 };
 
 export const DEFAULT_MATRIX = MATRIX;
