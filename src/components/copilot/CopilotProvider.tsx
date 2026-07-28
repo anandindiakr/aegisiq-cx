@@ -481,7 +481,9 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
         setOpen(true);
         setMinimised(false);
         void run(interrupted.command, "text", {
-          resume: interrupted.partial ?? undefined,
+          resume: (interrupted.partial?.sections?.length
+            ? (interrupted.partial as CopilotReportPartial)
+            : undefined),
           runId: interrupted.id,
         });
       });
