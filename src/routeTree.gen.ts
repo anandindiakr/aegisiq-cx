@@ -57,6 +57,7 @@ import { Route as AuthenticatedConversationiqAuditRouteImport } from './routes/_
 import { Route as AuthenticatedConversationiqConversationIdRouteImport } from './routes/_authenticated/conversationiq.$conversationId'
 import { Route as AuthenticatedAdministrationSpeechRouteImport } from './routes/_authenticated/administration.speech'
 import { Route as AuthenticatedAdministrationGeneralRouteImport } from './routes/_authenticated/administration.general'
+import { Route as AuthenticatedAdministrationAlertsRouteImport } from './routes/_authenticated/administration.alerts'
 import { Route as AuthenticatedAdministrationAiRouteImport } from './routes/_authenticated/administration.ai'
 import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated/admin.roles'
 import { Route as AuthenticatedAdminCopilotAuditRouteImport } from './routes/_authenticated/admin.copilot-audit'
@@ -332,6 +333,12 @@ const AuthenticatedAdministrationGeneralRoute =
     path: '/general',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
+const AuthenticatedAdministrationAlertsRoute =
+  AuthenticatedAdministrationAlertsRouteImport.update({
+    id: '/alerts',
+    path: '/alerts',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationAiRoute =
   AuthenticatedAdministrationAiRouteImport.update({
     id: '/ai',
@@ -377,6 +384,7 @@ export interface FileRoutesByFullPath {
   '/admin/copilot-audit': typeof AuthenticatedAdminCopilotAuditRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/administration/ai': typeof AuthenticatedAdministrationAiRoute
+  '/administration/alerts': typeof AuthenticatedAdministrationAlertsRoute
   '/administration/general': typeof AuthenticatedAdministrationGeneralRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
@@ -428,6 +436,7 @@ export interface FileRoutesByTo {
   '/admin/copilot-audit': typeof AuthenticatedAdminCopilotAuditRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/administration/ai': typeof AuthenticatedAdministrationAiRoute
+  '/administration/alerts': typeof AuthenticatedAdministrationAlertsRoute
   '/administration/general': typeof AuthenticatedAdministrationGeneralRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
@@ -482,6 +491,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/copilot-audit': typeof AuthenticatedAdminCopilotAuditRoute
   '/_authenticated/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/_authenticated/administration/ai': typeof AuthenticatedAdministrationAiRoute
+  '/_authenticated/administration/alerts': typeof AuthenticatedAdministrationAlertsRoute
   '/_authenticated/administration/general': typeof AuthenticatedAdministrationGeneralRoute
   '/_authenticated/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
@@ -536,6 +546,7 @@ export interface FileRouteTypes {
     | '/admin/copilot-audit'
     | '/admin/roles'
     | '/administration/ai'
+    | '/administration/alerts'
     | '/administration/general'
     | '/administration/speech'
     | '/conversationiq/$conversationId'
@@ -587,6 +598,7 @@ export interface FileRouteTypes {
     | '/admin/copilot-audit'
     | '/admin/roles'
     | '/administration/ai'
+    | '/administration/alerts'
     | '/administration/general'
     | '/administration/speech'
     | '/conversationiq/$conversationId'
@@ -640,6 +652,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/copilot-audit'
     | '/_authenticated/admin/roles'
     | '/_authenticated/administration/ai'
+    | '/_authenticated/administration/alerts'
     | '/_authenticated/administration/general'
     | '/_authenticated/administration/speech'
     | '/_authenticated/conversationiq/$conversationId'
@@ -1013,6 +1026,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationGeneralRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
+    '/_authenticated/administration/alerts': {
+      id: '/_authenticated/administration/alerts'
+      path: '/alerts'
+      fullPath: '/administration/alerts'
+      preLoaderRoute: typeof AuthenticatedAdministrationAlertsRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/ai': {
       id: '/_authenticated/administration/ai'
       path: '/ai'
@@ -1039,6 +1059,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationAiRoute: typeof AuthenticatedAdministrationAiRoute
+  AuthenticatedAdministrationAlertsRoute: typeof AuthenticatedAdministrationAlertsRoute
   AuthenticatedAdministrationGeneralRoute: typeof AuthenticatedAdministrationGeneralRoute
   AuthenticatedAdministrationSpeechRoute: typeof AuthenticatedAdministrationSpeechRoute
   AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
@@ -1047,6 +1068,8 @@ interface AuthenticatedAdministrationRouteChildren {
 const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRouteChildren =
   {
     AuthenticatedAdministrationAiRoute: AuthenticatedAdministrationAiRoute,
+    AuthenticatedAdministrationAlertsRoute:
+      AuthenticatedAdministrationAlertsRoute,
     AuthenticatedAdministrationGeneralRoute:
       AuthenticatedAdministrationGeneralRoute,
     AuthenticatedAdministrationSpeechRoute:
