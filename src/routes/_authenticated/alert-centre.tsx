@@ -115,7 +115,8 @@ function AlertCentrePage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const allSelected = rows.length > 0 && selected.length === rows.length;
+  const actionable = rows.filter((r) => access.canActOn("acknowledge", r.outlet_id));
+  const allSelected = actionable.length > 0 && selected.length === actionable.length;
 
   const exportCsv = () => {
     const header = ["Triggered", "Severity", "Status", "Category", "Outlet", "Title"];
