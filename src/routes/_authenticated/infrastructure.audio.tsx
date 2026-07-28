@@ -72,14 +72,30 @@ function AudioStreamsPage() {
       />
 
       <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Active streams" value={`${active}`} hint={`${rows.length} configured`} />
-        <MetricCard label="Average latency" value={`${avgLatency}ms`} hint="Capture to ingest" />
         <MetricCard
+          icon={AudioLines}
+          label="Active streams"
+          value={`${active}`}
+          hint={`${rows.length} configured`}
+        />
+        <MetricCard
+          icon={Timer}
+          label="Average latency"
+          value={`${avgLatency}ms`}
+          hint="Capture to ingest"
+        />
+        <MetricCard
+          icon={Waves}
           label="Packet loss"
           value={`${avgLoss.toFixed(2)}%`}
           hint="Estate-wide average"
         />
-        <MetricCard label="Signal quality" value={`${avgQuality}`} hint="0–100 composite score" />
+        <MetricCard
+          icon={SignalHigh}
+          label="Signal quality"
+          value={`${avgQuality}`}
+          hint="0–100 composite score"
+        />
       </div>
 
       <Panel title="Stream telemetry" description="Sampled every 30 seconds from the edge agents.">
