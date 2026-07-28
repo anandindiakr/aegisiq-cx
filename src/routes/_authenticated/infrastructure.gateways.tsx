@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Cpu, HardDrive, Plus, Search, Thermometer } from "lucide-react";
+import { Cpu, HardDrive, KeyRound, Plus, Search, Thermometer } from "lucide-react";
 
 import {
   EmptyState,
@@ -23,6 +23,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AddGatewayDialog } from "@/components/infrastructure/AddGatewayDialog";
+import { DeviceCredentialsDialog } from "@/components/infrastructure/DeviceCredentialsDialog";
+import { InfraChangeHistory } from "@/components/infrastructure/InfraChangeHistory";
+import { useCredentialAccess } from "@/features/infrastructure/audit";
 import { edgeGatewaysQuery, infraCamerasQuery } from "@/features/infrastructure/queries";
 import { formatRelative } from "@/lib/format";
 
@@ -58,6 +61,8 @@ function EdgeGatewaysPage() {
   const cameras = useQuery(infraCamerasQuery);
   const [term, setTerm] = useState("");
   const [open, setOpen] = useState(false);
+  const credentialAccess = useCredentialAccess();
+  const [credentialFor, setCredentialFor] = useState<{ id: string; name: string } | null>(null);
 
   const attached = useMemo(() => {
     const map = new Map<string, number>();
@@ -131,6 +136,7 @@ function EdgeGatewaysPage() {
                   <TableHead>Version</TableHead>
                   <TableHead>Heartbeat</TableHead>
                   <TableHead>Cameras</TableHead>
+                  <TableHead className="w-32">Credentials</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -181,6 +187,16 @@ function EdgeGatewaysPage() {
                     <TableCell className="text-xs tabular-nums">
                       {attached.get(gateway.id) ?? 0}
                     </TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={!credentialAccess.canView}
+                        onClick={() => setCredentialFor({ id: gateway.id, name: gateway.name })}
+                      >
+                        <KeyRound className="mr-2 size-3.5" /> Manage
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -210,7 +226,22 @@ function EdgeGatewaysPage() {
         />
       </div>
 
+      <div className="mt-5">
+        <InfraChangeHistory
+          scope={["gateway", "gateway_credential"]}
+          title="Gateway change history"
+          description="Enrolment, configuration edits, decommissions and credential access for every edge node."
+        />
+      </div>
+
       <AddGatewayDialog open={open} onOpenChange={setOpen} />
+      <DeviceCredentialsDialog
+        open={credentialFor !== null}
+        onOpenChange={(value) => !value && setCredentialFor(null)}
+        deviceType="gateway"
+        deviceId={credentialFor?.id ?? null}
+        deviceName={credentialFor?.name ?? ""}
+      />
     </div>
   );
 }

@@ -1,15 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Gauge, Network, Radio, Waves } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { ErrorState, MetricCard, PageHeader, Panel } from "@/components/common/Primitives";
 import {
@@ -141,7 +133,11 @@ function NetworkHealthPage() {
               description="Active transports between the estate and the platform."
             >
               <ul className="space-y-3 text-sm">
-                <Row label="RTSP sessions" value={network.rtspConnections} hint="Camera video/audio" />
+                <Row
+                  label="RTSP sessions"
+                  value={network.rtspConnections}
+                  hint="Camera video/audio"
+                />
                 <Row
                   label="Audio pipelines"
                   value={network.audioConnections}

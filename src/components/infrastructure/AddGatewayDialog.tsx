@@ -208,7 +208,9 @@ export function AddGatewayDialog({
           <Button
             size="sm"
             disabled={
-              save.isPending || draft.name.trim().length < 2 || draft.serial_number.trim().length < 3
+              save.isPending ||
+              draft.name.trim().length < 2 ||
+              draft.serial_number.trim().length < 3
             }
             onClick={() => save.mutate()}
           >

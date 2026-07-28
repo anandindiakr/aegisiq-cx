@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AudioLines, SignalHigh, Timer, Waves } from "lucide-react";
@@ -21,6 +21,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { audioStreamsQuery, infraCamerasQuery } from "@/features/infrastructure/queries";
+import { AudioStreamPreview } from "@/components/infrastructure/AudioStreamPreview";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/infrastructure/audio")({
   head: () => ({
@@ -53,6 +55,8 @@ function AudioStreamsPage() {
   }, [cameras.data]);
 
   const rows = data ?? [];
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const selected = rows.find((s) => s.id === selectedId) ?? rows[0] ?? null;
   const active = rows.filter((s) => s.status === "streaming").length;
   const avgLatency = rows.length
     ? Math.round(rows.reduce((sum, s) => sum + s.latency_ms, 0) / rows.length)
@@ -98,7 +102,17 @@ function AudioStreamsPage() {
         />
       </div>
 
-      <Panel title="Stream telemetry" description="Sampled every 30 seconds from the edge agents.">
+      <div className="mb-5">
+        <AudioStreamPreview
+          stream={selected}
+          deviceName={selected ? cameraName(selected.camera_id) : ""}
+        />
+      </div>
+
+      <Panel
+        title="Stream telemetry"
+        description="Select a row to monitor it live. Sampled every 30 seconds from the edge agents."
+      >
         {error ? (
           <ErrorState message={error.message} onRetry={() => refetch()} />
         ) : isPending ? (
@@ -122,7 +136,14 @@ function AudioStreamsPage() {
               </TableHeader>
               <TableBody>
                 {rows.map((stream) => (
-                  <TableRow key={stream.id} className="border-border">
+                  <TableRow
+                    key={stream.id}
+                    onClick={() => setSelectedId(stream.id)}
+                    className={cn(
+                      "cursor-pointer border-border",
+                      selected?.id === stream.id && "bg-primary/5",
+                    )}
+                  >
                     <TableCell className="font-mono text-xs">
                       <span className="inline-flex items-center gap-2">
                         <AudioLines className="size-3.5 text-primary" />

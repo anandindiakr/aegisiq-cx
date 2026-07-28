@@ -12,6 +12,7 @@ import {
 } from "@/components/common/Primitives";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { InfraChangeHistory } from "@/components/infrastructure/InfraChangeHistory";
 import { SpeechPipeline } from "@/components/infrastructure/SpeechPipeline";
 import { aiEnginesQuery, updateEngine, type AiEngine } from "@/features/infrastructure/queries";
 import { formatRelative } from "@/lib/format";
@@ -78,6 +79,14 @@ function AiEnginesPage() {
           </div>
         )}
       </Panel>
+
+      <div className="mt-5">
+        <InfraChangeHistory
+          scope={["ai_engine"]}
+          title="Engine change history"
+          description="Enablement, endpoint, version and health-policy changes with the person responsible."
+        />
+      </div>
 
       <div className="mt-5">
         <Panel
