@@ -251,8 +251,12 @@ export function CopilotDock() {
 
         {/* Ask ---------------------------------------------------------- */}
         <TabsContent value="ask" className="min-h-0 flex-1">
-          <ScrollArea ref={scrollRef} className="h-full px-3 py-3">
-            <div className="space-y-3 pb-2">
+          <ScrollArea
+            ref={scrollRef}
+            className="h-full px-3 py-3 [&_[data-radix-scroll-area-viewport]>div]:!block"
+          >
+            <div className="w-full min-w-0 space-y-3 pb-2">
+
               {messages.length === 0 && (
                 <div className="rounded-xl border border-dashed border-border p-4 text-center">
                   <p className="text-sm font-medium">Ask anything about your estate</p>
