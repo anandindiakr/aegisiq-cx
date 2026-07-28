@@ -11,7 +11,8 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getActiveTenant } from "@/features/platform/queries";
 import { captureError } from "@/lib/observability";
-import { DASHBOARD_KEY } from "./queries";
+
+const DASHBOARD_KEY = "executive-command-centre";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const table = (name: string): any => (supabase as any).from(name);
