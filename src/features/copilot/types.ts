@@ -150,6 +150,13 @@ export interface CopilotResponse {
   followUps?: CopilotFollowUp[];
   /** Set when the copilot needs a decision before it can execute. */
   clarification?: CopilotClarification;
+  /** Set when the command was dry run and awaits confirmation. */
+  preview?: CopilotPreview;
+  /** Section-level state of a streamed executive report (for resume). */
+  report?: CopilotReportPartial;
+  /** Row id in the executive report history, once persisted. */
+  runId?: string;
+
   /** Live progress while the answer is still streaming. */
   progress?: CopilotProgress;
 }
