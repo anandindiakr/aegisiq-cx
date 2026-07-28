@@ -7,7 +7,7 @@ import { AlarmClock, Gauge, ShieldAlert, Siren, Timer, Zap } from "lucide-react"
 import {
   EmptyState,
   ErrorState,
-  KpiCard,
+  MetricCard,
   LoadingState,
   PageHeader,
   Panel,
@@ -146,28 +146,28 @@ function AlertAnalyticsPage() {
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <KpiCard
+            <MetricCard
               label="Alerts raised"
               value={formatNumber(analytics.total)}
               hint={`${formatNumber(analytics.open)} still open`}
               icon={Siren}
               index={0}
             />
-            <KpiCard
+            <MetricCard
               label="MTTA"
               value={minutesLabel(analytics.mtta)}
               hint="Mean time to acknowledge"
               icon={AlarmClock}
               index={1}
             />
-            <KpiCard
+            <MetricCard
               label="MTTR"
               value={minutesLabel(analytics.mttr)}
               hint="Mean time to resolve"
               icon={Gauge}
               index={2}
             />
-            <KpiCard
+            <MetricCard
               label="SLA breaches"
               value={formatNumber(analytics.breached)}
               hint={`${formatNumber(analytics.escalated)} escalated to backups`}
@@ -191,7 +191,10 @@ function AlertAnalyticsPage() {
             </div>
             <Panel title="Severity mix" description="Distribution across the selected window">
               {analytics.bySeverity.length === 0 ? (
-                <EmptyState title="No alerts in this window" />
+                <EmptyState
+                  title="No alerts in this window"
+                  description="Widen the reporting window to see the severity mix."
+                />
               ) : (
                 <DonutChart data={analytics.bySeverity} />
               )}
@@ -201,14 +204,20 @@ function AlertAnalyticsPage() {
           <div className="mt-4 grid gap-4 xl:grid-cols-2">
             <Panel title="Alerts by outlet" description="Top 10 outlets by alert volume">
               {analytics.byOutlet.length === 0 ? (
-                <EmptyState title="No outlet activity yet" />
+                <EmptyState
+                  title="No outlet activity yet"
+                  description="Alerts will appear here once outlets start raising signals."
+                />
               ) : (
                 <CategoryBarChart data={analytics.byOutlet} valueName="Alerts" />
               )}
             </Panel>
             <Panel title="Outlet response performance" description="Breach count and MTTR by site">
               {analytics.byOutlet.length === 0 ? (
-                <EmptyState title="No outlet activity yet" />
+                <EmptyState
+                  title="No outlet activity yet"
+                  description="Alerts will appear here once outlets start raising signals."
+                />
               ) : (
                 <ul className="space-y-2">
                   {analytics.byOutlet.map((row) => (
