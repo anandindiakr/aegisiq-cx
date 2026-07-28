@@ -337,6 +337,18 @@ export function ScheduledReports() {
           </Button>
         </div>
       </DialogContent>
+
+      <ExportPreviewDialog
+        preview={preview}
+        onOpenChange={(next) => {
+          if (!next) {
+            setPreview(null);
+            setPendingSchedule(null);
+          }
+        }}
+        onConfirm={() => pendingSchedule && deliver.mutate(pendingSchedule)}
+        busy={deliver.isPending}
+      />
     </Dialog>
   );
 }
