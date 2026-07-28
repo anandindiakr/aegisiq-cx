@@ -178,6 +178,12 @@ export function FilterPresets({
                 >
                   <span className="flex w-full items-center gap-1.5">
                     <span className="truncate text-xs font-medium">{preset.name}</span>
+                    {preset.is_default && (
+                      <Badge variant="outline" className="gap-1 text-[9px] text-primary">
+                        <Star className="size-2.5" />
+                        Default
+                      </Badge>
+                    )}
                     {preset.is_shared && (
                       <Badge variant="outline" className="gap-1 text-[9px]">
                         <Users className="size-2.5" />
@@ -186,9 +192,10 @@ export function FilterPresets({
                     )}
                   </span>
                   <span className="truncate text-[10px] text-muted-foreground">
-                    {rangeLabel(presetToFilters(preset))} ·{" "}
+                    {scopeLabel(preset)} · {rangeLabel(presetToFilters(preset))} ·{" "}
                     {activeFilterCount(presetToFilters(preset))} filters
                   </span>
+
                 </button>
                 <Button
                   variant="ghost"
