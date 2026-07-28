@@ -63,7 +63,7 @@ import {
   rollbackReportTemplate,
   templateVersionsQuery,
   updateReportTemplate,
-  type ReportTemplate,,
+  type ReportTemplate,
   DEFAULT_DELIVERY,
   DEFAULT_FORMATTING,
 } from "@/features/command-centre/reportTemplates";
