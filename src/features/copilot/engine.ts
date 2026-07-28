@@ -183,47 +183,8 @@ async function resolveIntent(opts: ResolveOptions): Promise<CopilotResponse> {
   const ctx = opts.context;
 
   switch (intent) {
-    case "executive_report": {
-      // Streamed in stages so executives see sections as they are produced.
-      const response = base(intent, `Executive report — ${rangeLabel(opts.filters)}`);
-      const emit = (label: string, percent: number, done = false) => {
-        response.progress = { label, percent, done };
-        opts.onPartial?.({ ...response, body: [...response.body], metrics: [...response.metrics] });
-      };
-
-      emit("Collecting tenant snapshot…", 12);
-      const overview = await overviewFor(opts);
-
-      const score = cxScore(overview);
-      const band = cxBand(score);
-      response.metrics = [
-        { label: "CX score", value: `${score}`, hint: band.label },
-        ...kpiMetrics(overview),
-      ];
-      response.tone = score < 50 ? "danger" : score < 65 ? "warning" : "default";
-      emit("Scoring customer experience…", 38);
-
-      response.body = executiveBriefing(overview);
-      emit("Writing the executive briefing…", 62);
-
-      response.chart = {
-        title: "Daily conversation volume",
-        points: overview.daily.slice(-14).map((d) => ({
-          label: d.day.slice(5),
-          value: d.conversations,
-        })),
-      };
-      emit("Charting the trend…", 82);
-
-      const recs = recommendations(overview).slice(0, 3);
-      if (recs.length > 0) response.body.push(...recs.map((r) => `**${r.title}** — ${r.detail}`));
-      response.links = [
-        { label: "Open Command Centre", to: "/command-centre" },
-        { label: "Scheduled reports", to: "/reports" },
-      ];
-      response.progress = { label: "Report complete", percent: 100, done: true };
-      return response;
-    }
+    case "executive_report":
+      return runExecutiveReport(opts);
 
     case "export_report": {
       const format = detectFormat(opts.text);
@@ -259,6 +220,25 @@ async function resolveIntent(opts: ResolveOptions): Promise<CopilotResponse> {
       }
       const overview = await overviewFor(opts);
 
+      if (!opts.confirmed) {
+        // Dry run: show exactly what will be produced before anything leaves.
+        const dry = base(intent, `Dry run — ${format.toUpperCase()} board pack`);
+        dry.outcome = "preview";
+        dry.entities = { format };
+        dry.body = [
+          "Nothing has been exported yet. Review the parameters below and confirm to execute.",
+        ];
+        dry.metrics = kpiMetrics(overview).slice(0, 3);
+        dry.preview = {
+          kind: "export",
+          summary: `Board pack for ${rangeLabel(opts.filters)} across ${formatNumber(overview.kpis.total)} conversations.`,
+          parameters: previewParameters(opts, format, overview),
+          confirmLabel: `Export ${format.toUpperCase()}`,
+          confirmCommand: `${CONFIRM_PREFIX}${opts.text}`,
+        };
+        return dry;
+      }
+
       const response = base(intent, `Exporting board pack (${format.toUpperCase()})`);
       response.outcome = "exported";
       response.exportFormat = format;
@@ -271,6 +251,7 @@ async function resolveIntent(opts: ResolveOptions): Promise<CopilotResponse> {
       response.links = [{ label: "Export history", to: "/reports" }];
       return response;
     }
+
 
     case "open_alerts": {
       const overview = await overviewFor(opts);
