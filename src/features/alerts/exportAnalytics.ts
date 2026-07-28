@@ -132,8 +132,7 @@ function exportPdf(sections: Section[], meta: AlertExportMeta) {
             (row) =>
               `<tr>${row
                 .map(
-                  (cell, i) =>
-                    `<td class="${i === 0 ? "" : "n"}">${escapeHtml(String(cell))}</td>`,
+                  (cell, i) => `<td class="${i === 0 ? "" : "n"}">${escapeHtml(String(cell))}</td>`,
                 )
                 .join("")}</tr>`,
           )

@@ -37,9 +37,7 @@ function writeSeen(ids: string[]) {
 }
 
 export function escalationTarget(event: AlertEscalation): string {
-  return (
-    event.to_user_name ?? (event.to_role ? titleCase(event.to_role) : "the backup owner")
-  );
+  return event.to_user_name ?? (event.to_role ? titleCase(event.to_role) : "the backup owner");
 }
 
 export function escalationSummary(event: AlertEscalation): string {

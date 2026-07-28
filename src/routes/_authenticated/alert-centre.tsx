@@ -129,9 +129,7 @@ function AlertCentrePage() {
       if (summary.updated > 0 && blocked === 0) {
         toast.success(`${summary.updated} alerts ${summary.status}`);
       } else if (summary.updated > 0) {
-        toast.warning(
-          `${summary.updated} ${summary.status} · ${blocked} could not be updated`,
-        );
+        toast.warning(`${summary.updated} ${summary.status} · ${blocked} could not be updated`);
       } else {
         toast.error(`No alerts were ${summary.status}`);
       }
@@ -277,9 +275,7 @@ function AlertCentrePage() {
         {triageSummary && (
           <div className="mt-4 rounded-lg border border-border bg-surface/50 px-3 py-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium">
-                Bulk {triageSummary.action} results
-              </span>
+              <span className="text-xs font-medium">Bulk {triageSummary.action} results</span>
               <StatusPill label={`${triageSummary.updated} updated`} tone="positive" />
               {triageSummary.skipped > 0 && (
                 <StatusPill label={`${triageSummary.skipped} unchanged`} tone="neutral" />
@@ -341,14 +337,14 @@ function AlertCentrePage() {
                 <Checkbox
                   checked={allSelected}
                   onCheckedChange={(v) =>
-                  setSelected(
-                    v
-                      ? rows
-                          .filter((r) => access.canActOn("acknowledge", r.outlet_id))
-                          .map((r) => r.id)
-                      : [],
-                  )
-                }
+                    setSelected(
+                      v
+                        ? rows
+                            .filter((r) => access.canActOn("acknowledge", r.outlet_id))
+                            .map((r) => r.id)
+                        : [],
+                    )
+                  }
                 />
                 Select all in view
               </label>
