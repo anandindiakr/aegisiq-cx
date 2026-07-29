@@ -59,9 +59,9 @@ import type { ExecutiveOverview, OutletPerformance } from "@/features/command-ce
 
 export const Route = createFileRoute("/_authenticated/command-centre")({
   // `share` carries a preset share token so a recipient lands on the exact view.
-  validateSearch: (search: Record<string, unknown>) => ({
-    share: typeof search.share === "string" ? search.share : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { share?: string } =>
+    typeof search.share === "string" ? { share: search.share } : {},
+
   head: () => ({
     meta: [
       { title: "Executive Command Centre — AegisIQ CX™" },
