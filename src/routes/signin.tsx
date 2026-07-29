@@ -29,6 +29,7 @@ export const Route = createFileRoute("/signin")({
         property: "og:description",
         content:
           "Secure company sign-in for AegisIQ CX™, the AI customer experience intelligence platform for multi-site enterprises.",
+      },
       { property: "og:url", content: "https://aegisiqcx.com/signin" },
     ],
     links: [{ rel: "canonical", href: "https://aegisiqcx.com/signin" }],
