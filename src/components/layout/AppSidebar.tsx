@@ -19,7 +19,6 @@ import {
   Settings,
   ScrollText,
   UserCircle2,
-  ShieldCheck,
   Timer,
   KeyRound,
   Bookmark,
