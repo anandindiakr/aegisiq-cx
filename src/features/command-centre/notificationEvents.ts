@@ -18,6 +18,9 @@ export const NOTIFICATION_EVENTS = [
   "access_request.denied",
   "access_request.expired",
   "alert.escalated",
+  "usage.threshold",
+  "usage.throttled",
+  "usage.anomaly",
 ] as const;
 
 export type NotificationEvent = (typeof NOTIFICATION_EVENTS)[number];
@@ -34,7 +37,11 @@ export const EVENT_LABELS: Record<NotificationEvent, string> = {
   "access_request.denied": "Widget access denied",
   "access_request.expired": "Widget access request expired",
   "alert.escalated": "Alert escalated to backup owner",
+  "usage.threshold": "Usage approaching an allowance",
+  "usage.throttled": "Throttling or budget block activated",
+  "usage.anomaly": "Anomalous usage spike detected",
 };
+
 
 export const EVENT_GROUPS: { label: string; events: NotificationEvent[] }[] = [
   {
@@ -61,7 +68,12 @@ export const EVENT_GROUPS: { label: string; events: NotificationEvent[] }[] = [
     label: "Alerts",
     events: ["alert.escalated"],
   },
+  {
+    label: "Usage & budget",
+    events: ["usage.threshold", "usage.throttled", "usage.anomaly"],
+  },
 ];
+
 
 export type NotificationChannel = "email" | "slack" | "teams" | "webhook";
 
@@ -77,6 +89,8 @@ export function isFailureEvent(event: string): boolean {
     event.endsWith(".failed") ||
     event.endsWith(".denied") ||
     event.endsWith(".expired") ||
-    event === "alert.escalated"
+    event === "alert.escalated" ||
+    event.startsWith("usage.")
   );
 }
+

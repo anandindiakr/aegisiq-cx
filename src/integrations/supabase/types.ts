@@ -3475,6 +3475,137 @@ export type Database = {
           },
         ]
       }
+      usage_alert_events: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          baseline: number | null
+          company_id: string
+          created_at: string
+          dedupe_key: string
+          id: string
+          kind: string
+          limit_value: number | null
+          message: string
+          metric: string
+          notified_channels: string[]
+          observed: number
+          outlet_id: string | null
+          outlet_name: string | null
+          pct: number | null
+          scope: string
+          severity: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          baseline?: number | null
+          company_id: string
+          created_at?: string
+          dedupe_key: string
+          id?: string
+          kind: string
+          limit_value?: number | null
+          message: string
+          metric: string
+          notified_channels?: string[]
+          observed?: number
+          outlet_id?: string | null
+          outlet_name?: string | null
+          pct?: number | null
+          scope?: string
+          severity?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          baseline?: number | null
+          company_id?: string
+          created_at?: string
+          dedupe_key?: string
+          id?: string
+          kind?: string
+          limit_value?: number | null
+          message?: string
+          metric?: string
+          notified_channels?: string[]
+          observed?: number
+          outlet_id?: string | null
+          outlet_name?: string | null
+          pct?: number | null
+          scope?: string
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_alert_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "usage_alert_events_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_alert_rules: {
+        Row: {
+          company_id: string
+          created_at: string
+          critical_pct: number
+          enabled: boolean
+          id: string
+          metric: string
+          min_baseline: number
+          notify_super_admin: boolean
+          notify_tenant_admins: boolean
+          spike_multiplier: number
+          updated_at: string
+          warn_pct: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          critical_pct?: number
+          enabled?: boolean
+          id?: string
+          metric: string
+          min_baseline?: number
+          notify_super_admin?: boolean
+          notify_tenant_admins?: boolean
+          spike_multiplier?: number
+          updated_at?: string
+          warn_pct?: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          critical_pct?: number
+          enabled?: boolean
+          id?: string
+          metric?: string
+          min_baseline?: number
+          notify_super_admin?: boolean
+          notify_tenant_admins?: boolean
+          spike_multiplier?: number
+          updated_at?: string
+          warn_pct?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_alert_rules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       usage_counters: {
         Row: {
           ai_tokens: number
@@ -3525,6 +3656,63 @@ export type Database = {
           },
           {
             foreignKeyName: "usage_counters_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_daily_counters: {
+        Row: {
+          ai_tokens: number
+          audio_minutes: number
+          company_id: string
+          copilot_queries: number
+          created_at: string
+          egress_gb: number
+          id: string
+          outlet_id: string | null
+          storage_gb: number
+          updated_at: string
+          usage_date: string
+        }
+        Insert: {
+          ai_tokens?: number
+          audio_minutes?: number
+          company_id: string
+          copilot_queries?: number
+          created_at?: string
+          egress_gb?: number
+          id?: string
+          outlet_id?: string | null
+          storage_gb?: number
+          updated_at?: string
+          usage_date?: string
+        }
+        Update: {
+          ai_tokens?: number
+          audio_minutes?: number
+          company_id?: string
+          copilot_queries?: number
+          created_at?: string
+          egress_gb?: number
+          id?: string
+          outlet_id?: string | null
+          storage_gb?: number
+          updated_at?: string
+          usage_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_daily_counters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "usage_daily_counters_outlet_id_fkey"
             columns: ["outlet_id"]
             isOneToOne: false
             referencedRelation: "outlets"
@@ -3598,6 +3786,65 @@ export type Database = {
             foreignKeyName: "usage_plans_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_report_schedules: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          format: string
+          frequency: string
+          id: string
+          is_active: boolean
+          last_sent_at: string | null
+          last_status: string | null
+          name: string
+          recipients: string[]
+          scope: string
+          send_hour: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          format?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          last_status?: string | null
+          name: string
+          recipients?: string[]
+          scope?: string
+          send_hour?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          format?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          last_status?: string | null
+          name?: string
+          recipients?: string[]
+          scope?: string
+          send_hour?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_report_schedules_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -3793,6 +4040,7 @@ export type Database = {
       current_company_id: { Args: never; Returns: string }
       escalate_overdue_alerts: { Args: never; Returns: number }
       evaluate_infra_health: { Args: never; Returns: number }
+      evaluate_usage_alerts: { Args: never; Returns: Json }
       executive_overview: { Args: { p_filters?: Json }; Returns: Json }
       expire_widget_access_requests: { Args: never; Returns: number }
       has_role: {
@@ -3804,6 +4052,7 @@ export type Database = {
       }
       infra_can: { Args: { _action: string }; Returns: boolean }
       is_company_admin: { Args: never; Returns: boolean }
+      platform_usage_overview: { Args: { _month?: string }; Returns: Json }
       preset_by_share_token: { Args: { _token: string }; Returns: Json }
       record_usage: {
         Args: { _metric: string; _outlet_id?: string; _quantity?: number }
@@ -3859,6 +4108,26 @@ export type Database = {
           brand_tagline: string
           logo_url: string
           name: string
+        }[]
+      }
+      usage_export_rows: {
+        Args: { _month?: string }
+        Returns: {
+          ai_tokens: number
+          audio_minutes: number
+          audio_minutes_limit: number
+          audio_minutes_remaining: number
+          copilot_queries: number
+          egress_gb: number
+          outlet_code: string
+          outlet_name: string
+          period_month: string
+          queries_remaining: number
+          query_limit: number
+          region: string
+          scope: string
+          storage_gb: number
+          throttled: boolean
         }[]
       }
       usage_overview: { Args: { _month?: string }; Returns: Json }
