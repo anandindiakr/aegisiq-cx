@@ -298,6 +298,7 @@ function HomePage() {
       <footer className="border-t border-border py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 text-[11px] text-muted-foreground sm:flex-row">
           <p>© {new Date().getFullYear()} AegisIQ CX™. All rights reserved.</p>
+          <p>Powered by AI Algo (S) Pte Ltd.</p>
           <p>Enterprise-grade security · Regional data residency ready</p>
         </div>
       </footer>
