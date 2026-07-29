@@ -18,7 +18,14 @@ import {
 } from "@/components/common/Primitives";
 import { Progress } from "@/components/ui/progress";
 import { TrendAreaChart } from "@/components/command-centre/charts";
+import {
+  UsageAlertRulesPanel,
+  UsageAnomalyPanel,
+  UsageExportButton,
+  UsageSchedulesPanel,
+} from "@/components/administration/UsageGovernance";
 import { usageOverviewQuery, type UsageOutletRow } from "@/features/administration/usage";
+
 
 const nf = new Intl.NumberFormat("en-SG");
 
@@ -114,7 +121,11 @@ export function MeteredUsageDashboard() {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <UsageExportButton />
+      </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
         <MetricCard
           label="Copilot queries"
           value={nf.format(totals.queries)}
@@ -222,6 +233,14 @@ export function MeteredUsageDashboard() {
           <EmptyState title="No outlets" description="Add outlets to see per-site metering." />
         )}
       </Panel>
+
+      <UsageAnomalyPanel />
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <UsageAlertRulesPanel />
+        <UsageSchedulesPanel />
+      </div>
     </div>
+
   );
 }
