@@ -28,11 +28,46 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://aegisiqcx.com/" },
       { property: "og:title", content: "AegisIQ CX™ — AI Customer Experience Intelligence" },
+      { name: "twitter:title", content: "AegisIQ CX™ — AI Customer Experience Intelligence" },
       {
         property: "og:description",
         content:
           "Conversation intelligence, live alerting and executive analytics for retail estates — in one enterprise console.",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Conversation intelligence, live alerting and executive analytics for retail estates — in one enterprise console.",
+      },
+      { property: "og:image", content: "https://aegisiqcx.com/aegisiqcx-social-icon.png" },
+      { name: "twitter:image", content: "https://aegisiqcx.com/aegisiqcx-social-icon.png" },
+    ],
+    links: [{ rel: "canonical", href: "https://aegisiqcx.com/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "AegisIQ CX™",
+              url: "https://aegisiqcx.com/",
+              logo: "https://aegisiqcx.com/aegisiqcx-icon-512.png",
+              description:
+                "AI customer experience intelligence platform for multi-site retail and enterprise operations.",
+            },
+            {
+              "@type": "WebSite",
+              name: "AegisIQ CX™",
+              url: "https://aegisiqcx.com/",
+              description:
+                "Conversation intelligence, live alerting and executive analytics for retail estates in one enterprise console.",
+            },
+          ],
+        }),
       },
     ],
   }),
