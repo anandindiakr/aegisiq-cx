@@ -40,6 +40,7 @@ import { Route as AuthenticatedAdministrationIndexRouteImport } from './routes/_
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
 import { Route as AuthenticatedPlatformUsageRouteImport } from './routes/_authenticated/platform.usage'
 import { Route as AuthenticatedPlatformPricingRouteImport } from './routes/_authenticated/platform.pricing'
+import { Route as AuthenticatedPlatformEdgeRouteImport } from './routes/_authenticated/platform.edge'
 import { Route as AuthenticatedInfrastructureStorageRouteImport } from './routes/_authenticated/infrastructure.storage'
 import { Route as AuthenticatedInfrastructureNetworkRouteImport } from './routes/_authenticated/infrastructure.network'
 import { Route as AuthenticatedInfrastructureHealthRouteImport } from './routes/_authenticated/infrastructure.health'
@@ -241,6 +242,12 @@ const AuthenticatedPlatformPricingRoute =
   AuthenticatedPlatformPricingRouteImport.update({
     id: '/pricing',
     path: '/pricing',
+    getParentRoute: () => AuthenticatedPlatformRoute,
+  } as any)
+const AuthenticatedPlatformEdgeRoute =
+  AuthenticatedPlatformEdgeRouteImport.update({
+    id: '/edge',
+    path: '/edge',
     getParentRoute: () => AuthenticatedPlatformRoute,
   } as any)
 const AuthenticatedInfrastructureStorageRoute =
@@ -506,6 +513,7 @@ export interface FileRoutesByFullPath {
   '/infrastructure/health': typeof AuthenticatedInfrastructureHealthRoute
   '/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
   '/infrastructure/storage': typeof AuthenticatedInfrastructureStorageRoute
+  '/platform/edge': typeof AuthenticatedPlatformEdgeRoute
   '/platform/pricing': typeof AuthenticatedPlatformPricingRoute
   '/platform/usage': typeof AuthenticatedPlatformUsageRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -570,6 +578,7 @@ export interface FileRoutesByTo {
   '/infrastructure/health': typeof AuthenticatedInfrastructureHealthRoute
   '/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
   '/infrastructure/storage': typeof AuthenticatedInfrastructureStorageRoute
+  '/platform/edge': typeof AuthenticatedPlatformEdgeRoute
   '/platform/pricing': typeof AuthenticatedPlatformPricingRoute
   '/platform/usage': typeof AuthenticatedPlatformUsageRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -638,6 +647,7 @@ export interface FileRoutesById {
   '/_authenticated/infrastructure/health': typeof AuthenticatedInfrastructureHealthRoute
   '/_authenticated/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
   '/_authenticated/infrastructure/storage': typeof AuthenticatedInfrastructureStorageRoute
+  '/_authenticated/platform/edge': typeof AuthenticatedPlatformEdgeRoute
   '/_authenticated/platform/pricing': typeof AuthenticatedPlatformPricingRoute
   '/_authenticated/platform/usage': typeof AuthenticatedPlatformUsageRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
@@ -706,6 +716,7 @@ export interface FileRouteTypes {
     | '/infrastructure/health'
     | '/infrastructure/network'
     | '/infrastructure/storage'
+    | '/platform/edge'
     | '/platform/pricing'
     | '/platform/usage'
     | '/api/public/telemetry'
@@ -770,6 +781,7 @@ export interface FileRouteTypes {
     | '/infrastructure/health'
     | '/infrastructure/network'
     | '/infrastructure/storage'
+    | '/platform/edge'
     | '/platform/pricing'
     | '/platform/usage'
     | '/api/public/telemetry'
@@ -837,6 +849,7 @@ export interface FileRouteTypes {
     | '/_authenticated/infrastructure/health'
     | '/_authenticated/infrastructure/network'
     | '/_authenticated/infrastructure/storage'
+    | '/_authenticated/platform/edge'
     | '/_authenticated/platform/pricing'
     | '/_authenticated/platform/usage'
     | '/api/public/telemetry'
@@ -1071,6 +1084,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/platform/pricing'
       preLoaderRoute: typeof AuthenticatedPlatformPricingRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
+    }
+    '/_authenticated/platform/edge': {
+      id: '/_authenticated/platform/edge'
+      path: '/edge'
+      fullPath: '/platform/edge'
+      preLoaderRoute: typeof AuthenticatedPlatformEdgeRouteImport
       parentRoute: typeof AuthenticatedPlatformRoute
     }
     '/_authenticated/infrastructure/storage': {
@@ -1368,12 +1388,14 @@ const AuthenticatedAdministrationRouteWithChildren =
   )
 
 interface AuthenticatedPlatformRouteChildren {
+  AuthenticatedPlatformEdgeRoute: typeof AuthenticatedPlatformEdgeRoute
   AuthenticatedPlatformPricingRoute: typeof AuthenticatedPlatformPricingRoute
   AuthenticatedPlatformUsageRoute: typeof AuthenticatedPlatformUsageRoute
   AuthenticatedPlatformIndexRoute: typeof AuthenticatedPlatformIndexRoute
 }
 
 const AuthenticatedPlatformRouteChildren: AuthenticatedPlatformRouteChildren = {
+  AuthenticatedPlatformEdgeRoute: AuthenticatedPlatformEdgeRoute,
   AuthenticatedPlatformPricingRoute: AuthenticatedPlatformPricingRoute,
   AuthenticatedPlatformUsageRoute: AuthenticatedPlatformUsageRoute,
   AuthenticatedPlatformIndexRoute: AuthenticatedPlatformIndexRoute,

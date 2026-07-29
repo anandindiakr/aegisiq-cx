@@ -31,6 +31,9 @@ import {
   Activity,
   Network,
   Database,
+  Gauge,
+  Wallet,
+  ShieldHalf,
 } from "lucide-react";
 
 import {
@@ -94,6 +97,9 @@ const GOVERNANCE = [
   { title: "Settings", url: "/settings", icon: Settings },
   { title: "Audit Logs", url: "/audit-logs", icon: ScrollText },
   { title: "Copilot Audit", url: "/admin/copilot-audit", icon: Bot },
+  { title: "Metered Usage", url: "/administration/usage", icon: Gauge },
+  { title: "Copilot Quotas", url: "/administration/quotas", icon: Wallet },
+  { title: "Platform Console", url: "/platform", icon: ShieldHalf },
   { title: "Profile", url: "/profile", icon: UserCircle2 },
 ];
 
