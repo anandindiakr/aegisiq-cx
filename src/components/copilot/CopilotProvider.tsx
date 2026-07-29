@@ -47,6 +47,11 @@ import {
   type CopilotPreferences,
 } from "@/features/copilot/preferences";
 import { logCopilotEvent } from "@/features/copilot/audit";
+import {
+  checkCopilotQuota,
+  quotaDeniedMessage,
+  recordUsage,
+} from "@/features/administration/usage";
 import type {
   CopilotInputMode,
   CopilotMessage,
@@ -191,6 +196,22 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
           next[index] = message;
           return next;
         });
+
+      // Budget guardrail: quotas are checked server-side before any token is
+      // spent, so a throttled workspace never reaches the AI gateway.
+      const verdict = await checkCopilotQuota(context?.outletId ?? null);
+      if (!verdict.allowed) {
+        const message = quotaDeniedMessage(verdict);
+        upsertAssistant({ id: assistantId, role: "assistant", text: message });
+        toast.error(message);
+        return;
+      }
+      if (verdict.warn) {
+        toast.warning(
+          `Copilot usage is at ${verdict.tenantPct ?? 0}% of the workspace allowance.`,
+        );
+      }
+      void recordUsage("copilot_queries", 1, context?.outletId ?? null);
 
       // Report runs are recorded in "My executive reports" so a streamed job
       // can be reopened, resumed or re-run later.
