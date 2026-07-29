@@ -24,6 +24,10 @@ export function renderErrorPage(): string {
         <button class="primary" onclick="location.reload()">Try again</button>
         <a class="secondary" href="/">Go home</a>
       </div>
+      <footer style="margin-top:2rem;font-size:12px;color:#6b7280;">
+        <p>&copy; ${new Date().getFullYear()} AegisIQ CX&trade;. All rights reserved.</p>
+        <p>Powered by AI Algo (S) Pte Ltd.</p>
+      </footer>
     </div>
   </body>
 </html>`;
