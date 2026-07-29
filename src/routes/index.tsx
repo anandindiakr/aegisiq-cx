@@ -10,6 +10,7 @@ import {
   Languages,
   Radar,
   ServerCog,
+  ShieldCheck,
   Sparkles,
   TrendingUp,
 } from "lucide-react";
