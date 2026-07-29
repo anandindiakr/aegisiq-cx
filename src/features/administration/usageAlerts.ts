@@ -16,8 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { getActiveTenant } from "@/features/platform/queries";
 
 // Generated types lag behind this migration; RLS is the real gate.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const raw = supabase as unknown as { from: (table: string) => any; rpc: (fn: string, args?: unknown) => any };
+
+const raw = supabase as unknown as {
+  from: (table: string) => any;
+  rpc: (fn: string, args?: unknown) => any;
+};
 
 export type UsageMetric = "copilot_queries" | "audio_minutes" | "storage_gb" | "egress_gb";
 
@@ -83,9 +86,7 @@ function csvCell(value: unknown): string {
 
 export function usageRowsToCsv(rows: UsageExportRow[]): string {
   const head = CSV_COLUMNS.map((c) => c.header).join(",");
-  const body = rows
-    .map((row) => CSV_COLUMNS.map((c) => csvCell(row[c.key])).join(","))
-    .join("\n");
+  const body = rows.map((row) => CSV_COLUMNS.map((c) => csvCell(row[c.key])).join(",")).join("\n");
   return `${head}\n${body}`;
 }
 
@@ -165,8 +166,14 @@ export async function deleteUsageSchedule(id: string) {
 export async function runUsageScheduleNow(schedule: UsageReportSchedule) {
   const rows = await fetchUsageExportRows();
   const filtered = schedule.scope === "tenant" ? rows.filter((r) => r.scope === "tenant") : rows;
-  const slug = schedule.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  downloadCsv(`${slug || "usage"}-${new Date().toISOString().slice(0, 10)}.csv`, usageRowsToCsv(filtered));
+  const slug = schedule.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  downloadCsv(
+    `${slug || "usage"}-${new Date().toISOString().slice(0, 10)}.csv`,
+    usageRowsToCsv(filtered),
+  );
   await raw
     .from("usage_report_schedules")
     .update({ last_sent_at: new Date().toISOString(), last_status: "downloaded" })
@@ -285,6 +292,6 @@ export const platformUsageQuery = queryOptions({
   queryFn: async () => {
     const { data, error } = await raw.rpc("platform_usage_overview", { _month: null });
     if (error) throw new Error(error.message);
-    return ((data?.tenants ?? []) as PlatformTenantUsage[]);
+    return (data?.tenants ?? []) as PlatformTenantUsage[];
   },
 });

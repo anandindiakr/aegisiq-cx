@@ -26,7 +26,6 @@ import {
 } from "@/components/administration/UsageGovernance";
 import { usageOverviewQuery, type UsageOutletRow } from "@/features/administration/usage";
 
-
 const nf = new Intl.NumberFormat("en-SG");
 
 function money(value: number, currency: string) {
@@ -78,7 +77,13 @@ function OutletRow({ row }: { row: UsageOutletRow }) {
       <td className="py-3">
         <StatusPill
           label={
-            queryPct >= 100 ? "exhausted" : queryPct >= 85 ? "near limit" : row.throttle_enabled ? "metered" : "unmetered"
+            queryPct >= 100
+              ? "exhausted"
+              : queryPct >= 85
+                ? "near limit"
+                : row.throttle_enabled
+                  ? "metered"
+                  : "unmetered"
           }
           tone={queryPct >= 100 ? "negative" : queryPct >= 85 ? "warning" : "info"}
         />
@@ -91,8 +96,15 @@ export function MeteredUsageDashboard() {
   const { data, isPending, error, refetch } = useQuery(usageOverviewQuery);
 
   if (isPending) return <MetricSkeletonGrid count={6} />;
-  if (error) return <ErrorState message={(error as Error).message} onRetry={() => void refetch()} />;
-  if (!data) return <EmptyState title="No usage recorded yet" description="Consumption appears once the workspace starts processing conversations." />;
+  if (error)
+    return <ErrorState message={(error as Error).message} onRetry={() => void refetch()} />;
+  if (!data)
+    return (
+      <EmptyState
+        title="No usage recorded yet"
+        description="Consumption appears once the workspace starts processing conversations."
+      />
+    );
 
   const plan = data.plan;
   const currency = plan?.currency ?? "SGD";
@@ -125,7 +137,6 @@ export function MeteredUsageDashboard() {
         <UsageExportButton />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-
         <MetricCard
           label="Copilot queries"
           value={nf.format(totals.queries)}
@@ -178,17 +189,40 @@ export function MeteredUsageDashboard() {
           {trend.length ? (
             <TrendAreaChart data={trend} valueName="Queries" secondaryName="Audio minutes" />
           ) : (
-            <EmptyState title="No history yet" description="Trends appear after the first full billing cycle." />
+            <EmptyState
+              title="No history yet"
+              description="Trends appear after the first full billing cycle."
+            />
           )}
         </Panel>
 
         <Panel title="Remaining allowances" description="Workspace entitlement for this cycle">
           <div className="space-y-4">
             {[
-              { label: "Copilot queries", used: queryPct, remaining: Math.max(0, (plan?.included_queries ?? 0) - totals.queries), unit: "queries" },
-              { label: "Audio minutes", used: audioPct, remaining: Math.max(0, (plan?.included_audio_minutes ?? 0) - totals.audio_minutes), unit: "min" },
-              { label: "Storage", used: storagePct, remaining: Math.max(0, (plan?.included_storage_gb ?? 0) - totals.storage_gb), unit: "GB" },
-              { label: "Egress", used: egressPct, remaining: Math.max(0, (plan?.included_egress_gb ?? 0) - totals.egress_gb), unit: "GB" },
+              {
+                label: "Copilot queries",
+                used: queryPct,
+                remaining: Math.max(0, (plan?.included_queries ?? 0) - totals.queries),
+                unit: "queries",
+              },
+              {
+                label: "Audio minutes",
+                used: audioPct,
+                remaining: Math.max(0, (plan?.included_audio_minutes ?? 0) - totals.audio_minutes),
+                unit: "min",
+              },
+              {
+                label: "Storage",
+                used: storagePct,
+                remaining: Math.max(0, (plan?.included_storage_gb ?? 0) - totals.storage_gb),
+                unit: "GB",
+              },
+              {
+                label: "Egress",
+                used: egressPct,
+                remaining: Math.max(0, (plan?.included_egress_gb ?? 0) - totals.egress_gb),
+                unit: "GB",
+              },
             ].map((row) => (
               <div key={row.label}>
                 <div className="flex items-center justify-between text-xs">
@@ -241,6 +275,5 @@ export function MeteredUsageDashboard() {
         <UsageSchedulesPanel />
       </div>
     </div>
-
   );
 }

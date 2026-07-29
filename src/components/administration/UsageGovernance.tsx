@@ -8,17 +8,16 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  AlertTriangle,
-  Check,
-  Download,
-  Play,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { AlertTriangle, Check, Download, Play, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { EmptyState, ErrorState, LoadingState, Panel, StatusPill } from "@/components/common/Primitives";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  Panel,
+  StatusPill,
+} from "@/components/common/Primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -108,14 +107,20 @@ export function useUsageAlertWatcher(enabled = true) {
       const title = `${KIND_LABELS[event.kind]} — ${METRIC_LABELS[event.metric]}`;
       if (event.severity === "critical") toast.error(title, { description: event.message });
       else toast.warning(title, { description: event.message });
-      void notify(EVENT_TYPE[event.kind], title, event.message, {
-        metric: event.metric,
-        outlet: event.outlet_name,
-        observed: event.observed,
-        baseline: event.baseline,
-        limit: event.limit_value,
-        pct: event.pct,
-      }, { dedupeKey: `usage:${event.id}` });
+      void notify(
+        EVENT_TYPE[event.kind],
+        title,
+        event.message,
+        {
+          metric: event.metric,
+          outlet: event.outlet_name,
+          observed: event.observed,
+          baseline: event.baseline,
+          limit: event.limit_value,
+          pct: event.pct,
+        },
+        { dedupeKey: `usage:${event.id}` },
+      );
     }
   }, [rows]);
 
@@ -172,7 +177,8 @@ function RuleRow({ metric, rule }: { metric: UsageMetric; rule?: UsageAlertRule 
   const client = useQueryClient();
   const value = { ...DEFAULT_RULE, ...(rule ?? {}) };
   const save = useMutation({
-    mutationFn: (patch: Partial<UsageAlertRule>) => saveUsageAlertRule(metric, { ...value, ...patch }),
+    mutationFn: (patch: Partial<UsageAlertRule>) =>
+      saveUsageAlertRule(metric, { ...value, ...patch }),
     onSuccess: () => {
       void client.invalidateQueries({ queryKey: ["usage", "alert-rules"] });
       toast.success(`${METRIC_LABELS[metric]} rule saved`);
@@ -254,8 +260,8 @@ export function UsageAlertRulesPanel() {
             <RuleRow key={metric} metric={metric} rule={data?.find((r) => r.metric === metric)} />
           ))}
           <p className="text-xs text-muted-foreground">
-            A spike is raised when today&apos;s consumption exceeds the trailing 14-day average by the
-            multiplier, provided the baseline is at least the minimum shown.
+            A spike is raised when today&apos;s consumption exceeds the trailing 14-day average by
+            the multiplier, provided the baseline is at least the minimum shown.
           </p>
         </div>
       )}
@@ -279,7 +285,9 @@ function EventRow({ event }: { event: UsageAlertEvent }) {
     <div className="flex items-start gap-3 border-b border-border/60 py-3 last:border-0">
       <AlertTriangle
         className={
-          event.severity === "critical" ? "mt-0.5 size-4 text-destructive" : "mt-0.5 size-4 text-amber-400"
+          event.severity === "critical"
+            ? "mt-0.5 size-4 text-destructive"
+            : "mt-0.5 size-4 text-amber-400"
         }
       />
       <div className="min-w-0 flex-1">
@@ -318,7 +326,9 @@ export function UsageAnomalyPanel() {
     <Panel
       title="Usage alerts & anomalies"
       description="Limit approaches, throttle activations and sudden spikes in queries, audio minutes or egress"
-      actions={<StatusPill label={`${open.length} open`} tone={open.length ? "warning" : "positive"} />}
+      actions={
+        <StatusPill label={`${open.length} open`} tone={open.length ? "warning" : "positive"} />
+      }
     >
       {events.length ? (
         <div className="max-h-[420px] overflow-y-auto pr-1">
@@ -370,7 +380,8 @@ export function UsageSchedulesPanel() {
       void client.invalidateQueries({ queryKey: ["usage", "report-schedules"] });
       toast.success("Schedule created");
     },
-    onError: (error: Error) => toast.error("Could not create schedule", { description: error.message }),
+    onError: (error: Error) =>
+      toast.error("Could not create schedule", { description: error.message }),
   });
 
   const remove = useMutation({
@@ -388,7 +399,8 @@ export function UsageSchedulesPanel() {
   });
 
   const toggle = useMutation({
-    mutationFn: (row: UsageReportSchedule) => saveUsageSchedule({ id: row.id, is_active: !row.is_active }),
+    mutationFn: (row: UsageReportSchedule) =>
+      saveUsageSchedule({ id: row.id, is_active: !row.is_active }),
     onSuccess: () => void client.invalidateQueries({ queryKey: ["usage", "report-schedules"] }),
   });
 
@@ -456,7 +468,11 @@ export function UsageSchedulesPanel() {
                 onChange={(e) => setDraft({ ...draft, send_hour: Number(e.target.value) })}
               />
             </div>
-            <Button size="sm" onClick={() => create.mutate()} disabled={create.isPending || !draft.name.trim()}>
+            <Button
+              size="sm"
+              onClick={() => create.mutate()}
+              disabled={create.isPending || !draft.name.trim()}
+            >
               <Plus className="mr-1.5 size-4" />
               Add
             </Button>
@@ -481,8 +497,8 @@ export function UsageSchedulesPanel() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium">{row.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {row.frequency} · {row.scope === "tenant" ? "tenant roll-up" : "per outlet"} · CSV
-                      at {String(row.send_hour).padStart(2, "0")}:00 ·{" "}
+                      {row.frequency} · {row.scope === "tenant" ? "tenant roll-up" : "per outlet"} ·
+                      CSV at {String(row.send_hour).padStart(2, "0")}:00 ·{" "}
                       {row.recipients.length ? row.recipients.join(", ") : "no recipients"}
                     </p>
                     {row.last_sent_at && (

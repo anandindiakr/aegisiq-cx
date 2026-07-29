@@ -2,9 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 
 import { MeteredUsageDashboard } from "@/components/administration/MeteredUsage";
-import { EmptyState, ErrorState, LoadingState, Panel, StatusPill } from "@/components/common/Primitives";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  Panel,
+  StatusPill,
+} from "@/components/common/Primitives";
 import { platformUsageQuery } from "@/features/administration/usageAlerts";
-
 
 export const Route = createFileRoute("/_authenticated/platform/usage")({
   head: () => ({
@@ -81,7 +86,10 @@ function CrossTenantPanel() {
           </table>
         </div>
       ) : (
-        <EmptyState title="No tenants metered" description="Consumption appears once workspaces start processing." />
+        <EmptyState
+          title="No tenants metered"
+          description="Consumption appears once workspaces start processing."
+        />
       )}
     </Panel>
   );
@@ -95,4 +103,3 @@ function PlatformUsagePage() {
     </div>
   );
 }
-
