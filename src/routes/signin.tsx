@@ -253,7 +253,11 @@ function SignInPage() {
                   className="size-full object-contain"
                 />
               ) : (
-                <ShieldCheck className="size-4" />
+                <img
+                  src="/aegisiqcx-icon-192.png"
+                  alt="AegisIQ CX"
+                  className="size-4 object-contain"
+                />
               )}
             </span>
             <span className="text-sm font-semibold">{brandName}</span>
