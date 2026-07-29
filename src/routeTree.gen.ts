@@ -19,6 +19,7 @@ import { Route as AuthenticatedSharedPresetRouteImport } from './routes/_authent
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedPlatformRouteImport } from './routes/_authenticated/platform'
 import { Route as AuthenticatedOutletsRouteImport } from './routes/_authenticated/outlets'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedLiveMonitorRouteImport } from './routes/_authenticated/live-monitor'
@@ -119,6 +120,11 @@ const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlatformRoute = AuthenticatedPlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOutletsRoute = AuthenticatedOutletsRouteImport.update({
@@ -439,6 +445,7 @@ export interface FileRoutesByFullPath {
   '/live-monitor': typeof AuthenticatedLiveMonitorRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/outlets': typeof AuthenticatedOutletsRoute
+  '/platform': typeof AuthenticatedPlatformRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -500,6 +507,7 @@ export interface FileRoutesByTo {
   '/live-monitor': typeof AuthenticatedLiveMonitorRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/outlets': typeof AuthenticatedOutletsRoute
+  '/platform': typeof AuthenticatedPlatformRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -564,6 +572,7 @@ export interface FileRoutesById {
   '/_authenticated/live-monitor': typeof AuthenticatedLiveMonitorRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/outlets': typeof AuthenticatedOutletsRoute
+  '/_authenticated/platform': typeof AuthenticatedPlatformRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -628,6 +637,7 @@ export interface FileRouteTypes {
     | '/live-monitor'
     | '/notifications'
     | '/outlets'
+    | '/platform'
     | '/profile'
     | '/reports'
     | '/settings'
@@ -689,6 +699,7 @@ export interface FileRouteTypes {
     | '/live-monitor'
     | '/notifications'
     | '/outlets'
+    | '/platform'
     | '/profile'
     | '/reports'
     | '/settings'
@@ -752,6 +763,7 @@ export interface FileRouteTypes {
     | '/_authenticated/live-monitor'
     | '/_authenticated/notifications'
     | '/_authenticated/outlets'
+    | '/_authenticated/platform'
     | '/_authenticated/profile'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
@@ -875,6 +887,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/platform': {
+      id: '/_authenticated/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof AuthenticatedPlatformRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/outlets': {
@@ -1305,6 +1324,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLiveMonitorRoute: typeof AuthenticatedLiveMonitorRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOutletsRoute: typeof AuthenticatedOutletsRoute
+  AuthenticatedPlatformRoute: typeof AuthenticatedPlatformRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -1350,6 +1370,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLiveMonitorRoute: AuthenticatedLiveMonitorRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOutletsRoute: AuthenticatedOutletsRoute,
+  AuthenticatedPlatformRoute: AuthenticatedPlatformRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
