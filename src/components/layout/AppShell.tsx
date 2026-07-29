@@ -65,16 +65,21 @@ export function AppShell({ children }: { children: ReactNode }) {
           <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur-xl md:px-6">
             <SidebarTrigger className="text-muted-foreground" />
             <div className="hidden min-w-0 items-center gap-2 md:flex">
-              {company?.logo_url ? (
-                <img
-                  src={company.logo_url}
-                  alt={`${company.name} logo`}
-                  className="size-5 rounded object-contain"
-                  loading="lazy"
-                />
-              ) : (
-                <ShieldCheck className="size-4 text-primary" />
-              )}
+            {company?.logo_url ? (
+              <img
+                src={company.logo_url}
+                alt={`${company.name} logo`}
+                className="size-5 rounded object-contain"
+                loading="lazy"
+              />
+            ) : (
+              <img
+                src="/aegisiqcx-icon-192.png"
+                alt="AegisIQ CX"
+                className="size-5 object-contain"
+                loading="lazy"
+              />
+            )}
               <span className="truncate text-sm font-medium">
                 {company?.name ?? "Loading tenant…"}
               </span>
