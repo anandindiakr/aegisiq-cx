@@ -58,96 +58,96 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <CopilotProvider>
-    <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <AppSidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur-xl md:px-6">
-            <SidebarTrigger className="text-muted-foreground" />
-            <div className="hidden min-w-0 items-center gap-2 md:flex">
-            {company?.logo_url ? (
-              <img
-                src={company.logo_url}
-                alt={`${company.name} logo`}
-                className="size-5 rounded object-contain"
-                loading="lazy"
-              />
-            ) : (
-              <img
-                src="/aegisiqcx-icon-192.png"
-                alt="AegisIQ CX"
-                className="size-5 object-contain"
-                loading="lazy"
-              />
-            )}
-              <span className="truncate text-sm font-medium">
-                {company?.name ?? "Loading tenant…"}
-              </span>
-              <Badge variant="outline" className="border-primary/30 text-primary">
-                {(company?.subscription_plan ?? "enterprise").toUpperCase()}
-              </Badge>
-            </div>
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full bg-background">
+          <AppSidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur-xl md:px-6">
+              <SidebarTrigger className="text-muted-foreground" />
+              <div className="hidden min-w-0 items-center gap-2 md:flex">
+                {company?.logo_url ? (
+                  <img
+                    src={company.logo_url}
+                    alt={`${company.name} logo`}
+                    className="size-5 rounded object-contain"
+                    loading="lazy"
+                  />
+                ) : (
+                  <img
+                    src="/aegisiqcx-icon-192.png"
+                    alt="AegisIQ CX"
+                    className="size-5 object-contain"
+                    loading="lazy"
+                  />
+                )}
+                <span className="truncate text-sm font-medium">
+                  {company?.name ?? "Loading tenant…"}
+                </span>
+                <Badge variant="outline" className="border-primary/30 text-primary">
+                  {(company?.subscription_plan ?? "enterprise").toUpperCase()}
+                </Badge>
+              </div>
 
-            <div className="relative ml-auto hidden w-72 lg:block">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search conversations, outlets, alerts…"
-                className="h-9 bg-surface pl-9"
-                aria-label="Global search"
-              />
-            </div>
+              <div className="relative ml-auto hidden w-72 lg:block">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search conversations, outlets, alerts…"
+                  className="h-9 bg-surface pl-9"
+                  aria-label="Global search"
+                />
+              </div>
 
-            <Button variant="ghost" size="icon" className="ml-auto lg:ml-0" aria-label="Alerts">
-              <Bell className="size-4" />
-            </Button>
+              <Button variant="ghost" size="icon" className="ml-auto lg:ml-0" aria-label="Alerts">
+                <Bell className="size-4" />
+              </Button>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-10 gap-2 px-2">
-                  <Avatar className="size-7">
-                    <AvatarFallback className="bg-primary/15 text-xs text-primary">
-                      {initials || "AI"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="hidden text-left md:block">
-                    <span className="block max-w-36 truncate text-xs font-medium">
-                      {displayName}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-10 gap-2 px-2">
+                    <Avatar className="size-7">
+                      <AvatarFallback className="bg-primary/15 text-xs text-primary">
+                        {initials || "AI"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden text-left md:block">
+                      <span className="block max-w-36 truncate text-xs font-medium">
+                        {displayName}
+                      </span>
+                      <span className="block text-[10px] text-muted-foreground">
+                        {ROLE_LABELS[roles?.[0] ?? "viewer"]}
+                      </span>
                     </span>
-                    <span className="block text-[10px] text-muted-foreground">
-                      {ROLE_LABELS[roles?.[0] ?? "viewer"]}
-                    </span>
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="truncate">{user?.email}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate({ to: "/profile" })}>
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="mr-2 size-4" /> Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </header>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="truncate">{user?.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate({ to: "/profile" })}>
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 size-4" /> Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </header>
 
-          <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
+            <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
 
-          <footer className="border-t border-border py-4">
-            <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 text-[11px] text-muted-foreground sm:flex-row md:px-8">
-              <p>© {new Date().getFullYear()} AegisIQ CX™. All rights reserved.</p>
-              <p>Powered by AI Algo (S) Pte Ltd.</p>
-            </div>
-          </footer>
+            <footer className="border-t border-border py-4">
+              <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 text-[11px] text-muted-foreground sm:flex-row md:px-8">
+                <p>© {new Date().getFullYear()} AegisIQ CX™. All rights reserved.</p>
+                <p>Powered by AI Algo (S) Pte Ltd.</p>
+              </div>
+            </footer>
+          </div>
         </div>
-      </div>
-      <CopilotDock />
-    </SidebarProvider>
+        <CopilotDock />
+      </SidebarProvider>
     </CopilotProvider>
   );
 }
