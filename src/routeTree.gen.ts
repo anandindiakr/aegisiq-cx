@@ -55,6 +55,7 @@ import { Route as AuthenticatedConversationiqLanguagesRouteImport } from './rout
 import { Route as AuthenticatedConversationiqKeywordsRouteImport } from './routes/_authenticated/conversationiq.keywords'
 import { Route as AuthenticatedConversationiqAuditRouteImport } from './routes/_authenticated/conversationiq.audit'
 import { Route as AuthenticatedConversationiqConversationIdRouteImport } from './routes/_authenticated/conversationiq.$conversationId'
+import { Route as AuthenticatedAdministrationUsageRouteImport } from './routes/_authenticated/administration.usage'
 import { Route as AuthenticatedAdministrationSpeechRouteImport } from './routes/_authenticated/administration.speech'
 import { Route as AuthenticatedAdministrationSecurityRouteImport } from './routes/_authenticated/administration.security'
 import { Route as AuthenticatedAdministrationQuotasRouteImport } from './routes/_authenticated/administration.quotas'
@@ -329,6 +330,12 @@ const AuthenticatedConversationiqConversationIdRoute =
     path: '/conversationiq/$conversationId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdministrationUsageRoute =
+  AuthenticatedAdministrationUsageRouteImport.update({
+    id: '/usage',
+    path: '/usage',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationSpeechRoute =
   AuthenticatedAdministrationSpeechRouteImport.update({
     id: '/speech',
@@ -451,6 +458,7 @@ export interface FileRoutesByFullPath {
   '/administration/quotas': typeof AuthenticatedAdministrationQuotasRoute
   '/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
+  '/administration/usage': typeof AuthenticatedAdministrationUsageRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
@@ -511,6 +519,7 @@ export interface FileRoutesByTo {
   '/administration/quotas': typeof AuthenticatedAdministrationQuotasRoute
   '/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
+  '/administration/usage': typeof AuthenticatedAdministrationUsageRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
@@ -574,6 +583,7 @@ export interface FileRoutesById {
   '/_authenticated/administration/quotas': typeof AuthenticatedAdministrationQuotasRoute
   '/_authenticated/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/_authenticated/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
+  '/_authenticated/administration/usage': typeof AuthenticatedAdministrationUsageRoute
   '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/_authenticated/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/_authenticated/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
@@ -637,6 +647,7 @@ export interface FileRouteTypes {
     | '/administration/quotas'
     | '/administration/security'
     | '/administration/speech'
+    | '/administration/usage'
     | '/conversationiq/$conversationId'
     | '/conversationiq/audit'
     | '/conversationiq/keywords'
@@ -697,6 +708,7 @@ export interface FileRouteTypes {
     | '/administration/quotas'
     | '/administration/security'
     | '/administration/speech'
+    | '/administration/usage'
     | '/conversationiq/$conversationId'
     | '/conversationiq/audit'
     | '/conversationiq/keywords'
@@ -759,6 +771,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/quotas'
     | '/_authenticated/administration/security'
     | '/_authenticated/administration/speech'
+    | '/_authenticated/administration/usage'
     | '/_authenticated/conversationiq/$conversationId'
     | '/_authenticated/conversationiq/audit'
     | '/_authenticated/conversationiq/keywords'
@@ -1116,6 +1129,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConversationiqConversationIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/administration/usage': {
+      id: '/_authenticated/administration/usage'
+      path: '/usage'
+      fullPath: '/administration/usage'
+      preLoaderRoute: typeof AuthenticatedAdministrationUsageRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/speech': {
       id: '/_authenticated/administration/speech'
       path: '/speech'
@@ -1230,6 +1250,7 @@ interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationQuotasRoute: typeof AuthenticatedAdministrationQuotasRoute
   AuthenticatedAdministrationSecurityRoute: typeof AuthenticatedAdministrationSecurityRoute
   AuthenticatedAdministrationSpeechRoute: typeof AuthenticatedAdministrationSpeechRoute
+  AuthenticatedAdministrationUsageRoute: typeof AuthenticatedAdministrationUsageRoute
   AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
 }
 
@@ -1258,6 +1279,8 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
       AuthenticatedAdministrationSecurityRoute,
     AuthenticatedAdministrationSpeechRoute:
       AuthenticatedAdministrationSpeechRoute,
+    AuthenticatedAdministrationUsageRoute:
+      AuthenticatedAdministrationUsageRoute,
     AuthenticatedAdministrationIndexRoute:
       AuthenticatedAdministrationIndexRoute,
   }
