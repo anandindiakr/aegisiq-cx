@@ -128,8 +128,12 @@ function HomePage() {
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
-            <span className="grid size-9 place-items-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/30">
-              <ShieldCheck className="size-5" />
+            <span className="grid size-9 place-items-center overflow-hidden rounded-xl bg-primary/15 text-primary ring-1 ring-primary/30">
+              <img
+                src="/aegisiqcx-icon-192.png"
+                alt="AegisIQ CX"
+                className="size-5 object-contain"
+              />
             </span>
             <div>
               <p className="text-sm font-semibold tracking-tight">AegisIQ CX™</p>
@@ -298,6 +302,7 @@ function HomePage() {
       <footer className="border-t border-border py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 text-[11px] text-muted-foreground sm:flex-row">
           <p>© {new Date().getFullYear()} AegisIQ CX™. All rights reserved.</p>
+          <p>Powered by AI Algo (S) Pte Ltd.</p>
           <p>Enterprise-grade security · Regional data residency ready</p>
         </div>
       </footer>

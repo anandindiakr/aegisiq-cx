@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Building2, KeyRound, Languages, Loader2, Radar, ShieldCheck } from "lucide-react";
+import { Building2, KeyRound, Languages, Loader2, Radar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
@@ -187,7 +187,11 @@ function SignInPage() {
                 className="size-full object-contain"
               />
             ) : (
-              <ShieldCheck className="size-5" />
+              <img
+                src="/aegisiqcx-icon-192.png"
+                alt="AegisIQ CX"
+                className="size-5 object-contain"
+              />
             )}
           </span>
           <div>
@@ -249,7 +253,11 @@ function SignInPage() {
                   className="size-full object-contain"
                 />
               ) : (
-                <ShieldCheck className="size-4" />
+                <img
+                  src="/aegisiqcx-icon-192.png"
+                  alt="AegisIQ CX"
+                  className="size-4 object-contain"
+                />
               )}
             </span>
             <span className="text-sm font-semibold">{brandName}</span>
