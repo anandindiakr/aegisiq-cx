@@ -202,7 +202,13 @@ export function CopilotProvider({ children }: { children: ReactNode }) {
       const verdict = await checkCopilotQuota(context?.outletId ?? null);
       if (!verdict.allowed) {
         const message = quotaDeniedMessage(verdict);
-        upsertAssistant({ id: assistantId, role: "assistant", text: message });
+        upsertAssistant({
+          id: assistantId,
+          role: "assistant",
+          text: message,
+          mode: "text",
+          createdAt: new Date().toISOString(),
+        });
         toast.error(message);
         return;
       }
