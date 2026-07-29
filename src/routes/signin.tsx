@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { applyBrandColor, publicBrandingQuery } from "@/features/platform/branding";
+import { BrandFooter } from "@/components/layout/BrandFooter";
 
 export const Route = createFileRoute("/signin")({
   head: () => ({
@@ -176,7 +177,7 @@ function SignInPage() {
   const brandTagline = branding?.brand_tagline ?? "AI Customer Experience Intelligence Platform";
 
   return (
-    <div className="auth-backdrop grid min-h-screen grid-cols-1 bg-background lg:grid-cols-[1.05fr_0.95fr]">
+    <div className="auth-backdrop relative grid min-h-screen grid-cols-1 bg-background pb-12 lg:grid-cols-[1.05fr_0.95fr]">
       <section className="hidden flex-col justify-between border-r border-border px-12 py-14 lg:flex">
         <div className="flex items-center gap-3">
           <span className="grid size-10 place-items-center overflow-hidden rounded-xl bg-primary/15 text-primary ring-1 ring-primary/30">
@@ -400,6 +401,7 @@ function SignInPage() {
           </p>
         </motion.div>
       </section>
+      <BrandFooter variant="overlay" />
     </div>
   );
 }

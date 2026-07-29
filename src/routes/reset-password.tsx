@@ -6,6 +6,7 @@ import { Loader2, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BrandFooter } from "@/components/layout/BrandFooter";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/reset-password")({
@@ -55,7 +56,7 @@ function ResetPasswordPage() {
   }
 
   return (
-    <div className="auth-backdrop flex min-h-screen items-center justify-center bg-background px-5 py-12">
+    <div className="auth-backdrop relative flex min-h-screen items-center justify-center bg-background px-5 py-12 pb-20">
       <div className="panel w-full max-w-md p-7">
         <span className="grid size-10 place-items-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/30">
           <KeyRound className="size-5" />
@@ -98,6 +99,7 @@ function ResetPasswordPage() {
           </Button>
         </form>
       </div>
+      <BrandFooter variant="overlay" />
     </div>
   );
 }

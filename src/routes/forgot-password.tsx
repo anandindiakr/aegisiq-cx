@@ -7,6 +7,7 @@ import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BrandFooter } from "@/components/layout/BrandFooter";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/forgot-password")({
@@ -54,7 +55,7 @@ function ForgotPasswordPage() {
   }
 
   return (
-    <div className="auth-backdrop flex min-h-screen items-center justify-center bg-background px-5 py-12">
+    <div className="auth-backdrop relative flex min-h-screen items-center justify-center bg-background px-5 py-12 pb-20">
       <div className="panel w-full max-w-md p-7">
         <span className="grid size-10 place-items-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/30">
           <ShieldCheck className="size-5" />
@@ -98,6 +99,7 @@ function ForgotPasswordPage() {
           <ArrowLeft className="size-3.5" /> Back to sign in
         </Link>
       </div>
+      <BrandFooter variant="overlay" />
     </div>
   );
 }
