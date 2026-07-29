@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, LogOut, Search } from "lucide-react";
 
 import { AppSidebar } from "./AppSidebar";
+import { BrandFooter } from "./BrandFooter";
 import { CopilotProvider } from "@/components/copilot/CopilotProvider";
 import { CopilotDock } from "@/components/copilot/CopilotDock";
 import { Button } from "@/components/ui/button";
