@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, LogOut, Search } from "lucide-react";
 
 import { AppSidebar } from "./AppSidebar";
+import { BrandFooter } from "./BrandFooter";
 import { CopilotProvider } from "@/components/copilot/CopilotProvider";
 import { CopilotDock } from "@/components/copilot/CopilotDock";
 import { Button } from "@/components/ui/button";
@@ -138,12 +139,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
 
-            <footer className="border-t border-border py-4">
-              <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 text-[11px] text-muted-foreground sm:flex-row md:px-8">
-                <p>© {new Date().getFullYear()} AegisIQ CX™. All rights reserved.</p>
-                <p>Powered by AI Algo (S) Pte Ltd.</p>
-              </div>
-            </footer>
+            <BrandFooter />
           </div>
         </div>
         <CopilotDock />

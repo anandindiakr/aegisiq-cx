@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MetricSkeletonGrid, LoadingState } from "@/components/common/Primitives";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import { captureError } from "@/lib/observability";
+import { BrandFooter } from "@/components/layout/BrandFooter";
 
 function messageOf(error: unknown) {
   if (error instanceof Response) return `Request failed with status ${error.status}.`;
@@ -41,6 +42,7 @@ export function RouteErrorBoundary({ error, reset }: { error: Error; reset?: () 
           <Link to="/">Go home</Link>
         </Button>
       </div>
+      <BrandFooter className="mt-10" />
     </div>
   );
 }
@@ -69,6 +71,7 @@ export function RouteNotFound() {
       <Button asChild size="sm" className="mt-5">
         <Link to="/">Go home</Link>
       </Button>
+      <BrandFooter className="mt-10" />
     </div>
   );
 }
