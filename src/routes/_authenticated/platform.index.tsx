@@ -161,7 +161,7 @@ function PlatformControlCentre() {
                       <Select
                         onValueChange={(role) =>
                           grant.mutate({
-                            userId: member.profile.user_id,
+                            userId: member.profile.user_id ?? "",
                             role: role as AppRole,
                           })
                         }
