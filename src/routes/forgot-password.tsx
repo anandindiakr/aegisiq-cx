@@ -24,7 +24,9 @@ export const Route = createFileRoute("/forgot-password")({
         property: "og:description",
         content: "Request a secure password reset link for your AegisIQ CX™ workspace account.",
       },
+      { property: "og:url", content: "https://aegisiqcx.com/forgot-password" },
     ],
+    links: [{ rel: "canonical", href: "https://aegisiqcx.com/forgot-password" }],
   }),
   component: ForgotPasswordPage,
 });
