@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, LogOut, Search, ShieldCheck } from "lucide-react";
+import { Bell, LogOut, Search } from "lucide-react";
 
 import { AppSidebar } from "./AppSidebar";
 import { CopilotProvider } from "@/components/copilot/CopilotProvider";
