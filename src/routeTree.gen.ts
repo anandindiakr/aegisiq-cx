@@ -19,6 +19,7 @@ import { Route as AuthenticatedSharedPresetRouteImport } from './routes/_authent
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedPlatformRouteImport } from './routes/_authenticated/platform'
 import { Route as AuthenticatedOutletsRouteImport } from './routes/_authenticated/outlets'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedLiveMonitorRouteImport } from './routes/_authenticated/live-monitor'
@@ -33,9 +34,13 @@ import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAlertCentreRouteImport } from './routes/_authenticated/alert-centre'
 import { Route as AuthenticatedAlertAnalyticsRouteImport } from './routes/_authenticated/alert-analytics'
 import { Route as AuthenticatedAdministrationRouteImport } from './routes/_authenticated/administration'
+import { Route as AuthenticatedPlatformIndexRouteImport } from './routes/_authenticated/platform.index'
 import { Route as AuthenticatedConversationiqIndexRouteImport } from './routes/_authenticated/conversationiq.index'
 import { Route as AuthenticatedAdministrationIndexRouteImport } from './routes/_authenticated/administration.index'
 import { Route as ApiPublicTelemetryRouteImport } from './routes/api/public/telemetry'
+import { Route as AuthenticatedPlatformUsageRouteImport } from './routes/_authenticated/platform.usage'
+import { Route as AuthenticatedPlatformPricingRouteImport } from './routes/_authenticated/platform.pricing'
+import { Route as AuthenticatedPlatformEdgeRouteImport } from './routes/_authenticated/platform.edge'
 import { Route as AuthenticatedInfrastructureStorageRouteImport } from './routes/_authenticated/infrastructure.storage'
 import { Route as AuthenticatedInfrastructureNetworkRouteImport } from './routes/_authenticated/infrastructure.network'
 import { Route as AuthenticatedInfrastructureHealthRouteImport } from './routes/_authenticated/infrastructure.health'
@@ -55,8 +60,10 @@ import { Route as AuthenticatedConversationiqLanguagesRouteImport } from './rout
 import { Route as AuthenticatedConversationiqKeywordsRouteImport } from './routes/_authenticated/conversationiq.keywords'
 import { Route as AuthenticatedConversationiqAuditRouteImport } from './routes/_authenticated/conversationiq.audit'
 import { Route as AuthenticatedConversationiqConversationIdRouteImport } from './routes/_authenticated/conversationiq.$conversationId'
+import { Route as AuthenticatedAdministrationUsageRouteImport } from './routes/_authenticated/administration.usage'
 import { Route as AuthenticatedAdministrationSpeechRouteImport } from './routes/_authenticated/administration.speech'
 import { Route as AuthenticatedAdministrationSecurityRouteImport } from './routes/_authenticated/administration.security'
+import { Route as AuthenticatedAdministrationQuotasRouteImport } from './routes/_authenticated/administration.quotas'
 import { Route as AuthenticatedAdministrationLicensingRouteImport } from './routes/_authenticated/administration.licensing'
 import { Route as AuthenticatedAdministrationLanguagesRouteImport } from './routes/_authenticated/administration.languages'
 import { Route as AuthenticatedAdministrationKeywordsRouteImport } from './routes/_authenticated/administration.keywords'
@@ -117,6 +124,11 @@ const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlatformRoute = AuthenticatedPlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOutletsRoute = AuthenticatedOutletsRouteImport.update({
@@ -197,6 +209,12 @@ const AuthenticatedAdministrationRoute =
     path: '/administration',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPlatformIndexRoute =
+  AuthenticatedPlatformIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedPlatformRoute,
+  } as any)
 const AuthenticatedConversationiqIndexRoute =
   AuthenticatedConversationiqIndexRouteImport.update({
     id: '/conversationiq/',
@@ -214,6 +232,24 @@ const ApiPublicTelemetryRoute = ApiPublicTelemetryRouteImport.update({
   path: '/api/public/telemetry',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPlatformUsageRoute =
+  AuthenticatedPlatformUsageRouteImport.update({
+    id: '/usage',
+    path: '/usage',
+    getParentRoute: () => AuthenticatedPlatformRoute,
+  } as any)
+const AuthenticatedPlatformPricingRoute =
+  AuthenticatedPlatformPricingRouteImport.update({
+    id: '/pricing',
+    path: '/pricing',
+    getParentRoute: () => AuthenticatedPlatformRoute,
+  } as any)
+const AuthenticatedPlatformEdgeRoute =
+  AuthenticatedPlatformEdgeRouteImport.update({
+    id: '/edge',
+    path: '/edge',
+    getParentRoute: () => AuthenticatedPlatformRoute,
+  } as any)
 const AuthenticatedInfrastructureStorageRoute =
   AuthenticatedInfrastructureStorageRouteImport.update({
     id: '/infrastructure/storage',
@@ -328,6 +364,12 @@ const AuthenticatedConversationiqConversationIdRoute =
     path: '/conversationiq/$conversationId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdministrationUsageRoute =
+  AuthenticatedAdministrationUsageRouteImport.update({
+    id: '/usage',
+    path: '/usage',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationSpeechRoute =
   AuthenticatedAdministrationSpeechRouteImport.update({
     id: '/speech',
@@ -338,6 +380,12 @@ const AuthenticatedAdministrationSecurityRoute =
   AuthenticatedAdministrationSecurityRouteImport.update({
     id: '/security',
     path: '/security',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
+const AuthenticatedAdministrationQuotasRoute =
+  AuthenticatedAdministrationQuotasRouteImport.update({
+    id: '/quotas',
+    path: '/quotas',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
 const AuthenticatedAdministrationLicensingRoute =
@@ -425,6 +473,7 @@ export interface FileRoutesByFullPath {
   '/live-monitor': typeof AuthenticatedLiveMonitorRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/outlets': typeof AuthenticatedOutletsRoute
+  '/platform': typeof AuthenticatedPlatformRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -441,8 +490,10 @@ export interface FileRoutesByFullPath {
   '/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
   '/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
   '/administration/licensing': typeof AuthenticatedAdministrationLicensingRoute
+  '/administration/quotas': typeof AuthenticatedAdministrationQuotasRoute
   '/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
+  '/administration/usage': typeof AuthenticatedAdministrationUsageRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
@@ -462,9 +513,13 @@ export interface FileRoutesByFullPath {
   '/infrastructure/health': typeof AuthenticatedInfrastructureHealthRoute
   '/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
   '/infrastructure/storage': typeof AuthenticatedInfrastructureStorageRoute
+  '/platform/edge': typeof AuthenticatedPlatformEdgeRoute
+  '/platform/pricing': typeof AuthenticatedPlatformPricingRoute
+  '/platform/usage': typeof AuthenticatedPlatformUsageRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
+  '/platform/': typeof AuthenticatedPlatformIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -500,8 +555,10 @@ export interface FileRoutesByTo {
   '/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
   '/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
   '/administration/licensing': typeof AuthenticatedAdministrationLicensingRoute
+  '/administration/quotas': typeof AuthenticatedAdministrationQuotasRoute
   '/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
+  '/administration/usage': typeof AuthenticatedAdministrationUsageRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
@@ -521,9 +578,13 @@ export interface FileRoutesByTo {
   '/infrastructure/health': typeof AuthenticatedInfrastructureHealthRoute
   '/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
   '/infrastructure/storage': typeof AuthenticatedInfrastructureStorageRoute
+  '/platform/edge': typeof AuthenticatedPlatformEdgeRoute
+  '/platform/pricing': typeof AuthenticatedPlatformPricingRoute
+  '/platform/usage': typeof AuthenticatedPlatformUsageRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/administration': typeof AuthenticatedAdministrationIndexRoute
   '/conversationiq': typeof AuthenticatedConversationiqIndexRoute
+  '/platform': typeof AuthenticatedPlatformIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -546,6 +607,7 @@ export interface FileRoutesById {
   '/_authenticated/live-monitor': typeof AuthenticatedLiveMonitorRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/outlets': typeof AuthenticatedOutletsRoute
+  '/_authenticated/platform': typeof AuthenticatedPlatformRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -562,8 +624,10 @@ export interface FileRoutesById {
   '/_authenticated/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
   '/_authenticated/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
   '/_authenticated/administration/licensing': typeof AuthenticatedAdministrationLicensingRoute
+  '/_authenticated/administration/quotas': typeof AuthenticatedAdministrationQuotasRoute
   '/_authenticated/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/_authenticated/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
+  '/_authenticated/administration/usage': typeof AuthenticatedAdministrationUsageRoute
   '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
   '/_authenticated/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/_authenticated/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
@@ -583,9 +647,13 @@ export interface FileRoutesById {
   '/_authenticated/infrastructure/health': typeof AuthenticatedInfrastructureHealthRoute
   '/_authenticated/infrastructure/network': typeof AuthenticatedInfrastructureNetworkRoute
   '/_authenticated/infrastructure/storage': typeof AuthenticatedInfrastructureStorageRoute
+  '/_authenticated/platform/edge': typeof AuthenticatedPlatformEdgeRoute
+  '/_authenticated/platform/pricing': typeof AuthenticatedPlatformPricingRoute
+  '/_authenticated/platform/usage': typeof AuthenticatedPlatformUsageRoute
   '/api/public/telemetry': typeof ApiPublicTelemetryRoute
   '/_authenticated/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/_authenticated/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
+  '/_authenticated/platform/': typeof AuthenticatedPlatformIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -608,6 +676,7 @@ export interface FileRouteTypes {
     | '/live-monitor'
     | '/notifications'
     | '/outlets'
+    | '/platform'
     | '/profile'
     | '/reports'
     | '/settings'
@@ -624,8 +693,10 @@ export interface FileRouteTypes {
     | '/administration/keywords'
     | '/administration/languages'
     | '/administration/licensing'
+    | '/administration/quotas'
     | '/administration/security'
     | '/administration/speech'
+    | '/administration/usage'
     | '/conversationiq/$conversationId'
     | '/conversationiq/audit'
     | '/conversationiq/keywords'
@@ -645,9 +716,13 @@ export interface FileRouteTypes {
     | '/infrastructure/health'
     | '/infrastructure/network'
     | '/infrastructure/storage'
+    | '/platform/edge'
+    | '/platform/pricing'
+    | '/platform/usage'
     | '/api/public/telemetry'
     | '/administration/'
     | '/conversationiq/'
+    | '/platform/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -683,8 +758,10 @@ export interface FileRouteTypes {
     | '/administration/keywords'
     | '/administration/languages'
     | '/administration/licensing'
+    | '/administration/quotas'
     | '/administration/security'
     | '/administration/speech'
+    | '/administration/usage'
     | '/conversationiq/$conversationId'
     | '/conversationiq/audit'
     | '/conversationiq/keywords'
@@ -704,9 +781,13 @@ export interface FileRouteTypes {
     | '/infrastructure/health'
     | '/infrastructure/network'
     | '/infrastructure/storage'
+    | '/platform/edge'
+    | '/platform/pricing'
+    | '/platform/usage'
     | '/api/public/telemetry'
     | '/administration'
     | '/conversationiq'
+    | '/platform'
   id:
     | '__root__'
     | '/'
@@ -728,6 +809,7 @@ export interface FileRouteTypes {
     | '/_authenticated/live-monitor'
     | '/_authenticated/notifications'
     | '/_authenticated/outlets'
+    | '/_authenticated/platform'
     | '/_authenticated/profile'
     | '/_authenticated/reports'
     | '/_authenticated/settings'
@@ -744,8 +826,10 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/keywords'
     | '/_authenticated/administration/languages'
     | '/_authenticated/administration/licensing'
+    | '/_authenticated/administration/quotas'
     | '/_authenticated/administration/security'
     | '/_authenticated/administration/speech'
+    | '/_authenticated/administration/usage'
     | '/_authenticated/conversationiq/$conversationId'
     | '/_authenticated/conversationiq/audit'
     | '/_authenticated/conversationiq/keywords'
@@ -765,9 +849,13 @@ export interface FileRouteTypes {
     | '/_authenticated/infrastructure/health'
     | '/_authenticated/infrastructure/network'
     | '/_authenticated/infrastructure/storage'
+    | '/_authenticated/platform/edge'
+    | '/_authenticated/platform/pricing'
+    | '/_authenticated/platform/usage'
     | '/api/public/telemetry'
     | '/_authenticated/administration/'
     | '/_authenticated/conversationiq/'
+    | '/_authenticated/platform/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -849,6 +937,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/platform': {
+      id: '/_authenticated/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof AuthenticatedPlatformRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/outlets': {
@@ -949,6 +1044,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/platform/': {
+      id: '/_authenticated/platform/'
+      path: '/'
+      fullPath: '/platform/'
+      preLoaderRoute: typeof AuthenticatedPlatformIndexRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
+    }
     '/_authenticated/conversationiq/': {
       id: '/_authenticated/conversationiq/'
       path: '/conversationiq'
@@ -969,6 +1071,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/telemetry'
       preLoaderRoute: typeof ApiPublicTelemetryRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/platform/usage': {
+      id: '/_authenticated/platform/usage'
+      path: '/usage'
+      fullPath: '/platform/usage'
+      preLoaderRoute: typeof AuthenticatedPlatformUsageRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
+    }
+    '/_authenticated/platform/pricing': {
+      id: '/_authenticated/platform/pricing'
+      path: '/pricing'
+      fullPath: '/platform/pricing'
+      preLoaderRoute: typeof AuthenticatedPlatformPricingRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
+    }
+    '/_authenticated/platform/edge': {
+      id: '/_authenticated/platform/edge'
+      path: '/edge'
+      fullPath: '/platform/edge'
+      preLoaderRoute: typeof AuthenticatedPlatformEdgeRouteImport
+      parentRoute: typeof AuthenticatedPlatformRoute
     }
     '/_authenticated/infrastructure/storage': {
       id: '/_authenticated/infrastructure/storage'
@@ -1103,6 +1226,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConversationiqConversationIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/administration/usage': {
+      id: '/_authenticated/administration/usage'
+      path: '/usage'
+      fullPath: '/administration/usage'
+      preLoaderRoute: typeof AuthenticatedAdministrationUsageRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/speech': {
       id: '/_authenticated/administration/speech'
       path: '/speech'
@@ -1115,6 +1245,13 @@ declare module '@tanstack/react-router' {
       path: '/security'
       fullPath: '/administration/security'
       preLoaderRoute: typeof AuthenticatedAdministrationSecurityRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
+    '/_authenticated/administration/quotas': {
+      id: '/_authenticated/administration/quotas'
+      path: '/quotas'
+      fullPath: '/administration/quotas'
+      preLoaderRoute: typeof AuthenticatedAdministrationQuotasRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
     '/_authenticated/administration/licensing': {
@@ -1207,8 +1344,10 @@ interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationKeywordsRoute: typeof AuthenticatedAdministrationKeywordsRoute
   AuthenticatedAdministrationLanguagesRoute: typeof AuthenticatedAdministrationLanguagesRoute
   AuthenticatedAdministrationLicensingRoute: typeof AuthenticatedAdministrationLicensingRoute
+  AuthenticatedAdministrationQuotasRoute: typeof AuthenticatedAdministrationQuotasRoute
   AuthenticatedAdministrationSecurityRoute: typeof AuthenticatedAdministrationSecurityRoute
   AuthenticatedAdministrationSpeechRoute: typeof AuthenticatedAdministrationSpeechRoute
+  AuthenticatedAdministrationUsageRoute: typeof AuthenticatedAdministrationUsageRoute
   AuthenticatedAdministrationIndexRoute: typeof AuthenticatedAdministrationIndexRoute
 }
 
@@ -1231,10 +1370,14 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
       AuthenticatedAdministrationLanguagesRoute,
     AuthenticatedAdministrationLicensingRoute:
       AuthenticatedAdministrationLicensingRoute,
+    AuthenticatedAdministrationQuotasRoute:
+      AuthenticatedAdministrationQuotasRoute,
     AuthenticatedAdministrationSecurityRoute:
       AuthenticatedAdministrationSecurityRoute,
     AuthenticatedAdministrationSpeechRoute:
       AuthenticatedAdministrationSpeechRoute,
+    AuthenticatedAdministrationUsageRoute:
+      AuthenticatedAdministrationUsageRoute,
     AuthenticatedAdministrationIndexRoute:
       AuthenticatedAdministrationIndexRoute,
   }
@@ -1242,6 +1385,25 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
 const AuthenticatedAdministrationRouteWithChildren =
   AuthenticatedAdministrationRoute._addFileChildren(
     AuthenticatedAdministrationRouteChildren,
+  )
+
+interface AuthenticatedPlatformRouteChildren {
+  AuthenticatedPlatformEdgeRoute: typeof AuthenticatedPlatformEdgeRoute
+  AuthenticatedPlatformPricingRoute: typeof AuthenticatedPlatformPricingRoute
+  AuthenticatedPlatformUsageRoute: typeof AuthenticatedPlatformUsageRoute
+  AuthenticatedPlatformIndexRoute: typeof AuthenticatedPlatformIndexRoute
+}
+
+const AuthenticatedPlatformRouteChildren: AuthenticatedPlatformRouteChildren = {
+  AuthenticatedPlatformEdgeRoute: AuthenticatedPlatformEdgeRoute,
+  AuthenticatedPlatformPricingRoute: AuthenticatedPlatformPricingRoute,
+  AuthenticatedPlatformUsageRoute: AuthenticatedPlatformUsageRoute,
+  AuthenticatedPlatformIndexRoute: AuthenticatedPlatformIndexRoute,
+}
+
+const AuthenticatedPlatformRouteWithChildren =
+  AuthenticatedPlatformRoute._addFileChildren(
+    AuthenticatedPlatformRouteChildren,
   )
 
 interface AuthenticatedRouteRouteChildren {
@@ -1259,6 +1421,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLiveMonitorRoute: typeof AuthenticatedLiveMonitorRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOutletsRoute: typeof AuthenticatedOutletsRoute
+  AuthenticatedPlatformRoute: typeof AuthenticatedPlatformRouteWithChildren
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -1304,6 +1467,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLiveMonitorRoute: AuthenticatedLiveMonitorRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOutletsRoute: AuthenticatedOutletsRoute,
+  AuthenticatedPlatformRoute: AuthenticatedPlatformRouteWithChildren,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
@@ -1361,13 +1525,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

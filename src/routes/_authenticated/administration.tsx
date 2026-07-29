@@ -14,6 +14,8 @@ import {
   Sparkles,
   Tags,
   Waves,
+  Gauge,
+  Wallet,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/common/Primitives";
@@ -56,6 +58,8 @@ export const ADMIN_SECTIONS = [
   { title: "Integrations", url: "/administration/integrations", icon: Plug },
   { title: "API Keys", url: "/administration/api-keys", icon: KeyRound },
   { title: "Audit Logs", url: "/audit-logs", icon: ScrollText, external: true },
+  { title: "Metered Usage", url: "/administration/usage", icon: Gauge },
+  { title: "Copilot Quotas", url: "/administration/quotas", icon: Wallet },
   { title: "Licensing", url: "/administration/licensing", icon: Cpu },
   { title: "Backup", url: "/administration/backup", icon: DatabaseBackup },
 ] as const;

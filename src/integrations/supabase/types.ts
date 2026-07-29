@@ -2397,6 +2397,57 @@ export type Database = {
         }
         Relationships: []
       }
+      outlet_quotas: {
+        Row: {
+          audio_minutes_limit: number
+          company_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          outlet_id: string
+          query_limit: number
+          throttle_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          audio_minutes_limit?: number
+          company_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          outlet_id: string
+          query_limit?: number
+          throttle_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          audio_minutes_limit?: number
+          company_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          outlet_id?: string
+          query_limit?: number
+          throttle_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outlet_quotas_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outlet_quotas_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: true
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outlets: {
         Row: {
           address: string | null
@@ -2526,6 +2577,89 @@ export type Database = {
             columns: ["preset_id"]
             isOneToOne: false
             referencedRelation: "command_filter_presets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_scenarios: {
+        Row: {
+          audio_hours_per_outlet: number
+          cameras_per_outlet: number
+          company_id: string
+          cost_per_audio_hour: number
+          cost_per_outlet: number
+          cost_per_query: number
+          created_at: string
+          created_by: string | null
+          currency: string
+          id: string
+          included_query_packs: number
+          name: string
+          notes: string | null
+          outlets: number
+          platform_fee: number
+          price_per_audio_hour: number
+          price_per_camera: number
+          price_per_outlet: number
+          price_per_query_pack: number
+          queries_per_pack: number
+          target_margin_pct: number
+          updated_at: string
+        }
+        Insert: {
+          audio_hours_per_outlet?: number
+          cameras_per_outlet?: number
+          company_id: string
+          cost_per_audio_hour?: number
+          cost_per_outlet?: number
+          cost_per_query?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          included_query_packs?: number
+          name: string
+          notes?: string | null
+          outlets?: number
+          platform_fee?: number
+          price_per_audio_hour?: number
+          price_per_camera?: number
+          price_per_outlet?: number
+          price_per_query_pack?: number
+          queries_per_pack?: number
+          target_margin_pct?: number
+          updated_at?: string
+        }
+        Update: {
+          audio_hours_per_outlet?: number
+          cameras_per_outlet?: number
+          company_id?: string
+          cost_per_audio_hour?: number
+          cost_per_outlet?: number
+          cost_per_query?: number
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          id?: string
+          included_query_packs?: number
+          name?: string
+          notes?: string | null
+          outlets?: number
+          platform_fee?: number
+          price_per_audio_hour?: number
+          price_per_camera?: number
+          price_per_outlet?: number
+          price_per_query_pack?: number
+          queries_per_pack?: number
+          target_margin_pct?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_scenarios_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -3341,6 +3475,134 @@ export type Database = {
           },
         ]
       }
+      usage_counters: {
+        Row: {
+          ai_tokens: number
+          audio_minutes: number
+          company_id: string
+          copilot_queries: number
+          created_at: string
+          egress_gb: number
+          id: string
+          outlet_id: string | null
+          period_month: string
+          storage_gb: number
+          updated_at: string
+        }
+        Insert: {
+          ai_tokens?: number
+          audio_minutes?: number
+          company_id: string
+          copilot_queries?: number
+          created_at?: string
+          egress_gb?: number
+          id?: string
+          outlet_id?: string | null
+          period_month: string
+          storage_gb?: number
+          updated_at?: string
+        }
+        Update: {
+          ai_tokens?: number
+          audio_minutes?: number
+          company_id?: string
+          copilot_queries?: number
+          created_at?: string
+          egress_gb?: number
+          id?: string
+          outlet_id?: string | null
+          period_month?: string
+          storage_gb?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_counters_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "usage_counters_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_plans: {
+        Row: {
+          company_id: string
+          created_at: string
+          currency: string
+          hard_budget_stop: boolean
+          id: string
+          included_audio_minutes: number
+          included_egress_gb: number
+          included_queries: number
+          included_storage_gb: number
+          monthly_budget: number
+          overage_audio_minute_price: number
+          overage_egress_gb_price: number
+          overage_query_price: number
+          overage_storage_gb_price: number
+          plan_name: string
+          throttle_mode: string
+          throttle_threshold_pct: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          currency?: string
+          hard_budget_stop?: boolean
+          id?: string
+          included_audio_minutes?: number
+          included_egress_gb?: number
+          included_queries?: number
+          included_storage_gb?: number
+          monthly_budget?: number
+          overage_audio_minute_price?: number
+          overage_egress_gb_price?: number
+          overage_query_price?: number
+          overage_storage_gb_price?: number
+          plan_name?: string
+          throttle_mode?: string
+          throttle_threshold_pct?: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          currency?: string
+          hard_budget_stop?: boolean
+          id?: string
+          included_audio_minutes?: number
+          included_egress_gb?: number
+          included_queries?: number
+          included_storage_gb?: number
+          monthly_budget?: number
+          overage_audio_minute_price?: number
+          overage_egress_gb_price?: number
+          overage_query_price?: number
+          overage_storage_gb_price?: number
+          plan_name?: string
+          throttle_mode?: string
+          throttle_threshold_pct?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_plans_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           company_id: string | null
@@ -3527,6 +3789,7 @@ export type Database = {
       can_operate: { Args: never; Returns: boolean }
       can_triage_alert: { Args: { _outlet_id: string }; Returns: boolean }
       can_view_widget: { Args: { _widget_id: string }; Returns: boolean }
+      check_copilot_quota: { Args: { _outlet_id?: string }; Returns: Json }
       current_company_id: { Args: never; Returns: string }
       escalate_overdue_alerts: { Args: never; Returns: number }
       evaluate_infra_health: { Args: never; Returns: number }
@@ -3542,6 +3805,10 @@ export type Database = {
       infra_can: { Args: { _action: string }; Returns: boolean }
       is_company_admin: { Args: never; Returns: boolean }
       preset_by_share_token: { Args: { _token: string }; Returns: Json }
+      record_usage: {
+        Args: { _metric: string; _outlet_id?: string; _quantity?: number }
+        Returns: undefined
+      }
       request_credential_rotation: {
         Args: { _id: string; _note?: string }
         Returns: undefined
@@ -3594,6 +3861,7 @@ export type Database = {
           name: string
         }[]
       }
+      usage_overview: { Args: { _month?: string }; Returns: Json }
     }
     Enums: {
       alert_severity: "critical" | "high" | "medium" | "low" | "info"
