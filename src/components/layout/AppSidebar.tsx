@@ -157,7 +157,11 @@ export function AppSidebar() {
                 className="size-full object-contain"
               />
             ) : (
-              <ShieldCheck className="size-5" />
+              <img
+                src="/aegisiqcx-icon-192.png"
+                alt="AegisIQ CX"
+                className="size-5 object-contain"
+              />
             )}
           </span>
           {!collapsed && (
