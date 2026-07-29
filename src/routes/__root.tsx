@@ -89,36 +89,27 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Sign in — AegisIQ CX™ Intelligence Console" },
+      { title: "AegisIQ CX™ — AI Customer Experience Intelligence" },
       {
         name: "description",
         content:
-          "Secure company sign-in for AegisIQ CX™, the AI customer experience intelligence platform for multi-site enterprises.",
+          "AegisIQ CX™ is the AI customer experience intelligence platform for multi-site retail and enterprise operations.",
       },
       { name: "author", content: "AegisIQ" },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "AegisIQ CX™" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:title", content: "Sign in — AegisIQ CX™ Intelligence Console" },
-      { name: "twitter:title", content: "Sign in — AegisIQ CX™ Intelligence Console" },
+      { property: "og:title", content: "AegisIQ CX™ — AI Customer Experience Intelligence" },
+      { name: "twitter:title", content: "AegisIQ CX™ — AI Customer Experience Intelligence" },
       {
         property: "og:description",
         content:
-          "Secure company sign-in for AegisIQ CX™, the AI customer experience intelligence platform for multi-site enterprises.",
+          "AegisIQ CX™ is the AI customer experience intelligence platform for multi-site retail and enterprise operations.",
       },
       {
         name: "twitter:description",
         content:
-          "Secure company sign-in for AegisIQ CX™, the AI customer experience intelligence platform for multi-site enterprises.",
-      },
-      {
-        property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8acf25c6-8ba8-40c4-bfc6-b450e3efe058/id-preview-3898d00a--35d0fc92-2ca0-4b69-b273-98865699a05d.lovable.app-1785135165345.png",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/8acf25c6-8ba8-40c4-bfc6-b450e3efe058/id-preview-3898d00a--35d0fc92-2ca0-4b69-b273-98865699a05d.lovable.app-1785135165345.png",
+          "AegisIQ CX™ is the AI customer experience intelligence platform for multi-site retail and enterprise operations.",
       },
     ],
     links: [
