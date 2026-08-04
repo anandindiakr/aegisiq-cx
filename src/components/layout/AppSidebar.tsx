@@ -33,6 +33,7 @@ import {
   Gauge,
   Wallet,
   ShieldHalf,
+  ClipboardList,
 } from "lucide-react";
 
 import {
