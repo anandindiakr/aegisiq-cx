@@ -98,6 +98,7 @@ const GOVERNANCE = [
   { title: "Copilot Audit", url: "/admin/copilot-audit", icon: Bot },
   { title: "Metered Usage", url: "/administration/usage", icon: Gauge },
   { title: "Copilot Quotas", url: "/administration/quotas", icon: Wallet },
+  { title: "Customer Onboarding", url: "/administration/onboarding", icon: ClipboardList },
   { title: "Platform Console", url: "/platform", icon: ShieldHalf },
   { title: "Profile", url: "/profile", icon: UserCircle2 },
 ];
