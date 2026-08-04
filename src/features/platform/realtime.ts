@@ -15,6 +15,7 @@ import type { AlertRow } from "./queries";
 export function useAlertRealtime(companyId: string | null | undefined, enabled = true) {
   const queryClient = useQueryClient();
   const seen = useRef<Set<string>>(new Set());
+  const failures = useRef(0);
 
   useEffect(() => {
     if (!enabled || !companyId) return;
@@ -48,15 +49,29 @@ export function useAlertRealtime(companyId: string | null | undefined, enabled =
         },
       )
       .subscribe((status) => {
-        if (status === "CHANNEL_ERROR") {
-          captureError(new Error("Realtime alert channel failed"), {
-            companyId,
-            channel: "alerts",
-          });
+        if (status === "SUBSCRIBED") {
+          failures.current = 0;
+          return;
         }
+        if (status !== "CHANNEL_ERROR" && status !== "TIMED_OUT") return;
+
+        // Transient socket drops (tab sleep, dev reload, brief network loss)
+        // are retried automatically by supabase-js — only escalate if the
+        // channel keeps failing.
+        failures.current += 1;
+        if (failures.current < 4) {
+          console.warn(`[realtime] alerts channel ${status}, retrying…`);
+          return;
+        }
+        captureError(new Error("Realtime alert channel failed"), {
+          companyId,
+          channel: "alerts",
+          failures: failures.current,
+        });
       });
 
     return () => {
+      failures.current = 0;
       void supabase.removeChannel(channel);
     };
   }, [companyId, enabled, queryClient]);
