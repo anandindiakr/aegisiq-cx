@@ -2397,6 +2397,68 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_submissions: {
+        Row: {
+          answers: Json
+          approval_workflows: Json
+          company_id: string | null
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          id: string
+          internal_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          role_mappings: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          answers?: Json
+          approval_workflows?: Json
+          company_id?: string | null
+          company_name: string
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          internal_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role_mappings?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          answers?: Json
+          approval_workflows?: Json
+          company_id?: string | null
+          company_name?: string
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          internal_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role_mappings?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_submissions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outlet_quotas: {
         Row: {
           audio_minutes_limit: number
