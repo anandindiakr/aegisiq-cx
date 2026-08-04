@@ -3,6 +3,7 @@ import {
   Activity,
   BellRing,
   Building2,
+  ClipboardList,
   Cog,
   Cpu,
   DatabaseBackup,
