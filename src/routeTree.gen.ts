@@ -66,6 +66,7 @@ import { Route as AuthenticatedAdministrationUsageRouteImport } from './routes/_
 import { Route as AuthenticatedAdministrationSpeechRouteImport } from './routes/_authenticated/administration.speech'
 import { Route as AuthenticatedAdministrationSecurityRouteImport } from './routes/_authenticated/administration.security'
 import { Route as AuthenticatedAdministrationQuotasRouteImport } from './routes/_authenticated/administration.quotas'
+import { Route as AuthenticatedAdministrationOnboardingRouteImport } from './routes/_authenticated/administration.onboarding'
 import { Route as AuthenticatedAdministrationLicensingRouteImport } from './routes/_authenticated/administration.licensing'
 import { Route as AuthenticatedAdministrationLanguagesRouteImport } from './routes/_authenticated/administration.languages'
 import { Route as AuthenticatedAdministrationKeywordsRouteImport } from './routes/_authenticated/administration.keywords'
@@ -400,6 +401,12 @@ const AuthenticatedAdministrationQuotasRoute =
     path: '/quotas',
     getParentRoute: () => AuthenticatedAdministrationRoute,
   } as any)
+const AuthenticatedAdministrationOnboardingRoute =
+  AuthenticatedAdministrationOnboardingRouteImport.update({
+    id: '/onboarding',
+    path: '/onboarding',
+    getParentRoute: () => AuthenticatedAdministrationRoute,
+  } as any)
 const AuthenticatedAdministrationLicensingRoute =
   AuthenticatedAdministrationLicensingRouteImport.update({
     id: '/licensing',
@@ -504,6 +511,7 @@ export interface FileRoutesByFullPath {
   '/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
   '/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
   '/administration/licensing': typeof AuthenticatedAdministrationLicensingRoute
+  '/administration/onboarding': typeof AuthenticatedAdministrationOnboardingRoute
   '/administration/quotas': typeof AuthenticatedAdministrationQuotasRoute
   '/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
@@ -571,6 +579,7 @@ export interface FileRoutesByTo {
   '/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
   '/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
   '/administration/licensing': typeof AuthenticatedAdministrationLicensingRoute
+  '/administration/onboarding': typeof AuthenticatedAdministrationOnboardingRoute
   '/administration/quotas': typeof AuthenticatedAdministrationQuotasRoute
   '/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
@@ -642,6 +651,7 @@ export interface FileRoutesById {
   '/_authenticated/administration/keywords': typeof AuthenticatedAdministrationKeywordsRoute
   '/_authenticated/administration/languages': typeof AuthenticatedAdministrationLanguagesRoute
   '/_authenticated/administration/licensing': typeof AuthenticatedAdministrationLicensingRoute
+  '/_authenticated/administration/onboarding': typeof AuthenticatedAdministrationOnboardingRoute
   '/_authenticated/administration/quotas': typeof AuthenticatedAdministrationQuotasRoute
   '/_authenticated/administration/security': typeof AuthenticatedAdministrationSecurityRoute
   '/_authenticated/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
@@ -713,6 +723,7 @@ export interface FileRouteTypes {
     | '/administration/keywords'
     | '/administration/languages'
     | '/administration/licensing'
+    | '/administration/onboarding'
     | '/administration/quotas'
     | '/administration/security'
     | '/administration/speech'
@@ -780,6 +791,7 @@ export interface FileRouteTypes {
     | '/administration/keywords'
     | '/administration/languages'
     | '/administration/licensing'
+    | '/administration/onboarding'
     | '/administration/quotas'
     | '/administration/security'
     | '/administration/speech'
@@ -850,6 +862,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/keywords'
     | '/_authenticated/administration/languages'
     | '/_authenticated/administration/licensing'
+    | '/_authenticated/administration/onboarding'
     | '/_authenticated/administration/quotas'
     | '/_authenticated/administration/security'
     | '/_authenticated/administration/speech'
@@ -1294,6 +1307,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministrationQuotasRouteImport
       parentRoute: typeof AuthenticatedAdministrationRoute
     }
+    '/_authenticated/administration/onboarding': {
+      id: '/_authenticated/administration/onboarding'
+      path: '/onboarding'
+      fullPath: '/administration/onboarding'
+      preLoaderRoute: typeof AuthenticatedAdministrationOnboardingRouteImport
+      parentRoute: typeof AuthenticatedAdministrationRoute
+    }
     '/_authenticated/administration/licensing': {
       id: '/_authenticated/administration/licensing'
       path: '/licensing'
@@ -1384,6 +1404,7 @@ interface AuthenticatedAdministrationRouteChildren {
   AuthenticatedAdministrationKeywordsRoute: typeof AuthenticatedAdministrationKeywordsRoute
   AuthenticatedAdministrationLanguagesRoute: typeof AuthenticatedAdministrationLanguagesRoute
   AuthenticatedAdministrationLicensingRoute: typeof AuthenticatedAdministrationLicensingRoute
+  AuthenticatedAdministrationOnboardingRoute: typeof AuthenticatedAdministrationOnboardingRoute
   AuthenticatedAdministrationQuotasRoute: typeof AuthenticatedAdministrationQuotasRoute
   AuthenticatedAdministrationSecurityRoute: typeof AuthenticatedAdministrationSecurityRoute
   AuthenticatedAdministrationSpeechRoute: typeof AuthenticatedAdministrationSpeechRoute
@@ -1410,6 +1431,8 @@ const AuthenticatedAdministrationRouteChildren: AuthenticatedAdministrationRoute
       AuthenticatedAdministrationLanguagesRoute,
     AuthenticatedAdministrationLicensingRoute:
       AuthenticatedAdministrationLicensingRoute,
+    AuthenticatedAdministrationOnboardingRoute:
+      AuthenticatedAdministrationOnboardingRoute,
     AuthenticatedAdministrationQuotasRoute:
       AuthenticatedAdministrationQuotasRoute,
     AuthenticatedAdministrationSecurityRoute:
