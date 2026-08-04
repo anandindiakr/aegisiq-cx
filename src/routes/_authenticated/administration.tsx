@@ -62,6 +62,7 @@ export const ADMIN_SECTIONS = [
   { title: "Copilot Quotas", url: "/administration/quotas", icon: Wallet },
   { title: "Licensing", url: "/administration/licensing", icon: Cpu },
   { title: "Backup", url: "/administration/backup", icon: DatabaseBackup },
+  { title: "Customer Onboarding", url: "/administration/onboarding", icon: ClipboardList },
 ] as const;
 
 function AdministrationLayout() {
