@@ -97,8 +97,10 @@ function AnalysePage() {
             className="space-y-3"
             onSubmit={(e) => {
               e.preventDefault();
-              if (transcript.trim().length < 40)
-                return toast.error("Transcript is too short to analyse");
+              if (transcript.trim().length < 40) {
+                toast.error("Transcript is too short to analyse");
+                return;
+              }
               run.mutate();
             }}
           >
