@@ -79,6 +79,8 @@ import { Route as AuthenticatedAdministrationAlertsRouteImport } from './routes/
 import { Route as AuthenticatedAdministrationAiRouteImport } from './routes/_authenticated/administration.ai'
 import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated/admin.roles'
 import { Route as AuthenticatedAdminCopilotAuditRouteImport } from './routes/_authenticated/admin.copilot-audit'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -479,6 +481,16 @@ const AuthenticatedAdminCopilotAuditRoute =
     path: '/admin/copilot-audit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -550,6 +562,8 @@ export interface FileRoutesByFullPath {
   '/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
   '/platform/': typeof AuthenticatedPlatformIndexRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -619,6 +633,8 @@ export interface FileRoutesByTo {
   '/administration': typeof AuthenticatedAdministrationIndexRoute
   '/conversationiq': typeof AuthenticatedConversationiqIndexRoute
   '/platform': typeof AuthenticatedPlatformIndexRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -692,6 +708,8 @@ export interface FileRoutesById {
   '/_authenticated/administration/': typeof AuthenticatedAdministrationIndexRoute
   '/_authenticated/conversationiq/': typeof AuthenticatedConversationiqIndexRoute
   '/_authenticated/platform/': typeof AuthenticatedPlatformIndexRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -765,6 +783,8 @@ export interface FileRouteTypes {
     | '/administration/'
     | '/conversationiq/'
     | '/platform/'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -834,6 +854,8 @@ export interface FileRouteTypes {
     | '/administration'
     | '/conversationiq'
     | '/platform'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
   id:
     | '__root__'
     | '/'
@@ -906,6 +928,8 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/'
     | '/_authenticated/conversationiq/'
     | '/_authenticated/platform/'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -917,6 +941,8 @@ export interface RootRouteChildren {
   SigninRoute: typeof SigninRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiPublicTelemetryRoute: typeof ApiPublicTelemetryRoute
+  LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
+  LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1411,6 +1437,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCopilotAuditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1609,6 +1649,8 @@ const rootRouteChildren: RootRouteChildren = {
   SigninRoute: SigninRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiPublicTelemetryRoute: ApiPublicTelemetryRoute,
+  LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
+  LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
