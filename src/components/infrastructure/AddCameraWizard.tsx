@@ -95,10 +95,7 @@ export function AddCameraWizard({
     (draft.ip_address ? `rtsp://${draft.ip_address}:${draft.port}/Streaming/Channels/101` : "");
 
   const runCheck = (key: string, ok: boolean) => {
-    setChecks((prev) => ({ ...prev, [key]: "running" }));
-    window.setTimeout(() => {
-      setChecks((prev) => ({ ...prev, [key]: ok ? "passed" : "failed" }));
-    }, 900);
+    setChecks((prev) => ({ ...prev, [key]: ok ? "passed" : "failed" }));
   };
 
   const save = useMutation({
@@ -407,14 +404,20 @@ export function AddCameraWizard({
               label="Test connection"
               hint={draft.ip_address ? `${draft.ip_address}:${draft.port}` : "No IP address set"}
               state={checks.connection}
-              onRun={() => runCheck("connection", Boolean(draft.ip_address))}
+              onRun={() =>
+                runCheck(
+                  "connection",
+                  /^(\d{1,3}\.){3}\d{1,3}$/.test(draft.ip_address ?? "") &&
+                    (draft.ip_address ?? "").split(".").every((n) => Number(n) <= 255),
+                )
+              }
             />
             <CheckRow
               icon={Radio}
               label="Validate RTSP"
               hint={rtsp || "No stream endpoint"}
               state={checks.rtsp}
-              onRun={() => runCheck("rtsp", Boolean(rtsp))}
+              onRun={() => runCheck("rtsp", /^rtsps?:\/\/[^\s/]+/.test(rtsp))}
             />
             <CheckRow
               icon={Volume2}

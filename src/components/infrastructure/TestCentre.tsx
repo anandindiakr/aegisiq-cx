@@ -48,7 +48,7 @@ export function TestCentre({
 
   const run = (id: string) => {
     setRunning(id);
-    window.setTimeout(async () => {
+    void (async () => {
       const result = evaluateDiagnostic(id, { cameras, gateways, engines, streams });
       setResults((prev) => [result, ...prev].slice(0, 12));
       setRunning(null);
@@ -64,7 +64,7 @@ export function TestCentre({
       } catch {
         // Logging is best-effort; the diagnostic verdict is already on screen.
       }
-    }, 700);
+    })();
   };
 
   return (

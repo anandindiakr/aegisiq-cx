@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
  * the tenant audit trail automatically.
  */
 
-
 export type SettingsSection =
   | "general"
   | "ai"
@@ -250,11 +249,7 @@ export const backupRunsQuery = queryOptions({
   queryKey: ["admin-backup-runs"],
   queryFn: () =>
     run<BackupRun[]>(
-      supabase
-        .from("backup_runs")
-        .select("*")
-        .order("started_at", { ascending: false })
-        .limit(50),
+      supabase.from("backup_runs").select("*").order("started_at", { ascending: false }).limit(50),
     ),
 });
 
@@ -264,12 +259,12 @@ export async function createBackupRun(scope: string, retentionDays: number) {
   const { error } = await supabase.from("backup_runs").insert({
     kind: "manual",
     scope,
-    status: "completed",
-    size_mb: Number((180 + Math.random() * 640).toFixed(1)),
+    status: "queued",
+    size_mb: 0,
     retention_days: retentionDays,
     archive_location: `cold-storage://aegisiq/backups/${started.toISOString().slice(0, 10)}`,
     started_at: started.toISOString(),
-    completed_at: new Date(started.getTime() + 42_000).toISOString(),
+    completed_at: null,
     created_by: auth.user?.id ?? null,
   });
   if (error) throw new Error(error.message);
@@ -364,9 +359,7 @@ export const adminKeywordsQuery = queryOptions({
     ),
 });
 
-export async function upsertKeywords(
-  rows: { term: string; category: string; weight: number }[],
-) {
+export async function upsertKeywords(rows: { term: string; category: string; weight: number }[]) {
   const { data: company } = await supabase.from("companies").select("id").limit(1).maybeSingle();
   if (!company) throw new Error("No workspace found");
   const { error } = await supabase

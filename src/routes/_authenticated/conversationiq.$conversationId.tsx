@@ -87,15 +87,6 @@ export const Route = createFileRoute("/_authenticated/conversationiq/$conversati
   component: ConversationViewer,
 });
 
-const FUTURE_WIDGETS = [
-  { label: "Voice Stress Analysis", icon: Waves },
-  { label: "Speaker Diarisation", icon: Users2 },
-  { label: "Behaviour Analysis", icon: ScanFace },
-  { label: "Compliance Score", icon: ShieldCheck },
-  { label: "Customer Satisfaction Score", icon: SmilePlus },
-  { label: "Training Recommendation", icon: GraduationCap },
-];
-
 function offsetLabel(ms: number) {
   const total = Math.round(ms / 1000);
   return `${Math.floor(total / 60)
@@ -789,30 +780,6 @@ function ConversationViewer() {
                 <Progress value={Number(conversation.language_confidence) * 100} className="h-2" />
               </div>
             </div>
-          </Panel>
-
-          <Panel
-            title="Future AI widgets"
-            description="Architecture prepared — models are not connected in this release."
-          >
-            <div className="grid gap-3 sm:grid-cols-2">
-              {FUTURE_WIDGETS.map((widget) => (
-                <div
-                  key={widget.label}
-                  className="rounded-lg border border-dashed border-border bg-surface/40 p-3"
-                >
-                  <widget.icon className="size-4 text-muted-foreground" />
-                  <p className="mt-2 text-xs font-medium">{widget.label}</p>
-                  <p className="mt-1 flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-                    <Sparkles className="size-3" /> Coming soon
-                  </p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">
-              <Bot className="size-3.5" /> Inference outputs will populate these cards without UI
-              changes.
-            </p>
           </Panel>
         </div>
       </div>

@@ -12,8 +12,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { getActiveTenant } from "@/features/platform/queries";
 
 // The generated types lag behind this migration; the RLS policies are the gate.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const raw = supabase as unknown as { from: (table: string) => any; rpc: (fn: string, args?: unknown) => any };
+
+const raw = supabase as unknown as {
+  from: (table: string) => any;
+  rpc: (fn: string, args?: unknown) => any;
+};
 
 export type ThrottleMode = "off" | "warn" | "block";
 
@@ -233,7 +236,14 @@ export interface PricingResult {
   cameras: number;
   includedQueries: number;
   audioHours: number;
-  revenue: { platform: number; outlets: number; cameras: number; queries: number; audio: number; total: number };
+  revenue: {
+    platform: number;
+    outlets: number;
+    cameras: number;
+    queries: number;
+    audio: number;
+    total: number;
+  };
   cost: { outlets: number; queries: number; audio: number; total: number };
   grossProfit: number;
   marginPct: number;

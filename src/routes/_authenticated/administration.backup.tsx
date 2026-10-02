@@ -47,7 +47,7 @@ function BackupPage() {
   const run = useMutation({
     mutationFn: (scope: string) => createBackupRun(scope, retention),
     onSuccess: () => {
-      toast.success("Backup completed");
+      toast.success("Backup request queued — it will show as completed once the backup worker finishes");
       invalidate();
     },
     onError: (e: Error) => toast.error(e.message),

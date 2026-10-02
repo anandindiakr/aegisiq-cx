@@ -19,10 +19,8 @@ export interface LiveSample {
 
 const HISTORY = 60;
 
-function jitter(base: number, spread: number, min = 0, max = Number.POSITIVE_INFINITY) {
-  // Telemetry numerics arrive from Postgres as strings, so coerce defensively.
-  const value = Number(base) || 0;
-  return Math.min(max, Math.max(min, value + (Math.random() - 0.5) * spread));
+function num(v: unknown) {
+  return Number(v) || 0;
 }
 
 /**
@@ -74,20 +72,17 @@ export function AudioStreamPreview({
 
   useEffect(() => () => stopAudio(), []);
 
-  // Rolling telemetry: the edge agents report every few seconds.
+  // Plots the latest stored telemetry for this stream (no synthetic variation).
   useEffect(() => {
     if (!stream) return;
     const push = () =>
       setHistory((prev) => {
         const sample: LiveSample = {
-          latency_ms: Math.round(jitter(stream.latency_ms, stream.latency_ms * 0.25, 5)),
-          packet_loss: Number(jitter(Number(stream.packet_loss), 0.4, 0)),
-          signal_quality: Math.round(jitter(Number(stream.signal_quality), 8, 0, 100)),
-          noise_floor_db: jitter(Number(stream.noise_floor_db), 4, -120, 0),
-          level: Math.max(
-            2,
-            Math.min(100, jitter(Number(stream.signal_quality) * 0.75, 55, 2, 100)),
-          ),
+          latency_ms: Math.round(num(stream.latency_ms)),
+          packet_loss: num(stream.packet_loss),
+          signal_quality: Math.round(num(stream.signal_quality)),
+          noise_floor_db: num(stream.noise_floor_db),
+          level: Math.max(2, Math.min(100, num(stream.signal_quality) * 0.75)),
           at: Date.now(),
         };
         return [...prev, sample].slice(-HISTORY);
