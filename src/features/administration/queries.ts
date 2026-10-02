@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
  * the tenant audit trail automatically.
  */
 
-
 export type SettingsSection =
   | "general"
   | "ai"
@@ -250,11 +249,7 @@ export const backupRunsQuery = queryOptions({
   queryKey: ["admin-backup-runs"],
   queryFn: () =>
     run<BackupRun[]>(
-      supabase
-        .from("backup_runs")
-        .select("*")
-        .order("started_at", { ascending: false })
-        .limit(50),
+      supabase.from("backup_runs").select("*").order("started_at", { ascending: false }).limit(50),
     ),
 });
 
@@ -364,9 +359,7 @@ export const adminKeywordsQuery = queryOptions({
     ),
 });
 
-export async function upsertKeywords(
-  rows: { term: string; category: string; weight: number }[],
-) {
+export async function upsertKeywords(rows: { term: string; category: string; weight: number }[]) {
   const { data: company } = await supabase.from("companies").select("id").limit(1).maybeSingle();
   if (!company) throw new Error("No workspace found");
   const { error } = await supabase

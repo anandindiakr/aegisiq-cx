@@ -404,7 +404,13 @@ export function AddCameraWizard({
               label="Test connection"
               hint={draft.ip_address ? `${draft.ip_address}:${draft.port}` : "No IP address set"}
               state={checks.connection}
-              onRun={() => runCheck("connection", /^(\d{1,3}\.){3}\d{1,3}$/.test(draft.ip_address) && draft.ip_address.split(".").every((n) => Number(n) <= 255))}
+              onRun={() =>
+                runCheck(
+                  "connection",
+                  /^(\d{1,3}\.){3}\d{1,3}$/.test(draft.ip_address ?? "") &&
+                    (draft.ip_address ?? "").split(".").every((n) => Number(n) <= 255),
+                )
+              }
             />
             <CheckRow
               icon={Radio}

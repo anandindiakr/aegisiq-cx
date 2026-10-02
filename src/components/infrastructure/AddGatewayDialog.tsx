@@ -181,7 +181,8 @@ export function AddGatewayDialog({
             <div>
               <p className="text-sm font-medium">Health check</p>
               <p className="text-[11px] text-muted-foreground">
-                Validates IP address and hardware specs. Live reachability is confirmed once the edge agent checks in.
+                Validates IP address and hardware specs. Live reachability is confirmed once the
+                edge agent checks in.
               </p>
             </div>
           </div>
@@ -194,8 +195,8 @@ export function AddGatewayDialog({
               disabled={health === "running"}
               onClick={() => {
                 const ipOk =
-                  /^(\d{1,3}\.){3}\d{1,3}$/.test(draft.ip_address) &&
-                  draft.ip_address.split(".").every((n) => Number(n) <= 255);
+                  /^(\d{1,3}\.){3}\d{1,3}$/.test(draft.ip_address ?? "") &&
+                  (draft.ip_address ?? "").split(".").every((n) => Number(n) <= 255);
                 setHealth(ipOk && draft.ram_gb > 0 && draft.storage_gb > 0 ? "passed" : "failed");
               }}
             >

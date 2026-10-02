@@ -87,15 +87,6 @@ export const Route = createFileRoute("/_authenticated/conversationiq/$conversati
   component: ConversationViewer,
 });
 
-const FUTURE_WIDGETS = [
-  { label: "Voice Stress Analysis", icon: Waves },
-  { label: "Speaker Diarisation", icon: Users2 },
-  { label: "Behaviour Analysis", icon: ScanFace },
-  { label: "Compliance Score", icon: ShieldCheck },
-  { label: "Customer Satisfaction Score", icon: SmilePlus },
-  { label: "Training Recommendation", icon: GraduationCap },
-];
-
 function offsetLabel(ms: number) {
   const total = Math.round(ms / 1000);
   return `${Math.floor(total / 60)
