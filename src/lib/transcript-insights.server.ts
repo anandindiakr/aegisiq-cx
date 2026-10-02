@@ -8,7 +8,12 @@ export interface TranscriptInsights {
   intent: { primary: string; secondary: string[]; confidence: number };
   sentiment: { overall: string; score: number };
   drivers: { factor: string; impact: "positive" | "negative" | "neutral"; evidence: string }[];
-  actions: { action: string; owner: string; priority: "low" | "medium" | "high"; rationale: string }[];
+  actions: {
+    action: string;
+    owner: string;
+    priority: "low" | "medium" | "high";
+    rationale: string;
+  }[];
   summary: string;
 }
 
@@ -104,7 +109,8 @@ export async function extractInsights(transcript: string, context?: string) {
   }
 
   const match = text.match(/\{[\s\S]*\}/);
-  if (!match) throw new GatewayError("The model returned no analysis. Try a longer transcript.", 422);
+  if (!match)
+    throw new GatewayError("The model returned no analysis. Try a longer transcript.", 422);
   let parsed: TranscriptInsights;
   try {
     parsed = JSON.parse(match[0]);

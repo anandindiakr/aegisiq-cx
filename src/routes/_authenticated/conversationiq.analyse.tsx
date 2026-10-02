@@ -2,7 +2,15 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, ScanSearch, Target, TrendingDown, TrendingUp, Minus, ListTodo } from "lucide-react";
+import {
+  Loader2,
+  ScanSearch,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Minus,
+  ListTodo,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader, Panel, StatusPill } from "@/components/common/Primitives";
@@ -18,7 +26,8 @@ export const Route = createFileRoute("/_authenticated/conversationiq/analyse")({
       { title: "Transcript Analyser — ConversationIQ™ | AegisIQ CX" },
       {
         name: "description",
-        content: "Paste a customer conversation to identify intent, sentiment drivers and follow-up actions with AI.",
+        content:
+          "Paste a customer conversation to identify intent, sentiment drivers and follow-up actions with AI.",
       },
       { property: "og:title", content: "Transcript Analyser — ConversationIQ™" },
       {
@@ -48,15 +57,23 @@ function AnalysePage() {
   const [context, setContext] = useState("");
   const analyse = useServerFn(analyseTranscriptInsights);
   const run = useMutation({
-    mutationFn: () =>
-      analyse({ data: { transcript, context: context.trim() || undefined } }),
+    mutationFn: () => analyse({ data: { transcript, context: context.trim() || undefined } }),
     onSuccess: (r) => {
       if (!r.ok) toast.error(r.error);
     },
-    onError: (e: Error) => toast.error(e.message.includes("too short") ? "Transcript is too short to analyse" : e.message),
+    onError: (e: Error) =>
+      toast.error(
+        e.message.includes("too short") ? "Transcript is too short to analyse" : e.message,
+      ),
   });
   const result = run.data?.ok ? run.data.insights : null;
-  const SentIcon = !result ? Minus : result.sentiment.score > 0.15 ? TrendingUp : result.sentiment.score < -0.15 ? TrendingDown : Minus;
+  const SentIcon = !result
+    ? Minus
+    : result.sentiment.score > 0.15
+      ? TrendingUp
+      : result.sentiment.score < -0.15
+        ? TrendingDown
+        : Minus;
 
   return (
     <div className="space-y-6">
@@ -80,7 +97,8 @@ function AnalysePage() {
             className="space-y-3"
             onSubmit={(e) => {
               e.preventDefault();
-              if (transcript.trim().length < 40) return toast.error("Transcript is too short to analyse");
+              if (transcript.trim().length < 40)
+                return toast.error("Transcript is too short to analyse");
               run.mutate();
             }}
           >
@@ -99,9 +117,15 @@ function AnalysePage() {
               className="font-mono text-xs"
             />
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-muted-foreground">{transcript.length.toLocaleString()} / 40,000</span>
+              <span className="text-[11px] text-muted-foreground">
+                {transcript.length.toLocaleString()} / 40,000
+              </span>
               <Button type="submit" disabled={run.isPending}>
-                {run.isPending ? <Loader2 className="size-4 animate-spin" /> : <ScanSearch className="size-4" />}
+                {run.isPending ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <ScanSearch className="size-4" />
+                )}
                 {run.isPending ? "Analysing…" : "Analyse transcript"}
               </Button>
             </div>
@@ -144,8 +168,12 @@ function AnalysePage() {
                     <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">
                       <SentIcon className="size-3.5" /> Sentiment
                     </p>
-                    <p className="mt-1 font-medium capitalize">{result.sentiment.overall.replace(/_/g, " ")}</p>
-                    <p className="text-[11px] text-muted-foreground">Score {result.sentiment.score.toFixed(2)}</p>
+                    <p className="mt-1 font-medium capitalize">
+                      {result.sentiment.overall.replace(/_/g, " ")}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Score {result.sentiment.score.toFixed(2)}
+                    </p>
                   </div>
                 </div>
               </Panel>
@@ -157,7 +185,9 @@ function AnalysePage() {
                         <p className="text-sm font-medium">{d.factor}</p>
                         <StatusPill label={d.impact} tone={impactTone[d.impact] ?? "neutral"} />
                       </div>
-                      {d.evidence && <p className="mt-1 text-xs italic text-muted-foreground">“{d.evidence}”</p>}
+                      {d.evidence && (
+                        <p className="mt-1 text-xs italic text-muted-foreground">“{d.evidence}”</p>
+                      )}
                     </li>
                   ))}
                 </ul>

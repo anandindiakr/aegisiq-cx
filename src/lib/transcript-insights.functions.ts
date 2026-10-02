@@ -16,7 +16,8 @@ export const analyseTranscriptInsights = createServerFn({ method: "POST" })
     try {
       return { ok: true as const, insights: await extractInsights(data.transcript, data.context) };
     } catch (e) {
-      if (e instanceof GatewayError) return { ok: false as const, status: e.status, error: e.message };
+      if (e instanceof GatewayError)
+        return { ok: false as const, status: e.status, error: e.message };
       throw e;
     }
   });
