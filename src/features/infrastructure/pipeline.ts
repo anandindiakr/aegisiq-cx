@@ -317,7 +317,7 @@ interface DiagnosticContext {
 export function evaluateDiagnostic(id: string, ctx: DiagnosticContext): DiagnosticResult {
   const def = DIAGNOSTICS.find((d) => d.id === id)!;
   const at = new Date().toISOString();
-  const durationMs = 220 + Math.round(Math.random() * 900);
+  const started = performance.now();
   const engine = (provider: string) => ctx.engines.find((e) => e.provider === provider);
 
   const result = (status: DiagnosticResult["status"], detail: string): DiagnosticResult => ({
@@ -325,7 +325,7 @@ export function evaluateDiagnostic(id: string, ctx: DiagnosticContext): Diagnost
     label: def.label,
     status,
     detail,
-    durationMs,
+    durationMs: Math.max(1, Math.round(performance.now() - started)),
     at,
   });
 

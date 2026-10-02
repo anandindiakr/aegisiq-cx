@@ -49,7 +49,7 @@ export function AddGatewayDialog({
   const outlets = useQuery(outletsQuery);
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<GatewayDraft>(EMPTY);
-  const [health, setHealth] = useState<"idle" | "running" | "passed">("idle");
+  const [health, setHealth] = useState<"idle" | "running" | "passed" | "failed">("idle");
 
   const set = <K extends keyof GatewayDraft>(key: K, value: GatewayDraft[K]) =>
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -181,19 +181,22 @@ export function AddGatewayDialog({
             <div>
               <p className="text-sm font-medium">Health check</p>
               <p className="text-[11px] text-muted-foreground">
-                Verify agent reachability, CUDA runtime and disk headroom
+                Validates IP address and hardware specs. Live reachability is confirmed once the edge agent checks in.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {health === "passed" && <StatusPill label="ready" tone="positive" />}
+            {health === "passed" && <StatusPill label="config valid" tone="positive" />}
+            {health === "failed" && <StatusPill label="check IP / specs" tone="negative" />}
             <Button
               variant="outline"
               size="sm"
               disabled={health === "running"}
               onClick={() => {
-                setHealth("running");
-                window.setTimeout(() => setHealth("passed"), 900);
+                const ipOk =
+                  /^(\d{1,3}\.){3}\d{1,3}$/.test(draft.ip_address) &&
+                  draft.ip_address.split(".").every((n) => Number(n) <= 255);
+                setHealth(ipOk && draft.ram_gb > 0 && draft.storage_gb > 0 ? "passed" : "failed");
               }}
             >
               {health === "running" ? <Loader2 className="size-4 animate-spin" /> : "Run"}

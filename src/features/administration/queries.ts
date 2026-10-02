@@ -264,12 +264,12 @@ export async function createBackupRun(scope: string, retentionDays: number) {
   const { error } = await supabase.from("backup_runs").insert({
     kind: "manual",
     scope,
-    status: "completed",
-    size_mb: Number((180 + Math.random() * 640).toFixed(1)),
+    status: "queued",
+    size_mb: 0,
     retention_days: retentionDays,
     archive_location: `cold-storage://aegisiq/backups/${started.toISOString().slice(0, 10)}`,
     started_at: started.toISOString(),
-    completed_at: new Date(started.getTime() + 42_000).toISOString(),
+    completed_at: null,
     created_by: auth.user?.id ?? null,
   });
   if (error) throw new Error(error.message);
