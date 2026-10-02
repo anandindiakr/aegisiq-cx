@@ -28,6 +28,9 @@ jobs:
       - name: Verify no missing/extraneous dependencies
         run: bun run deps:check
 
+      - name: Security scan (fail on new findings)
+        run: bun run security:gate
+
       - name: Typecheck
         run: bun run typecheck
 
