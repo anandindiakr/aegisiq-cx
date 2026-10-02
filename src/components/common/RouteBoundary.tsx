@@ -1,3 +1,4 @@
+import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AlertTriangle, SearchX } from "lucide-react";
@@ -15,7 +16,7 @@ function messageOf(error: unknown) {
 }
 
 /** Shared route-level error boundary UI (wired as the router default). */
-export function RouteErrorBoundary({ error, reset }: { error: Error; reset?: () => void }) {
+export function RouteErrorBoundary({ error, reset }: ErrorComponentProps) {
   const [traceId, setTraceId] = useState<string>();
 
   useEffect(() => {
