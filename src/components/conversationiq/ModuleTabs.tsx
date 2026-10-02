@@ -6,6 +6,7 @@ import {
   ListChecks,
   MessagesSquare,
   Search,
+  ScanSearch,
   Tags,
   Timer,
   EyeOff,
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils";
 const TABS = [
   { label: "Conversations", to: "/conversationiq", icon: MessagesSquare },
   { label: "Search", to: "/conversationiq/search", icon: Search },
+  { label: "Analyser", to: "/conversationiq/analyse", icon: ScanSearch },
   { label: "AI Review", to: "/conversationiq/review", icon: BrainCircuit },
   { label: "Reviewer Queue", to: "/conversationiq/queue", icon: ListChecks },
   { label: "SLA Policies", to: "/conversationiq/sla", icon: Timer },

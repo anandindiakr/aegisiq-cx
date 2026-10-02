@@ -61,6 +61,7 @@ import { Route as AuthenticatedConversationiqQueueRouteImport } from './routes/_
 import { Route as AuthenticatedConversationiqLanguagesRouteImport } from './routes/_authenticated/conversationiq.languages'
 import { Route as AuthenticatedConversationiqKeywordsRouteImport } from './routes/_authenticated/conversationiq.keywords'
 import { Route as AuthenticatedConversationiqAuditRouteImport } from './routes/_authenticated/conversationiq.audit'
+import { Route as AuthenticatedConversationiqAnalyseRouteImport } from './routes/_authenticated/conversationiq.analyse'
 import { Route as AuthenticatedConversationiqConversationIdRouteImport } from './routes/_authenticated/conversationiq.$conversationId'
 import { Route as AuthenticatedAdministrationUsageRouteImport } from './routes/_authenticated/administration.usage'
 import { Route as AuthenticatedAdministrationSpeechRouteImport } from './routes/_authenticated/administration.speech'
@@ -371,6 +372,12 @@ const AuthenticatedConversationiqAuditRoute =
     path: '/conversationiq/audit',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedConversationiqAnalyseRoute =
+  AuthenticatedConversationiqAnalyseRouteImport.update({
+    id: '/conversationiq/analyse',
+    path: '/conversationiq/analyse',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConversationiqConversationIdRoute =
   AuthenticatedConversationiqConversationIdRouteImport.update({
     id: '/conversationiq/$conversationId',
@@ -517,6 +524,7 @@ export interface FileRoutesByFullPath {
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/administration/usage': typeof AuthenticatedAdministrationUsageRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
+  '/conversationiq/analyse': typeof AuthenticatedConversationiqAnalyseRoute
   '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
   '/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
@@ -585,6 +593,7 @@ export interface FileRoutesByTo {
   '/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/administration/usage': typeof AuthenticatedAdministrationUsageRoute
   '/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
+  '/conversationiq/analyse': typeof AuthenticatedConversationiqAnalyseRoute
   '/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
   '/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
@@ -657,6 +666,7 @@ export interface FileRoutesById {
   '/_authenticated/administration/speech': typeof AuthenticatedAdministrationSpeechRoute
   '/_authenticated/administration/usage': typeof AuthenticatedAdministrationUsageRoute
   '/_authenticated/conversationiq/$conversationId': typeof AuthenticatedConversationiqConversationIdRoute
+  '/_authenticated/conversationiq/analyse': typeof AuthenticatedConversationiqAnalyseRoute
   '/_authenticated/conversationiq/audit': typeof AuthenticatedConversationiqAuditRoute
   '/_authenticated/conversationiq/keywords': typeof AuthenticatedConversationiqKeywordsRoute
   '/_authenticated/conversationiq/languages': typeof AuthenticatedConversationiqLanguagesRoute
@@ -729,6 +739,7 @@ export interface FileRouteTypes {
     | '/administration/speech'
     | '/administration/usage'
     | '/conversationiq/$conversationId'
+    | '/conversationiq/analyse'
     | '/conversationiq/audit'
     | '/conversationiq/keywords'
     | '/conversationiq/languages'
@@ -797,6 +808,7 @@ export interface FileRouteTypes {
     | '/administration/speech'
     | '/administration/usage'
     | '/conversationiq/$conversationId'
+    | '/conversationiq/analyse'
     | '/conversationiq/audit'
     | '/conversationiq/keywords'
     | '/conversationiq/languages'
@@ -868,6 +880,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administration/speech'
     | '/_authenticated/administration/usage'
     | '/_authenticated/conversationiq/$conversationId'
+    | '/_authenticated/conversationiq/analyse'
     | '/_authenticated/conversationiq/audit'
     | '/_authenticated/conversationiq/keywords'
     | '/_authenticated/conversationiq/languages'
@@ -1272,6 +1285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConversationiqAuditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/conversationiq/analyse': {
+      id: '/_authenticated/conversationiq/analyse'
+      path: '/conversationiq/analyse'
+      fullPath: '/conversationiq/analyse'
+      preLoaderRoute: typeof AuthenticatedConversationiqAnalyseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/conversationiq/$conversationId': {
       id: '/_authenticated/conversationiq/$conversationId'
       path: '/conversationiq/$conversationId'
@@ -1493,6 +1513,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminCopilotAuditRoute: typeof AuthenticatedAdminCopilotAuditRoute
   AuthenticatedAdminRolesRoute: typeof AuthenticatedAdminRolesRoute
   AuthenticatedConversationiqConversationIdRoute: typeof AuthenticatedConversationiqConversationIdRoute
+  AuthenticatedConversationiqAnalyseRoute: typeof AuthenticatedConversationiqAnalyseRoute
   AuthenticatedConversationiqAuditRoute: typeof AuthenticatedConversationiqAuditRoute
   AuthenticatedConversationiqKeywordsRoute: typeof AuthenticatedConversationiqKeywordsRoute
   AuthenticatedConversationiqLanguagesRoute: typeof AuthenticatedConversationiqLanguagesRoute
@@ -1540,6 +1561,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRolesRoute: AuthenticatedAdminRolesRoute,
   AuthenticatedConversationiqConversationIdRoute:
     AuthenticatedConversationiqConversationIdRoute,
+  AuthenticatedConversationiqAnalyseRoute:
+    AuthenticatedConversationiqAnalyseRoute,
   AuthenticatedConversationiqAuditRoute: AuthenticatedConversationiqAuditRoute,
   AuthenticatedConversationiqKeywordsRoute:
     AuthenticatedConversationiqKeywordsRoute,
