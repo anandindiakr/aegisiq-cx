@@ -69,13 +69,22 @@ export const runBackup = createServerFn({ method: "POST" })
       };
       const tableData = archive.tables as Record<string, unknown[]>;
 
+      // Table names are dynamic, so use an untyped handle for the export loop.
+      const fromAny = supabaseAdmin.from.bind(supabaseAdmin) as (
+        table: string,
+      ) => {
+        select: (cols: string) => {
+          eq: (col: string, val: string) => {
+            limit: (n: number) => Promise<{ data: unknown[] | null; error: { message: string } | null }>;
+          };
+        };
+      };
+
       for (const table of tables) {
-        const query = supabaseAdmin
-          .from(table)
+        const { data: rows, error } = await fromAny(table)
           .select("*")
           .eq("company_id", companyId)
           .limit(50000);
-        const { data: rows, error } = await query;
         if (error) {
           // Table may lack company_id; skip rather than fail the whole archive.
           tableData[table] = [];
