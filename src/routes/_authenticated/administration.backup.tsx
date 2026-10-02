@@ -22,6 +22,7 @@ import {
   settingsQuery,
 } from "@/features/administration/queries";
 import { formatDateTime } from "@/lib/format";
+import { getBackupDownloadUrl, runBackup } from "@/lib/backup.functions";
 
 export const Route = createFileRoute("/_authenticated/administration/backup")({
   component: BackupPage,
@@ -45,10 +46,25 @@ function BackupPage() {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["admin-backup-runs"] });
 
   const run = useMutation({
-    mutationFn: (scope: string) => createBackupRun(scope, retention),
-    onSuccess: () => {
-      toast.success("Backup request queued — it will show as completed once the backup worker finishes");
+    mutationFn: async (scope: string) => {
+      const id = await createBackupRun(scope, retention);
       invalidate();
+      return runBackup({ data: { backupRunId: id } });
+    },
+    onSuccess: (result) => {
+      toast.success(`Backup completed — ${result.sizeMb} MB archived`);
+      invalidate();
+    },
+    onError: (e: Error) => {
+      toast.error(e.message);
+      invalidate();
+    },
+  });
+
+  const download = useMutation({
+    mutationFn: (id: string) => getBackupDownloadUrl({ data: { backupRunId: id } }),
+    onSuccess: ({ url }) => {
+      window.open(url, "_blank", "noopener");
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -177,12 +193,9 @@ function BackupPage() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          aria-label="Copy archive location"
-                          disabled={!row.archive_location}
-                          onClick={() => {
-                            void navigator.clipboard.writeText(row.archive_location ?? "");
-                            toast.success("Archive location copied");
-                          }}
+                          aria-label="Download backup archive"
+                          disabled={row.status !== "completed" || download.isPending}
+                          onClick={() => download.mutate(row.id)}
                         >
                           <Download className="size-4" />
                         </Button>

@@ -4097,6 +4097,7 @@ export type Database = {
       allowed_widgets: { Args: never; Returns: string[] }
       can_operate: { Args: never; Returns: boolean }
       can_triage_alert: { Args: { _outlet_id: string }; Returns: boolean }
+      can_view_outlet: { Args: { _outlet_id: string }; Returns: boolean }
       can_view_widget: { Args: { _widget_id: string }; Returns: boolean }
       check_copilot_quota: { Args: { _outlet_id?: string }; Returns: Json }
       current_company_id: { Args: never; Returns: string }
