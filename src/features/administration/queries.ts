@@ -256,18 +256,23 @@ export const backupRunsQuery = queryOptions({
 export async function createBackupRun(scope: string, retentionDays: number) {
   const started = new Date();
   const { data: auth } = await supabase.auth.getUser();
-  const { error } = await supabase.from("backup_runs").insert({
-    kind: "manual",
-    scope,
-    status: "queued",
-    size_mb: 0,
-    retention_days: retentionDays,
-    archive_location: `cold-storage://aegisiq/backups/${started.toISOString().slice(0, 10)}`,
-    started_at: started.toISOString(),
-    completed_at: null,
-    created_by: auth.user?.id ?? null,
-  });
+  const { data, error } = await supabase
+    .from("backup_runs")
+    .insert({
+      kind: "manual",
+      scope,
+      status: "queued",
+      size_mb: 0,
+      retention_days: retentionDays,
+      archive_location: null,
+      started_at: started.toISOString(),
+      completed_at: null,
+      created_by: auth.user?.id ?? null,
+    })
+    .select("id")
+    .single();
   if (error) throw new Error(error.message);
+  return data.id as string;
 }
 
 export async function deleteBackupRun(id: string) {
