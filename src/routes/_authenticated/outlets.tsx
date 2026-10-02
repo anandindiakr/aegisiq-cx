@@ -26,6 +26,7 @@ import {
   camerasQuery,
   conversationsQuery,
   outletsQuery,
+  createOutlet,
   updateOutlet,
   type Outlet,
 } from "@/features/platform/queries";
@@ -56,7 +57,38 @@ function OutletsPage() {
   const conversations = useQuery(conversationsQuery);
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<Outlet | null>(null);
+  const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ name: "", region: "", manager_name: "", timezone: "" });
+  const [newForm, setNewForm] = useState({
+    name: "",
+    code: "",
+    city: "",
+    region: "",
+    manager_name: "",
+    timezone: "Asia/Singapore",
+  });
+  const create = useMutation({
+    mutationFn: () => {
+      if (newForm.name.trim().length < 2) throw new Error("Enter an outlet name");
+      if (!/^[A-Za-z0-9-]{2,20}$/.test(newForm.code.trim()))
+        throw new Error("Code must be 2-20 letters, numbers or dashes");
+      return createOutlet(newForm);
+    },
+    onSuccess: () => {
+      toast.success("Outlet added — you can now assign cameras and staff to it");
+      queryClient.invalidateQueries({ queryKey: ["outlets"] });
+      setCreating(false);
+      setNewForm({
+        name: "",
+        code: "",
+        city: "",
+        region: "",
+        manager_name: "",
+        timezone: "Asia/Singapore",
+      });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const cameraCount = useMemo(() => {
     const map = new Map<string, number>();
@@ -102,7 +134,7 @@ function OutletsPage() {
         title="Outlets"
         description="Physical locations under this tenant, with regional grouping, ownership and coverage."
         actions={
-          <Button size="sm">
+          <Button size="sm" onClick={() => setCreating(true)}>
             <Plus className="mr-2 size-4" /> Add outlet
           </Button>
         }
@@ -211,6 +243,55 @@ function OutletsPage() {
               Save changes
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={creating} onOpenChange={setCreating}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add outlet</DialogTitle>
+            <DialogDescription>
+              Register a new store. Cameras, gateways and staff can then be assigned to it.
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              create.mutate();
+            }}
+          >
+            {(
+              [
+                ["name", "Outlet name *", "Orchard Flagship"],
+                ["code", "Outlet code *", "SG-ORC-01"],
+                ["city", "City", "Singapore"],
+                ["region", "Region", "Central"],
+                ["manager_name", "Manager", "Jane Tan"],
+                ["timezone", "Time zone", "Asia/Singapore"],
+              ] as const
+            ).map(([key, label, ph]) => (
+              <div key={key} className="space-y-2">
+                <Label htmlFor={`new-${key}`}>{label}</Label>
+                <Input
+                  id={`new-${key}`}
+                  value={newForm[key]}
+                  placeholder={ph}
+                  maxLength={120}
+                  onChange={(e) => setNewForm((f) => ({ ...f, [key]: e.target.value }))}
+                  className="bg-surface"
+                />
+              </div>
+            ))}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCreating(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={create.isPending}>
+                Add outlet
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

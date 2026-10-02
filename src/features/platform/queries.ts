@@ -295,6 +295,28 @@ export async function updateOutlet(id: string, patch: Partial<Outlet>) {
   if (error) throw new Error(error.message);
 }
 
+export async function createOutlet(input: {
+  name: string;
+  code: string;
+  region?: string;
+  city?: string;
+  manager_name?: string;
+  timezone?: string;
+}) {
+  const companyId = getActiveTenant();
+  if (!companyId) throw new Error("No active workspace.");
+  const { error } = await rawDb.from("outlets").insert({
+    company_id: companyId,
+    name: input.name.trim(),
+    code: input.code.trim().toUpperCase(),
+    region: input.region?.trim() || null,
+    city: input.city?.trim() || null,
+    manager_name: input.manager_name?.trim() || null,
+    timezone: input.timezone?.trim() || "UTC",
+  });
+  if (error) throw new Error(error.message);
+}
+
 export async function updateCamera(id: string, patch: Partial<Camera>) {
   const { error } = await db.from("cameras").update(patch).eq("id", id);
   if (error) throw new Error(error.message);
